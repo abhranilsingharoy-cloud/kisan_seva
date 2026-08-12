@@ -72,15 +72,13 @@ export default withSentryConfig(nextConfig, {
 
   // Source map upload (requires SENTRY_AUTH_TOKEN in CI)
   silent:         !process.env.CI,
-  hideSourceMaps: true,
+  sourcemaps:     { disable: false },
 
   // Auto-instrument all API routes
-  autoInstrumentServerFunctions: true,
-  autoInstrumentMiddleware:      true,
-  autoInstrumentAppDirectory:    true,
+  // (Deprecated options removed for Turbopack compatibility)
 
   // Tree-shake Sentry debug code in production
-  disableLogger: true,
+  // (Deprecated option removed for Turbopack compatibility)
 
   // Tunnels Sentry requests through /monitoring to bypass ad-blockers
   tunnelRoute: '/monitoring',

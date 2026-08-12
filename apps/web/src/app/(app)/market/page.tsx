@@ -7,7 +7,17 @@ import {
 } from 'lucide-react';
 
 const CROPS = ['Tomato', 'Wheat', 'Rice', 'Onion', 'Potato', 'Cotton', 'Maize', 'Soybean'];
-const STATES = ['', 'Maharashtra', 'Punjab', 'Uttar Pradesh', 'Madhya Pradesh', 'Karnataka', 'Tamil Nadu', 'Andhra Pradesh', 'Rajasthan', 'Delhi', 'West Bengal'];
+const STATES = [
+  '',
+  // 28 States
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 
+  'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  // 8 Union Territories
+  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 
+  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
+];
 
 export default function MarketPricePage() {
   const [selectedCrop, setSelectedCrop] = useState(CROPS[0]);
@@ -21,7 +31,7 @@ export default function MarketPricePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const [today, setToday] = useState('');
 
   const fetchPrices = useCallback(async () => {
     setLoading(true);
@@ -30,9 +40,16 @@ export default function MarketPricePage() {
       const params = new URLSearchParams({ commodity: selectedCrop, limit: '20' });
       if (selectedState) params.append('state', selectedState);
       const resp = await fetch(`/api/market?${params.toString()}`);
-      if (!resp.ok) throw new Error(`Server error ${resp.status}`);
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.error || 'No data');
+      
+      const data = await resp.json().catch(() => null);
+      
+      if (!resp.ok) {
+        throw new Error(data?.error || `Server error ${resp.status}`);
+      }
+      if (!data?.success) {
+        throw new Error(data?.error || 'No data returned from API');
+      }
+      
       setMarketData(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load mandi prices');
@@ -41,38 +58,25 @@ export default function MarketPricePage() {
     }
   }, [selectedCrop, selectedState]);
 
-  useEffect(() => { fetchPrices(); }, [fetchPrices]);
+  useEffect(() => {
+    fetchPrices();
+    setToday(new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }));
+  }, [fetchPrices]);
 
   const mandis = marketData?.mandis ?? [];
   const avgPrice = marketData?.stateAvgPrice ?? 0;
 
-  // Mock chart data for 30 days
+  // Deterministic mock data to prevent hydration mismatches
   const mockPrices = Array.from({ length: 30 }, (_, i) => {
-    return 2000 + Math.sin(i / 3) * 300 + Math.random() * 100;
+    return 2000 + Math.sin(i / 3) * 300 + (i % 5) * 20;
   });
   const maxPrice = Math.max(...mockPrices);
   const minPrice = Math.min(...mockPrices);
   const modalPrice = mockPrices[mockPrices.length - 1];
 
   return (
-    <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100vh', paddingBottom: '80px', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
-      {/* Top Navigation */}
-      <div className="page-header" style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--color-parchment)', borderBottom: '1px solid var(--color-bone)', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button style={{ padding: '8px', borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer' }} onClick={() => window.location.href = '/dashboard'}>
-            <ArrowLeft size={24} color="var(--color-ink)" />
-          </button>
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Mandi Price Comparator</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-bark)', fontSize: '0.875rem' }}>
-              <span>Live data &middot; Updated every 15 minutes</span>
-            </div>
-          </div>
-        </div>
-        <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-saddle)' }} onClick={fetchPrices}>
-          <RefreshCw size={20} className={loading ? 'spin' : ''} />
-        </button>
-      </div>
+    <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100%', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
+
 
       <main style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Filter Bar */}
@@ -116,18 +120,21 @@ export default function MarketPricePage() {
 
               <div style={{ position: 'relative', height: '200px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: '24px', borderBottom: '1px solid var(--color-bone)' }}>
                 {/* Min/Max/Modal Lines */}
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${((minPrice - 1800) / 1000) * 100}%`, borderTop: '1px dashed #3b82f6', opacity: 0.5, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${((maxPrice - 1800) / 1000) * 100}%`, borderTop: '1px dashed #ef4444', opacity: 0.5, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${((modalPrice - 1800) / 1000) * 100}%`, borderTop: '1px dashed #22c55e', opacity: 0.5, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${(((minPrice - 1800) / 1000) * 100).toFixed(2)}%`, borderTop: '1px dashed #3b82f6', opacity: 0.5, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${(((maxPrice - 1800) / 1000) * 100).toFixed(2)}%`, borderTop: '1px dashed #ef4444', opacity: 0.5, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${(((modalPrice - 1800) / 1000) * 100).toFixed(2)}%`, borderTop: '1px dashed #22c55e', opacity: 0.5, pointerEvents: 'none' }} />
 
-                {mockPrices.map((price, idx) => (
-                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '2%', position: 'relative' }}>
-                    <div style={{ width: '100%', height: `${((price - 1800) / 1000) * 150}px`, backgroundColor: 'var(--color-honey-amber)', borderRadius: '2px 2px 0 0' }} />
-                    {idx % 5 === 0 && (
-                      <span style={{ position: 'absolute', bottom: '-20px', fontSize: '0.7rem', color: 'var(--color-bark)' }}>{idx + 1}</span>
-                    )}
-                  </div>
-                ))}
+                {mockPrices.map((price, idx) => {
+                  const heightPx = Math.round(((price - 1800) / 1000) * 150);
+                  return (
+                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '2%', position: 'relative' }}>
+                      <div style={{ width: '100%', height: `${heightPx}px`, backgroundColor: 'var(--color-honey-amber)', borderRadius: '2px 2px 0 0' }} />
+                      {idx % 5 === 0 && (
+                        <span style={{ position: 'absolute', bottom: '-20px', fontSize: '0.7rem', color: 'var(--color-bark)' }}>{idx + 1}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div style={{ display: 'flex', gap: '16px', marginTop: '16px', fontSize: '0.875rem', color: 'var(--color-saddle)' }}>
@@ -295,17 +302,6 @@ export default function MarketPricePage() {
         </div>
       )}
 
-      {/* Mobile Nav */}
-      <nav className="ks-bottom-nav lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', borderTop: '1px solid var(--color-bone)', display: 'flex', justifyContent: 'space-around', padding: '12px 0', zIndex: 50 }}>
-        <a href="/dashboard" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--color-bark)', textDecoration: 'none', gap: '4px' }}>
-          <RefreshCw size={24} />
-          <span style={{ fontSize: '0.65rem' }}>Home</span>
-        </a>
-        <a href="/market" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--color-success)', textDecoration: 'none', gap: '4px' }}>
-          <TrendingUp size={24} />
-          <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Market</span>
-        </a>
-      </nav>
     </div>
   );
 }

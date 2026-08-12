@@ -52,11 +52,9 @@ export const viewport: Viewport = {
   viewportFit: 'cover'
 }
 
-import Navbar from '@/components/layout/Navbar'
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -65,8 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>
-        <Navbar />
+      <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-white text-slate-900">
         {children}
       </body>
     </html>

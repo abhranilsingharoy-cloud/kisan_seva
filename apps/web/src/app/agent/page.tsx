@@ -4,7 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bot, Send, Camera, ArrowLeft, Zap, Circle, CheckCircle, XCircle, Leaf, 
   TrendingUp, CloudSun, Brain, MessageSquare, Star, ThumbsUp, ThumbsDown, 
-  Home, Calendar, Activity, MapPin, Globe, Plus, Mic, Image as ImageIcon
+  Home, Calendar, Activity, MapPin, Globe, Plus, Mic, Image as ImageIcon,
+  ChevronDown, ChevronUp
 } from 'lucide-react';
 
 // Types

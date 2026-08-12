@@ -6,34 +6,55 @@
   --color-brand-dark: #4d7c0f;
 }
 
-/* ─── Full-Page Scroll Snap (same as JanSuvidha) ────────────────────────── */
-.snap-container {
-  position: fixed;
-  top: 88px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100,116,139,0.3) transparent;
-  z-index: 10;
-}
-.snap-container::-webkit-scrollbar { width: 5px; }
-.snap-container::-webkit-scrollbar-track { background: transparent; }
-.snap-container::-webkit-scrollbar-thumb {
-  background: rgba(100,116,139,0.3);
-  border-radius: 99px;
+/* ─── Exact JanSuvidha CSS from globals.css ────────────────────────────── */
+
+/* Category accent colors */
+:root {
+  --color-health: #ec4899;
+  --color-housing: #f59e0b;
+  --color-education: #3b82f6;
+  --color-civic: #6366f1;
+  --color-safety: #1e3a8a;
+
+  --gradient-mint: #d9f5e8;
+  --gradient-cream: #fdf6e8;
+  --gradient-blush: #fbe4e8;
+
+  /* Footer palette */
+  --footer-navy: #050A30;
+  --footer-midnight: #0a1040;
+  --footer-purple: #120830;
+  --footer-indigo: #1a0a40;
+  --footer-glow-blue: #4f8ff7;
+  --footer-soft-indigo: #818cf8;
+  --footer-gold: #fbbf24;
+  --footer-glass: rgba(15, 23, 60, 0.55);
+  --footer-glass-border: rgba(79, 143, 247, 0.12);
+  --footer-text: #94a3b8;
+  --footer-text-bright: #e2e8f0;
+
+  /* Landing page shadows */
+  --landing-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --landing-shadow-md: 0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.1);
+  --landing-shadow-lg: 0 4px 8px rgba(15, 23, 42, 0.05), 0 16px 40px -8px rgba(15, 23, 42, 0.12);
+  --landing-shadow-xl: 0 8px 16px rgba(15, 23, 42, 0.06), 0 24px 56px -12px rgba(15, 23, 42, 0.14);
 }
 
-.snap-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  min-height: calc(100dvh - 88px);
+/* ─── Base resets ───────────────────────────────────────────────────────── */
+html, body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* ─── Heartbeat footer line ─────────────────────────────────────────────── */
+/* ─── Landing page shadows ─────────────────────────────────────────────── */
+.landing-shadow-sm  { box-shadow: var(--landing-shadow-sm); }
+.landing-shadow-md  { box-shadow: var(--landing-shadow-md); }
+.landing-shadow-lg  { box-shadow: var(--landing-shadow-lg); }
+.landing-shadow-xl  { box-shadow: var(--landing-shadow-xl); }
+.landing-shadow-md-hover:hover { box-shadow: var(--landing-shadow-lg); }
+.landing-shadow-sm-hover:hover { box-shadow: var(--landing-shadow-md); }
+.landing-shadow-lg-hover:hover { box-shadow: var(--landing-shadow-xl); }
+
+/* ─── Footer heartbeat ─────────────────────────────────────────────────── */
 .footer-heartbeat-pulse {
   position: absolute;
   top: -1px;
@@ -41,6 +62,7 @@
   height: 3px;
   background: linear-gradient(90deg, transparent, #4f8ff7, transparent);
   border-radius: 2px;
+  filter: drop-shadow(0 0 6px #4f8ff7);
   animation: heartbeat-travel 4s linear infinite;
 }
 
@@ -49,9 +71,4 @@
   5%   { opacity: 1; }
   95%  { opacity: 1; }
   100% { left: calc(100% + 60px); opacity: 0; }
-}
-
-/* ─── Base resets ───────────────────────────────────────────────────────── */
-html, body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }

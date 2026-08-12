@@ -61,18 +61,7 @@ export default function SchedulePage() {
 
   return (
     <div style={PAGE_BG}>
-      {/* Top nav */}
-      <nav style={{ background: 'rgba(255,255,255,0.9)', borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 28px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backdropFilter: 'blur(8px)' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
-          <span style={{ fontSize: '1.2rem' }}>🌿</span>
-          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#2d6a27', letterSpacing: '-0.02em' }}>KisanSeva</span>
-        </Link>
-        <div style={{ display: 'flex', gap: 28 }}>
-          {[['Crops', '/diagnose'], ['Weather', '/schedule'], ['Market', '/market'], ['Profile', '/dashboard']].map(([label, href]) => (
-            <Link key={label} href={href} style={{ fontSize: '0.9rem', fontWeight: 500, color: label === 'Weather' ? '#2d6a27' : '#374151', textDecoration: 'none', borderBottom: label === 'Weather' ? '2px solid #2d6a27' : 'none', paddingBottom: 2 }}>{label}</Link>
-          ))}
-        </div>
-      </nav>
+
 
       {/* Plot selector tabs */}
       <div style={{ display: 'flex', gap: 4, padding: '24px 28px 0', borderBottom: '1px solid rgba(0,0,0,0.06)', background: 'rgba(255,255,255,0.5)' }}>
@@ -89,7 +78,7 @@ export default function SchedulePage() {
         ))}
       </div>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 80px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px' }}>
         {/* Current weather — big centered display */}
         {weatherLoading ? (
           <div style={{ textAlign: 'center', padding: 60, color: '#6b7280' }}>
@@ -212,15 +201,7 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* Mobile bottom nav */}
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.97)', borderTop: '1px solid #e8ede7', display: 'flex', justifyContent: 'space-around', padding: '8px 0', zIndex: 50 }}>
-        {[['🏠', 'Home', '/'], ['🔬', 'Crops', '/diagnose'], ['📈', 'Market', '/market'], ['📅', 'Schedule', '/schedule'], ['🤖', 'Agent', '/agent']].map(([icon, label, href]) => (
-          <Link key={label} href={href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, textDecoration: 'none', color: href === '/schedule' ? '#2d6a27' : '#6b7280', fontSize: '0.625rem', fontWeight: 500, padding: '4px 12px', minWidth: 44 }}>
-            <span style={{ fontSize: '1.25rem' }}>{icon}</span>
-            {label}
-          </Link>
-        ))}
-      </nav>
+
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

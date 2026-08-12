@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Cpu, AlertTriangle } from 'lucide-react'
 
 const PAGE_BG = {
   minHeight: '100vh',
@@ -25,17 +25,85 @@ const PESTS = [
 ]
 
 export default function DiagnosePage() {
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'done'>('idle')
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'done' | 'error'>('idle')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState(false)
   const [pestIndex, setPestIndex] = useState(0)
+  
+  const [provider, setProvider] = useState<string>('gemini')
+  const [diagnosisData, setDiagnosisData] = useState<any>(null)
+  const [errorMsg, setErrorMsg] = useState<string>('')
+
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = (file: File) => {
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.src = URL.createObjectURL(file)
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 800
+        const MAX_HEIGHT = 800
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg' }))
+          } else {
+            resolve(file) // fallback
+          }
+        }, 'image/jpeg', 0.8)
+      }
+      img.onerror = () => resolve(file) // fallback
+    })
+  }
+
+  const handleFile = async (file: File) => {
     setImageUrl(URL.createObjectURL(file))
     setStatus('uploading')
-    setTimeout(() => setStatus('processing'), 1200)
-    setTimeout(() => setStatus('done'), 3500)
+    
+    // Quick artificial delay for UI
+    await new Promise(r => setTimeout(r, 600))
+    
+    setStatus('processing')
+    
+    try {
+      const compressedFile = await compressImage(file)
+      const formData = new FormData()
+      formData.append('image', compressedFile)
+      formData.append('provider', provider)
+
+      const response = await fetch('/api/v1/diagnose', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+      
+      if (!result.success) throw new Error(result.error || 'Diagnosis failed')
+      
+      setDiagnosisData(result.data)
+      setStatus('done')
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Something went wrong')
+      setStatus('error')
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -44,32 +112,25 @@ export default function DiagnosePage() {
     if (file) handleFile(file)
   }
 
-  const reset = () => { setStatus('idle'); setImageUrl(null) }
+  const reset = () => { 
+    setStatus('idle')
+    setImageUrl(null)
+    setDiagnosisData(null)
+    setErrorMsg('')
+    if (fileRef.current) fileRef.current.value = ''
+  }
 
   const VISIBLE = 3
   const maxIndex = PESTS.length - VISIBLE
 
+  const providerNames: Record<string, string> = {
+    'gemini': 'Google Gemini 2.5 Vision',
+    'nvidia': 'NVIDIA LLaMA 3.2 Vision'
+  }
+
   return (
     <div style={PAGE_BG}>
-      {/* Top nav — same as weather page */}
-      <nav style={{ background: 'rgba(255,255,255,0.9)', borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 28px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backdropFilter: 'blur(8px)' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
-          <span style={{ fontSize: '1.2rem' }}>🌿</span>
-          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#2d6a27', letterSpacing: '-0.02em' }}>KisanSeva</span>
-        </Link>
-        <div style={{ display: 'flex', gap: 28 }}>
-          {[['Home', '/'], ['Crops', '/diagnose'], ['Weather', '/schedule'], ['Market Prices', '/market'], ['Profile', '/dashboard']].map(([label, href]) => (
-            <Link key={label} href={href} style={{ fontSize: '0.9rem', fontWeight: 500, color: label === 'Crops' ? '#2d6a27' : '#374151', textDecoration: 'none', borderBottom: label === 'Crops' ? '2px solid #2d6a27' : 'none', paddingBottom: 2 }}>{label}</Link>
-          ))}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>📡</div>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #a7d9a0, #5ab54e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff', cursor: 'pointer' }}>PS</div>
-          <span style={{ fontSize: '0.8rem', color: '#6b7280', cursor: 'pointer' }}>▾</span>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: 880, margin: '0 auto', padding: '32px 24px 100px' }}>
+      <div style={{ maxWidth: 880, margin: '0 auto', padding: '32px 24px' }}>
         {/* Scan Your Crop hero card */}
         <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #e8ede7', padding: '40px 24px', textAlign: 'center', marginBottom: 32 }}>
           {status === 'idle' && (
@@ -77,6 +138,31 @@ export default function DiagnosePage() {
               <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>📷🌿</div>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', margin: '0 0 10px', letterSpacing: '-0.025em' }}>Scan Your Crop</h1>
               <p style={{ fontSize: '0.9375rem', color: '#6b7280', margin: '0 0 28px' }}>Identify health issues and get treatment advice instantly.</p>
+              
+              <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <Cpu size={18} color="#6b7280" />
+                <span style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: 600 }}>AI Engine:</span>
+                <select 
+                  value={provider} 
+                  onChange={(e) => setProvider(e.target.value)}
+                  style={{
+                    background: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: '#111827',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                  }}
+                >
+                  <option value="gemini">Google Gemini 2.5 Vision (Fastest)</option>
+                  <option value="nvidia">NVIDIA NIM Vision</option>
+                </select>
+              </div>
+
               <div
                 onDrop={handleDrop}
                 onDragOver={e => e.preventDefault()}
@@ -106,43 +192,79 @@ export default function DiagnosePage() {
 
           {status === 'processing' && (
             <div style={{ padding: '20px 0' }}>
-              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0fdf4', border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 16px', animation: 'pulse 1.5s ease-in-out infinite' }}>🤖</div>
-              <div style={{ fontWeight: 700, fontSize: '1.125rem', color: '#111827', marginBottom: 8 }}>AI Analysing...</div>
-              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Running MobileNetV3 disease classifier</div>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0fdf4', border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', animation: 'pulse 1.5s ease-in-out infinite' }}>
+                <Cpu size={32} color="#16a34a" />
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '1.125rem', color: '#111827', marginBottom: 8 }}>{providerNames[provider]} is analysing...</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Running advanced visual diagnostics</div>
             </div>
           )}
 
-          {status === 'done' && imageUrl && (
+          {status === 'error' && (
+            <div style={{ padding: '20px 0' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#fef2f2', border: '2px solid #fca5a5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <AlertTriangle size={32} color="#dc2626" />
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '1.125rem', color: '#111827', marginBottom: 8 }}>Scan Failed</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: 20 }}>{errorMsg}</div>
+              <button onClick={reset} style={{ background: 'transparent', color: '#374151', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '10px 24px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>Try Again</button>
+            </div>
+          )}
+
+          {status === 'done' && imageUrl && diagnosisData && (
             <div>
-              <div style={{ background: '#fff8f0', border: '1px solid #fed7aa', borderRadius: 12, padding: '14px 20px', marginBottom: 20, textAlign: 'left' }}>
+              <div style={{ background: diagnosisData.severity === 'High' ? '#fff1f2' : diagnosisData.severity === 'Moderate' ? '#fff8f0' : '#f0fdf4', border: '1px solid', borderColor: diagnosisData.severity === 'High' ? '#fecdd3' : diagnosisData.severity === 'Moderate' ? '#fed7aa' : '#bbf7d0', borderRadius: 12, padding: '14px 20px', marginBottom: 20, textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                  <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                  <span style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#111827' }}>Early Stage Rice Blast Detected</span>
-                  <span style={{ marginLeft: 'auto', background: '#fef3c7', color: '#92400e', fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: 9999 }}>✓ 92% Confidence</span>
+                  <span style={{ fontSize: '1.2rem' }}>{diagnosisData.severity === 'High' ? '🚨' : diagnosisData.severity === 'Moderate' ? '⚠️' : '✅'}</span>
+                  <span style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#111827' }}>{diagnosisData.disease} Detected</span>
+                  <span style={{ marginLeft: 'auto', background: '#fff', color: '#111827', border: '1px solid #e5e7eb', fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: 9999 }}>{diagnosisData.confidence}% Confidence</span>
                 </div>
                 <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0, lineHeight: 1.6 }}>
-                  The uploaded image shows characteristic diamond-shaped lesions indicative of Magnaporthe oryzae infection. Immediate action recommended.
+                  {diagnosisData.description}
                 </p>
+                <div style={{ display: 'inline-block', marginTop: 12, fontSize: '0.75rem', fontWeight: 600, color: '#2d6a27', background: '#dcfce7', padding: '2px 8px', borderRadius: 6 }}>
+                  Analyzed by {providerNames[provider]}
+                </div>
               </div>
 
               <div style={{ textAlign: 'left', marginBottom: 20 }}>
+                {diagnosisData.symptoms && diagnosisData.symptoms.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>🩺 KEY SYMPTOMS</div>
+                    <ul style={{ margin: 0, paddingLeft: 20, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>
+                      {diagnosisData.symptoms.map((sym: string, i: number) => <li key={i}>{sym}</li>)}
+                    </ul>
+                  </div>
+                )}
+                
+                {diagnosisData.causes && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>🦠 ROOT CAUSE</div>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{diagnosisData.causes}</p>
+                  </div>
+                )}
+                
+                {diagnosisData.prevention && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>🛡️ PREVENTION</div>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{diagnosisData.prevention}</p>
+                  </div>
+                )}
+
                 <div style={{ fontSize: '0.7rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 12 }}>RECOMMENDED ACTION PLAN</div>
-                {[
-                  { n: 1, title: 'Apply Fungicide X', desc: 'Spray affected areas immediately during early morning or late afternoon.' },
-                  { n: 2, title: 'Reduce Standing Water', desc: 'Lower water levels in the paddy to decrease humidity around the plants.' },
-                  { n: 3, title: 'Notify Neighbor Farmers', desc: 'Spores travel by wind; alerting nearby farms helps prevent regional outbreak.' },
-                ].map(step => (
-                  <div key={step.n} style={{ display: 'flex', gap: 14, padding: '14px', background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 10, marginBottom: 10, textAlign: 'left' }}>
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#2d6a27', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{step.n}</div>
-                    <div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111827', marginBottom: 3 }}>{step.title}</div>
-                      <div style={{ fontSize: '0.8125rem', color: '#6b7280', lineHeight: 1.5 }}>{step.desc}</div>
+                {diagnosisData.treatmentSteps?.map((step: string, index: number) => (
+                  <div key={index} style={{ display: 'flex', gap: 14, padding: '14px', background: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: 10, marginBottom: 10, textAlign: 'left', alignItems: 'center' }}>
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#2d6a27', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>{index + 1}</div>
+                    <div style={{ fontSize: '0.9rem', color: '#374151', lineHeight: 1.5, fontWeight: 500 }}>
+                      {step}
                     </div>
                   </div>
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 12 }}>
-                <button style={{ flex: 1, background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>🛒 Buy Recommended Supplies</button>
+                <a href={`https://www.bighaat.com/search?q=${encodeURIComponent(diagnosisData.disease)}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
+                  <button style={{ width: '100%', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>🛒 Buy Recommended Supplies</button>
+                </a>
                 <button onClick={reset} style={{ flex: 1, background: 'transparent', color: '#374151', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>↩ New Scan</button>
               </div>
             </div>
@@ -211,16 +333,6 @@ export default function DiagnosePage() {
           </>
         )}
       </div>
-
-      {/* Mobile bottom nav */}
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.97)', borderTop: '1px solid #e8ede7', display: 'flex', justifyContent: 'space-around', padding: '8px 0', zIndex: 50 }}>
-        {[['🏠', 'Home', '/'], ['🔬', 'Crops', '/diagnose'], ['📈', 'Market', '/market'], ['📅', 'Schedule', '/schedule'], ['🤖', 'Agent', '/agent']].map(([icon, label, href]) => (
-          <Link key={label} href={href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, textDecoration: 'none', color: href === '/diagnose' ? '#2d6a27' : '#6b7280', fontSize: '0.625rem', fontWeight: 500, padding: '4px 12px', minWidth: 44 }}>
-            <span style={{ fontSize: '1.25rem' }}>{icon}</span>
-            {label}
-          </Link>
-        ))}
-      </nav>
 
       <style>{`
         @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:0.8} }

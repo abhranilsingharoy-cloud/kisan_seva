@@ -1,0 +1,45 @@
+﻿# Environment files — NEVER commit these
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# ML models (large files)
+*.onnx
+*.tflite
+*.pth
+*.h5
+*.pkl
+training/data/
+training/models/checkpoints/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+
+# Misc
+.DS_Store
+Thumbs.db
+logs/
+*.log
+feedback.db

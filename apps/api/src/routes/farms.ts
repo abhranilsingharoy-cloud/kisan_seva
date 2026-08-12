@@ -1,0 +1,1 @@
+import { Router } from "express"; export const farmsRouter = Router(); farmsRouter.get("/", (_, res) => res.json({ farms: [] })); farmsRouter.post("/", (_, res) => res.status(201).json({ message: "Farm created" }));

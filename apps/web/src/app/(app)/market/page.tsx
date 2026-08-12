@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  TrendingUp, TrendingDown, Bell, MapPin, ArrowLeft,
-  X, Share2, RefreshCw, Search, AlertCircle, Loader2, CheckCircle
-} from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Bell, Search, X } from 'lucide-react';
+import PriceChartCard from '@/components/features/market/PriceChartCard';
+import PinnedCommodities from '@/components/features/market/PinnedCommodities';
+import LiveMandiTable from '@/components/features/market/LiveMandiTable';
+import TopGainersLosers from '@/components/features/market/TopGainersLosers';
 
 const ALL_COMMODITIES = [
   'Amaranthus', 'Amla(Nelli Kai)', 'Apple', 'Arhar (Tur/Red Gram)', 'Ashgourd', 'Bajra(Pearl Millet)', 'Banana', 'Barley (Jau)',
@@ -17,6 +17,7 @@ const ALL_COMMODITIES = [
   'Pumpkin', 'Radish', 'Ragi (Finger Millet)', 'Rice', 'Soybean', 'Spinach', 'Sweet Potato', 'Tomato', 'Turmeric',
   'Water Melon', 'Wheat'
 ].sort();
+
 const STATES = [
   '',
   // 28 States
@@ -40,7 +41,6 @@ export default function MarketPricePage() {
   const [marketData, setMarketData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [today, setToday] = useState('');
 
   const fetchPrices = useCallback(async () => {
@@ -49,7 +49,7 @@ export default function MarketPricePage() {
     try {
       const params = new URLSearchParams({ commodity: selectedCrop, limit: '20' });
       if (selectedState) params.append('state', selectedState);
-      const resp = await fetch(`/api/market?${params.toString()}`);
+      const resp = await fetch(`/api/v1/market?${params.toString()}`);
       
       const data = await resp.json().catch(() => null);
       
@@ -106,8 +106,6 @@ export default function MarketPricePage() {
 
   return (
     <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100%', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
-
-
       <main style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {/* Filter Bar */}
         <div className="card" style={{ padding: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', borderBottom: '1px solid var(--color-bone)' }}>
@@ -149,166 +147,14 @@ export default function MarketPricePage() {
           
           {/* LEFT COLUMN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '2 1 65%' }}>
-            {/* Price Chart Card */}
-            <div className="card" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.25rem' }}>Price Trends (Last 30 Days) - {selectedCrop} in {selectedState || 'All States'}</h2>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button className="btn btn-sm" style={{ backgroundColor: 'var(--color-bone)' }}>All Dates</button>
-                  <button className="btn btn-sm" style={{ backgroundColor: 'var(--color-bone)' }}>My Gainers</button>
-                </div>
-              </div>
-
-              <div style={{ height: '300px', width: '100%', marginTop: '16px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorModal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 12, fill: '#6b7280' }} 
-                      tickLine={false} 
-                      axisLine={false}
-                      minTickGap={30}
-                    />
-                    <YAxis 
-                      domain={['auto', 'auto']}
-                      tickFormatter={(val) => `₹${val}`}
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                      formatter={(value: any, name: any) => [`₹${value}`, String(name).charAt(0).toUpperCase() + String(name).slice(1)]}
-                    />
-                    <Area type="monotone" dataKey="max" stroke="#ef4444" fill="none" strokeDasharray="5 5" />
-                    <Area type="monotone" dataKey="min" stroke="#3b82f6" fill="none" strokeDasharray="5 5" />
-                    <Area type="monotone" dataKey="modal" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorModal)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div style={{ display: 'flex', gap: '24px', marginTop: '16px', fontSize: '0.875rem', color: 'var(--color-saddle)', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#3b82f6', borderTop: '2px dashed #3b82f6' }} /> Minimum</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '4px', backgroundColor: '#22c55e' }} /> Modal Average</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#ef4444', borderTop: '2px dashed #ef4444' }} /> Maximum</div>
-              </div>
-            </div>
-
-            {/* Pinned Commodities */}
-            <div className="hide-scroll" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-              {[
-                { name: 'Wheat', price: '₹2,850', change: '+2.5% (+₹70)', isUp: true, img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=100&q=80', bg: '#fef3c7' },
-                { name: 'Rice', price: '₹4,100', change: '-1.2% (-₹50)', isUp: false, img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=100&q=80', bg: '#e0f2fe' },
-                { name: 'Tomato', price: '₹1,500', change: '+5.0% (+₹75)', isUp: true, img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=100&q=80', bg: '#fee2e2' },
-                { name: 'Onion', price: '₹2,200', change: '-0.5% (-₹10)', isUp: false, img: 'https://images.unsplash.com/photo-1620574387735-3624d75b2dfc?w=100&q=80', bg: '#f3e8ff' },
-                { name: 'Potato', price: '₹1,100', change: '+1.5% (+₹15)', isUp: true, img: 'https://images.unsplash.com/photo-1518977956812-cd3bdadaad31?w=100&q=80', bg: '#ffedd5' },
-                { name: 'Cotton', price: '₹6,500', change: '+3.2% (+₹200)', isUp: true, img: 'https://images.unsplash.com/photo-1601329025664-e4e6e8e5543a?w=100&q=80', bg: '#f1f5f9' },
-                { name: 'Soybean', price: '₹4,800', change: '-2.1% (-₹100)', isUp: false, img: 'https://images.unsplash.com/photo-1620601614798-75b293126fdb?w=100&q=80', bg: '#fef9c3' },
-              ].map(item => (
-                <div 
-                  key={item.name} 
-                  className="card" 
-                  onClick={() => setSelectedCrop(item.name)}
-                  style={{ flex: '0 0 200px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', border: selectedCrop === item.name ? '2px solid var(--color-honey-amber)' : '1px solid transparent', transition: 'all 0.2s' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: item.bg, overflow: 'hidden' }}>
-                      <img src={item.img} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{item.name}</span>
-                  </div>
-                  <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>{item.price} <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--color-bark)' }}>/ Qtl</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <span style={{ fontSize: '0.75rem', color: item.isUp ? 'var(--color-success)' : 'var(--color-danger)', fontWeight: 600 }}>{item.change}</span>
-                    <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '24px' }}>
-                      {[40, 60, 50, 80, 100].map((h, i) => (
-                        <div key={i} style={{ width: '4px', height: `${h}%`, backgroundColor: item.isUp ? '#22c55e' : '#ef4444', opacity: 0.5 + (i * 0.1) }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Live Market Table */}
-            <div className="card" style={{ padding: '24px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', margin: '0 0 16px 0', fontSize: '1.25rem' }}>Live Mandi Prices</h2>
-              {loading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}><Loader2 className="spin" size={32} color="var(--color-honey-amber)" /></div>
-              ) : error ? (
-                <div style={{ padding: '16px', color: 'var(--color-danger)', display: 'flex', gap: '8px' }}><AlertCircle /> {error}</div>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="ks-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                    <thead style={{ borderBottom: '1px solid var(--color-bone)' }}>
-                      <tr style={{ textAlign: 'left', color: 'var(--color-saddle)' }}>
-                        <th style={{ padding: '12px' }}>Mandi Name</th>
-                        <th style={{ padding: '12px' }}>State</th>
-                        <th style={{ padding: '12px' }}>Min</th>
-                        <th style={{ padding: '12px' }}>Modal</th>
-                        <th style={{ padding: '12px' }}>Max</th>
-                        <th style={{ padding: '12px' }}>vs Avg</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mandis.map((m: any, idx: number) => {
-                        const isBest = idx === 0;
-                        const delta = m.modal - avgPrice;
-                        return (
-                          <tr key={m.id} className={isBest ? 'best' : ''} style={{ borderBottom: '1px solid var(--color-bone)', backgroundColor: isBest ? 'rgba(34, 197, 94, 0.05)' : 'transparent' }}>
-                            <td style={{ padding: '12px', fontWeight: 500 }}>{m.name} {isBest && <span className="badge badge-success" style={{ marginLeft: '8px' }}>Best</span>}</td>
-                            <td style={{ padding: '12px' }}>{m.state}</td>
-                            <td style={{ padding: '12px', color: 'var(--color-bark)' }}>₹{m.min}</td>
-                            <td style={{ padding: '12px', fontWeight: 600 }}>₹{m.modal}</td>
-                            <td style={{ padding: '12px', color: 'var(--color-bark)' }}>₹{m.max}</td>
-                            <td style={{ padding: '12px', color: delta > 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                              {delta > 0 ? '+' : ''}₹{delta}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                      {mandis.length === 0 && (
-                        <tr><td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--color-bark)' }}>No data available for this selection.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+            <PriceChartCard selectedCrop={selectedCrop} selectedState={selectedState} chartData={chartData} />
+            <PinnedCommodities selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
+            <LiveMandiTable loading={loading} error={error} mandis={mandis} avgPrice={avgPrice} />
           </div>
 
           {/* RIGHT COLUMN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '1 1 35%' }}>
-            
-            {/* Top Gainers & Losers Card */}
-            <div className="card" style={{ padding: '24px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', margin: '0 0 20px 0', fontSize: '1.125rem' }}>Top Gainers & Losers (Today)</h2>
-              
-              <div style={{ marginBottom: '24px' }}>
-                <span className="badge badge-success" style={{ marginBottom: '12px', display: 'inline-block' }}>GAINERS</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Cotton</span><span style={{ color: 'var(--color-success)', fontWeight: 600 }}>₹6,500 (+5.2%)</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Soybean</span><span style={{ color: 'var(--color-success)', fontWeight: 600 }}>₹4,800 (+3.8%)</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Tur Dal</span><span style={{ color: 'var(--color-success)', fontWeight: 600 }}>₹9,200 (+2.1%)</span></div>
-                </div>
-              </div>
-
-              <div>
-                <span className="badge badge-danger" style={{ marginBottom: '12px', display: 'inline-block' }}>LOSERS</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Potato</span><span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>₹1,100 (-3.5%)</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Garlic</span><span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>₹8,500 (-2.8%)</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Maize</span><span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>₹1,950 (-1.9%)</span></div>
-                </div>
-              </div>
-            </div>
+            <TopGainersLosers />
 
             {/* Market News Card */}
             <div className="card" style={{ padding: '24px' }}>

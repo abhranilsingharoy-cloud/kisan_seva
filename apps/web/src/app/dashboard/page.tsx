@@ -1,291 +1,192 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import {
-  CloudSun,
-  Droplets,
-  AlertTriangle,
-  Beaker,
-  Microscope,
-  LayoutDashboard,
-  TrendingUp,
-  Cloud,
-  Users,
-  Settings,
-  ArrowRight,
-  Home,
-  Calendar,
-  Bot
-} from 'lucide-react';
+import Link from 'next/link'
+import { useState } from 'react'
+import { LayoutDashboard, Microscope, TrendingUp, Cloud, Users, Settings, CloudSun, Droplets, AlertTriangle, ChevronRight, Home } from 'lucide-react'
+
+const PAGE_BG = {
+  minHeight: '100vh',
+  background: 'radial-gradient(ellipse at 80% 10%, rgba(255,210,80,0.4) 0%, transparent 50%), radial-gradient(ellipse at 10% 90%, rgba(80,190,130,0.35) 0%, transparent 50%), #f0f7ee',
+}
+
+const SIDEBAR_STYLE = {
+  width: 230,
+  minHeight: '100vh',
+  background: '#fff',
+  borderRight: '1px solid #e8ede7',
+  display: 'flex' as const,
+  flexDirection: 'column' as const,
+  padding: '24px 16px',
+  flexShrink: 0,
+}
+
+const navItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+  { id: 'diagnose', label: 'Crop Health', icon: Microscope, href: '/diagnose' },
+  { id: 'market', label: 'Market Prices', icon: TrendingUp, href: '/market' },
+  { id: 'weather', label: 'Weather', icon: Cloud, href: '/schedule' },
+  { id: 'community', label: 'Community', icon: Users, href: '/dashboard' },
+  { id: 'settings', label: 'Settings', icon: Settings, href: '/dashboard' },
+]
 
 export default function DashboardPage() {
+  const [active, setActive] = useState('dashboard')
+
   return (
-    <div className="ks-layout" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-surface-low, #f8f9fa)' }}>
-      {/* SIDEBAR (desktop only) */}
-      <aside className="ks-sidebar" style={{ width: '240px', backgroundColor: '#ffffff', borderRight: '1px solid var(--color-border, #e2e8f0)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, bottom: 0, left: 0 }}>
-        <div style={{ padding: '24px' }}>
-          <h1 className="ks-sidebar-logo" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-primary-base, #326b00)', margin: 0, marginBottom: '24px' }}>
-            KisanSeva
-          </h1>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--color-primary-base, #326b00)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
-              PS
-            </div>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Inter,sans-serif' }}>
+      {/* Sidebar */}
+      <aside style={SIDEBAR_STYLE}>
+        {/* Logo */}
+        <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#2d6a27', letterSpacing: '-0.02em', paddingLeft: 10, marginBottom: 28 }}>
+          KisanSeva
+        </div>
+
+        {/* Farmer profile */}
+        <div style={{ paddingLeft: 6, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg, #a7d9a0, #5ab54e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>PS</div>
             <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Priya Sharma</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-dim, #64748b)' }}>Managing 3 Plots</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>Farmer Profile</div>
+              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Managing 2 Plots</div>
             </div>
           </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.875rem' }}>
-            <span style={{ fontWeight: 500 }}>Language</span>
-            <span className="badge" style={{ backgroundColor: 'var(--color-surface-high, #f1f5f9)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>EN / HI</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Language</span>
+            <span style={{ fontSize: '0.75rem', color: '#374151', fontWeight: 600 }}>EN / HI</span>
           </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', fontSize: '0.875rem' }}>
-            <span style={{ fontWeight: 500 }}>Low Data Mode</span>
-            <div style={{ width: '36px', height: '20px', borderRadius: '10px', backgroundColor: 'var(--color-primary-base, #326b00)', position: 'relative' }}>
-              <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#ffffff', position: 'absolute', top: '2px', right: '2px' }}></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Low Data Mode</span>
+            <div style={{ width: 36, height: 20, background: '#e5e7eb', borderRadius: 10, position: 'relative' as const, cursor: 'pointer' }}>
+              <div style={{ width: 16, height: 16, background: '#9ca3af', borderRadius: '50%', position: 'absolute' as const, top: 2, left: 2, transition: 'left 0.2s' }} />
             </div>
           </div>
         </div>
-        
-        <div style={{ height: '1px', backgroundColor: 'var(--color-border, #e2e8f0)', margin: '0 24px 16px' }}></div>
-        
-        <nav style={{ flex: 1, padding: '0 12px' }}>
-          <Link href="/dashboard" className="ks-nav-item active" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px', color: 'var(--color-primary-base, #326b00)', backgroundColor: 'var(--color-primary-surface, #f0fdf4)', fontWeight: 600, marginBottom: '4px', textDecoration: 'none' }}>
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link href="/diagnose" className="ks-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px', color: 'var(--color-text-base, #334155)', fontWeight: 500, marginBottom: '4px', textDecoration: 'none' }}>
-            <Microscope size={20} />
-            <span>Crop Health</span>
-          </Link>
-          <Link href="/market" className="ks-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px', color: 'var(--color-text-base, #334155)', fontWeight: 500, marginBottom: '4px', textDecoration: 'none' }}>
-            <TrendingUp size={20} />
-            <span>Market Prices</span>
-          </Link>
-          <Link href="/schedule" className="ks-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px', color: 'var(--color-text-base, #334155)', fontWeight: 500, marginBottom: '4px', textDecoration: 'none' }}>
-            <Cloud size={20} />
-            <span>Weather</span>
-          </Link>
-          <Link href="#" className="ks-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px', color: 'var(--color-text-base, #334155)', fontWeight: 500, marginBottom: '4px', textDecoration: 'none' }}>
-            <Users size={20} />
-            <span>Community</span>
-          </Link>
-          <Link href="#" className="ks-nav-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '8px', color: 'var(--color-text-base, #334155)', fontWeight: 500, marginBottom: '4px', textDecoration: 'none' }}>
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: '#f3f4f6', margin: '8px 0 16px' }} />
+
+        {/* Nav items */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {navItems.map(({ id, label, icon: Icon, href }) => (
+            <Link key={id} href={href}
+              onClick={() => setActive(id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 10, textDecoration: 'none',
+                background: active === id ? '#f0fdf4' : 'transparent',
+                color: active === id ? '#2d6a27' : '#4b5563',
+                fontWeight: active === id ? 600 : 500, fontSize: '0.9rem',
+                transition: 'all 0.15s',
+              }}>
+              <Icon size={19} />
+              {label}
+            </Link>
+          ))}
         </nav>
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="ks-main" style={{ flex: 1, marginLeft: '240px', display: 'flex', flexDirection: 'column' }}>
-        {/* Header Bar */}
-        <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid var(--color-border, #e2e8f0)', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Main content */}
+      <main style={{ flex: 1, ...PAGE_BG }}>
+        {/* Top header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '28px 32px 20px' }}>
           <div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0, color: 'var(--color-text-base, #1e293b)' }}>Good morning, Farmer. 🌾</h2>
-            <p style={{ margin: '4px 0 0', color: 'var(--color-text-dim, #64748b)' }}>Here is the latest data for your 3 plots.</p>
+            <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111827', margin: 0, letterSpacing: '-0.025em' }}>Good morning, Farmer. 🌾</h1>
+            <p style={{ color: '#6b7280', fontSize: '0.9375rem', margin: '6px 0 0', fontFamily: 'Inter,sans-serif' }}>Here is the latest data for your 2 plots.</p>
           </div>
-          <div>
-            <span className="badge badge-live" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--color-primary-surface, #f0fdf4)', color: 'var(--color-primary-base, #326b00)', padding: '6px 12px', borderRadius: '16px', fontWeight: 600, fontSize: '0.875rem' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-primary-base, #326b00)' }}></span>
-              System Online
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#2d6a27', color: '#fff', borderRadius: 9999, padding: '7px 14px', fontSize: '0.8125rem', fontWeight: 600, marginTop: 4 }}>
+            <span style={{ width: 7, height: 7, background: '#86efac', borderRadius: '50%', display: 'inline-block' }} />
+            System Online
           </div>
-        </header>
+        </div>
 
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {/* Stat Cards Row */}
-          <section style={{ padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-            
-            {/* Weather Card */}
-            <div className="card" style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid var(--color-border, #e2e8f0)', borderLeft: '4px solid #326b00', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>28°C</div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-dim, #64748b)' }}>Partly Cloudy, 60% Humidity</div>
-                </div>
-                <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: '#f0fdf4', color: '#326b00' }}>
-                  <CloudSun size={24} />
-                </div>
+        {/* Stat cards row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, padding: '0 32px' }}>
+          {[
+            { icon: '⛅', iconColor: '#2d6a27', label: 'Weather', big: '28°C', sub: 'Partly Cloudy, 60% Humidity', desc: 'Rain expected in 2 days. Adjust irrigation schedule accordingly.', btn: 'View 7-Day Forecast', btnHref: '/schedule', btnPrimary: true },
+            { icon: '💧', iconColor: '#0891b2', label: 'Irrigation', big: 'Skip Today', sub: '', desc: 'Soil moisture is optimal. Expected rain will cover needs.', btn: 'View Details', btnHref: '/schedule', btnPrimary: false },
+            { icon: '⚗️', iconColor: '#d97706', label: 'Fertilizer', big: 'Apply Urea Mix', sub: '', desc: 'Plot 1 requires nitrogen boost before upcoming rain.', btn: 'View Details', btnHref: '/schedule', btnPrimary: false },
+            { icon: '⚠️', iconColor: '#dc2626', label: 'Pest Alert', big: 'Moderate Risk', sub: '', desc: 'Conditions favorable for blight. Monitor lower leaves.', btn: 'View Details', btnHref: '/diagnose', btnPrimary: false },
+          ].map((card, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 16, padding: '20px', border: '1px solid #e8ede7', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
+                <span style={{ fontSize: '1.1rem' }}>{card.icon}</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: card.iconColor }}>{card.label}</span>
               </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-base, #334155)', margin: 0, flex: 1 }}>
-                Rain expected in 2 days. Adjust irrigation schedule accordingly.
-              </p>
-              <Link href="/schedule" className="btn btn-primary btn-sm" style={{ display: 'inline-flex', justifyContent: 'center', padding: '8px 16px', backgroundColor: 'var(--color-primary-base, #326b00)', color: '#ffffff', borderRadius: '6px', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none', border: 'none' }}>
-                View 7-Day Forecast
+              {card.sub && <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>{card.sub}</div>}
+              <div style={{ fontSize: card.big.length > 10 ? '1rem' : '1.25rem', fontWeight: 700, color: '#111827', letterSpacing: '-0.01em' }}>{card.big}</div>
+              <p style={{ fontSize: '0.8125rem', color: '#6b7280', lineHeight: 1.55, margin: '0 0 auto', flex: 1 }}>{card.desc}</p>
+              <Link href={card.btnHref} style={{
+                display: 'block', textAlign: 'center', marginTop: 10,
+                padding: '9px 0', borderRadius: 10, textDecoration: 'none',
+                fontSize: '0.8125rem', fontWeight: 600,
+                background: card.btnPrimary ? '#2d6a27' : 'transparent',
+                color: card.btnPrimary ? '#fff' : '#2d6a27',
+                border: card.btnPrimary ? 'none' : '1.5px solid #c9ddc6',
+              }}>
+                {card.btn}
               </Link>
             </div>
+          ))}
+        </div>
 
-            {/* Irrigation Card */}
-            <div className="card" style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid var(--color-border, #e2e8f0)', borderLeft: '4px solid #0ea5e9', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0ea5e9' }}>Skip Today</div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-dim, #64748b)' }}>Irrigation Status</div>
-                </div>
-                <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: '#e0f2fe', color: '#0ea5e9' }}>
-                  <Droplets size={24} />
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-base, #334155)', margin: 0, flex: 1 }}>
-                Soil moisture is optimal. Expected rain will cover needs.
-              </p>
-              <Link href="/schedule" className="btn btn-outline btn-sm" style={{ display: 'inline-flex', justifyContent: 'center', padding: '8px 16px', backgroundColor: 'transparent', color: 'var(--color-text-base, #334155)', border: '1px solid var(--color-border, #cbd5e1)', borderRadius: '6px', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
-                View Details
-              </Link>
+        {/* Lower row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16, padding: '16px 32px 32px', alignItems: 'stretch' }}>
+          {/* Scan Crop card */}
+          <div style={{ background: '#fff', borderRadius: 16, padding: '32px 24px', border: '1px solid #e8ede7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, textAlign: 'center' }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0fdf4', border: '1.5px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>📷</div>
+            <div>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#111827', margin: '0 0 5px' }}>Scan Crop</h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0 }}>Instantly diagnose pests &amp; diseases</p>
             </div>
+            <Link href="/diagnose" style={{ background: '#2d6a27', color: '#fff', padding: '11px 32px', borderRadius: 10, textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 600, boxShadow: '0 4px 12px rgba(45,106,39,0.3)' }}>
+              Scan Crop
+            </Link>
+          </div>
 
-            {/* Fertilizer Card */}
-            <div className="card" style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid var(--color-border, #e2e8f0)', borderLeft: '4px solid #f59e0b', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#f59e0b' }}>Apply Urea Mix</div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-dim, #64748b)' }}>Nutrient Plan</div>
-                </div>
-                <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: '#fef3c7', color: '#f59e0b' }}>
-                  <Beaker size={24} />
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-base, #334155)', margin: 0, flex: 1 }}>
-                Plot 1 requires nitrogen boost before upcoming rain.
-              </p>
-              <Link href="/schedule" className="btn btn-outline btn-sm" style={{ display: 'inline-flex', justifyContent: 'center', padding: '8px 16px', backgroundColor: 'transparent', color: 'var(--color-text-base, #334155)', border: '1px solid var(--color-border, #cbd5e1)', borderRadius: '6px', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
-                View Details
-              </Link>
+          {/* Nearby Markets card */}
+          <div style={{ background: '#fff', borderRadius: 16, padding: '20px', border: '1px solid #e8ede7', minWidth: 340 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#111827', margin: 0 }}>Nearby Markets</h3>
+              <span style={{ fontSize: '0.75rem', color: '#6b7280', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 6, padding: '3px 8px' }}>Wheat (Quintal)</span>
             </div>
-
-            {/* Pest Alert Card */}
-            <div className="card" style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid var(--color-border, #e2e8f0)', borderLeft: '4px solid #ef4444', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#ef4444' }}>Moderate Risk</div>
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-dim, #64748b)' }}>Pest Alert</div>
-                </div>
-                <div style={{ padding: '8px', borderRadius: '8px', backgroundColor: '#fee2e2', color: '#ef4444' }}>
-                  <AlertTriangle size={24} />
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-base, #334155)', margin: 0, flex: 1 }}>
-                Conditions favorable for blight. Monitor lower leaves.
-              </p>
-              <Link href="/diagnose" className="btn btn-outline btn-sm" style={{ display: 'inline-flex', justifyContent: 'center', padding: '8px 16px', backgroundColor: 'transparent', color: 'var(--color-text-base, #334155)', border: '1px solid var(--color-border, #cbd5e1)', borderRadius: '6px', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}>
-                View Details
-              </Link>
-            </div>
-          </section>
-
-          {/* Two columns row */}
-          <section style={{ padding: '0 24px 24px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            {/* Left Column: Scan Crop */}
-            <div className="card" style={{ flex: '2 1 400px', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid var(--color-border, #e2e8f0)', padding: '40px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-              <div style={{ width: '6rem', height: '6rem', borderRadius: '50%', backgroundColor: 'var(--color-surface-low, #f8f9fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-                <Microscope size={40} color="var(--color-primary-base, #326b00)" />
-              </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px' }}>Scan Crop</h3>
-              <p style={{ color: 'var(--color-text-dim, #64748b)', margin: '0 0 24px' }}>Instantly diagnose pests & diseases using AI</p>
-              <Link href="/diagnose" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', backgroundColor: 'var(--color-primary-base, #326b00)', color: '#ffffff', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, textDecoration: 'none', border: 'none' }}>
-                Diagnose Now <ArrowRight size={20} />
-              </Link>
-            </div>
-
-            {/* Right Column: Nearby Markets */}
-            <div className="card" style={{ flex: '1 1 280px', minWidth: '280px', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid var(--color-border, #e2e8f0)', padding: '24px', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: 0 }}>Nearby Markets</h3>
-                <span className="badge-neutral" style={{ padding: '4px 8px', backgroundColor: 'var(--color-surface-high, #f1f5f9)', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-dim, #64748b)' }}>Wheat (Quintal)</span>
-              </div>
-              
-              <div className="ks-table" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--color-border, #e2e8f0)' }}>
-                  <span style={{ fontWeight: 500 }}>Azadpur</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 600 }}>₹2,250</span>
-                    <span style={{ color: '#16a34a', fontSize: '0.875rem', fontWeight: 600 }}>+15↑</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--color-border, #e2e8f0)' }}>
-                  <span style={{ fontWeight: 500 }}>Najafgarh</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 600 }}>₹2,230</span>
-                    <span style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 600 }}>-5↓</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px' }}>
-                  <span style={{ fontWeight: 500 }}>Narela</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontWeight: 600 }}>₹2,245</span>
-                    <span style={{ color: 'var(--color-text-dim, #64748b)', fontSize: '0.875rem', fontWeight: 600 }}>--</span>
-                  </div>
-                </div>
-              </div>
-              
-              <Link href="/market" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-primary-base, #326b00)', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none', marginTop: '16px' }}>
-                View all prices <ArrowRight size={16} />
-              </Link>
-            </div>
-          </section>
-
-          {/* Quick Actions Row */}
-          <section style={{ padding: '0 24px 80px' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 16px' }}>Quick Actions</h3>
-            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
-              <Link href="/agent" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid var(--color-border, #e2e8f0)', textDecoration: 'none', color: 'var(--color-text-base, #334155)', fontWeight: 600, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                <span style={{ fontSize: '1.25rem' }}>🔬</span> AI Agent Chat
-              </Link>
-              <Link href="/schedule" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid var(--color-border, #e2e8f0)', textDecoration: 'none', color: 'var(--color-text-base, #334155)', fontWeight: 600, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                <span style={{ fontSize: '1.25rem' }}>📅</span> Irrigation Schedule
-              </Link>
-              <Link href="/market" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid var(--color-border, #e2e8f0)', textDecoration: 'none', color: 'var(--color-text-base, #334155)', fontWeight: 600, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                <span style={{ fontSize: '1.25rem' }}>📊</span> Market Prices
-              </Link>
-              <Link href="/schedule" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid var(--color-border, #e2e8f0)', textDecoration: 'none', color: 'var(--color-text-base, #334155)', fontWeight: 600, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                <span style={{ fontSize: '1.25rem' }}>🌧️</span> Weather Forecast
-              </Link>
-            </div>
-          </section>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  {['Mandi', 'Price (₹)', 'Trend'].map(h => (
+                    <th key={h} style={{ textAlign: 'left', padding: '0 0 10px', fontSize: '0.75rem', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.04em' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { mandi: 'Azadpur', price: '2,250', trend: '+15 ↑', trendColor: '#16a34a' },
+                  { mandi: 'Najafgarh', price: '2,230', trend: '-5 ↓', trendColor: '#dc2626' },
+                  { mandi: 'Narela', price: '2,245', trend: '-- —', trendColor: '#9ca3af' },
+                ].map((row, i) => (
+                  <tr key={i} style={{ borderBottom: i < 2 ? '1px solid #f9fafb' : 'none' }}>
+                    <td style={{ padding: '13px 0', color: '#111827', fontWeight: 500 }}>{row.mandi}</td>
+                    <td style={{ padding: '13px 0', color: '#111827' }}>{row.price}</td>
+                    <td style={{ padding: '13px 0', color: row.trendColor, fontWeight: 600, fontSize: '0.875rem' }}>{row.trend}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <Link href="/market" style={{ display: 'block', textAlign: 'center', marginTop: 14, padding: '9px', border: '1.5px solid #c9ddc6', borderRadius: 8, color: '#2d6a27', fontSize: '0.8125rem', fontWeight: 600, textDecoration: 'none' }}>
+              View all prices →
+            </Link>
+          </div>
         </div>
       </main>
 
-      {/* MOBILE BOTTOM NAV */}
-      <nav className="ks-bottom-nav" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: '#ffffff', borderTop: '1px solid var(--color-border, #e2e8f0)', display: 'none', padding: '8px 16px', zIndex: 10 }}>
-        {/* We use media queries or classes to show this only on mobile, simulated inline for now but class is given */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <Link href="/" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--color-primary-base, #326b00)', textDecoration: 'none' }}>
-            <Home size={24} />
-            <span style={{ fontSize: '0.625rem', fontWeight: 600 }}>Home</span>
+      {/* Mobile bottom nav */}
+      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(255,255,255,0.97)', borderTop: '1px solid #e8ede7', display: 'flex', justifyContent: 'space-around', padding: '8px 0', zIndex: 50 }} className="lg-hidden">
+        {[['🏠', 'Home', '/'], ['🔬', 'Crops', '/diagnose'], ['📈', 'Market', '/market'], ['📅', 'Schedule', '/schedule'], ['🤖', 'Agent', '/agent']].map(([icon, label, href]) => (
+          <Link key={label} href={href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, textDecoration: 'none', color: href === '/dashboard' ? '#2d6a27' : '#6b7280', fontSize: '0.625rem', fontWeight: 500, padding: '4px 12px', minWidth: 44 }}>
+            <span style={{ fontSize: '1.25rem' }}>{icon}</span>
+            {label}
           </Link>
-          <Link href="/diagnose" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--color-text-dim, #64748b)', textDecoration: 'none' }}>
-            <Microscope size={24} />
-            <span style={{ fontSize: '0.625rem', fontWeight: 500 }}>Crops</span>
-          </Link>
-          <Link href="/market" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--color-text-dim, #64748b)', textDecoration: 'none' }}>
-            <TrendingUp size={24} />
-            <span style={{ fontSize: '0.625rem', fontWeight: 500 }}>Market</span>
-          </Link>
-          <Link href="/schedule" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--color-text-dim, #64748b)', textDecoration: 'none' }}>
-            <Calendar size={24} />
-            <span style={{ fontSize: '0.625rem', fontWeight: 500 }}>Schedule</span>
-          </Link>
-          <Link href="/agent" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--color-text-dim, #64748b)', textDecoration: 'none' }}>
-            <Bot size={24} />
-            <span style={{ fontSize: '0.625rem', fontWeight: 500 }}>Agent</span>
-          </Link>
-        </div>
+        ))}
       </nav>
-      
-      {/* Basic media query styles can be handled in globals.css, but inline styles block display if not careful, so adding a style block */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @media (max-width: 768px) {
-          .ks-sidebar { display: none !important; }
-          .ks-main { margin-left: 0 !important; }
-          .ks-bottom-nav { display: flex !important; }
-        }
-      `}} />
     </div>
-  );
+  )
 }

@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
-const GEMINI_MODEL   = 'gemini-2.0-flash'
+const GEMINI_MODEL   = 'gemini-3.5-flash'
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = `You are KisanSeva AI, an expert agricultural advisor for smallholder farmers in India.
 Provide concise, actionable advice about crops, diseases, irrigation, fertilizers, and market prices.
+You MUST reply entirely in the language corresponding to this language code: ${language} (e.g., if 'hi', reply strictly in Hindi using Devanagari script).
 When answering in Hindi or regional languages, use simple vocabulary farmers understand.
 Always prioritise safety — for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.
 Current context: language=${language}, plot_id=${plot_id || 'unknown'}`

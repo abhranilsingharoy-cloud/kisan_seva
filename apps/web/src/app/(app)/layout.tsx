@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Home, 
+  LayoutDashboard,
   Search, 
   TrendingUp, 
   Calendar, 
@@ -15,9 +16,12 @@ import {
   UserCircle,
   Landmark
 } from 'lucide-react';
+import ChatWidget from '@/components/chat/ChatWidget';
+import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 
 const APP_LINKS = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Diagnose', href: '/diagnose', icon: Search },
   { name: 'Market', href: '/market', icon: TrendingUp },
   { name: 'Schedule', href: '/schedule', icon: Calendar },
@@ -96,6 +100,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           
           <div className="flex items-center gap-3">
+            <GoogleTranslateWidget className="hidden sm:inline-block mt-1" />
             <button className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors relative">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
@@ -195,6 +200,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
+      
+      {/* GLOBAL CHATBOT */}
+      <ChatWidget />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import ChatWidget from '@/components/chat/ChatWidget'
 import './marketing.css'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
@@ -16,14 +17,18 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               <li><Link href="/schedule">Weather</Link></li>
               <li><Link href="/dashboard">Dashboard</Link></li>
             </ul>
-            <div className="auth-buttons">
-              <Link href="/login" className="btn btn-outline nav-cta">Login</Link>
-              <Link href="/register" className="btn btn-solid nav-cta">Register</Link>
+            <div className="auth-buttons flex items-center gap-3">
+              <GoogleTranslateWidget className="mt-1" />
+              <Link href="/login" className="btn btn-outline nav-cta hidden sm:flex">Login</Link>
+              <Link href="/register" className="btn btn-solid nav-cta hidden sm:flex">Register</Link>
             </div>
           </nav>
         </div>
       </header>
       {children}
+      
+      {/* GLOBAL CHATBOT FOR MARKETING/HOME */}
+      <ChatWidget />
     </>
   )
 }

@@ -5,6 +5,7 @@ import {
   TrendingUp, TrendingDown, Bell, MapPin, ArrowLeft,
   X, Share2, RefreshCw, Search, AlertCircle, Loader2, CheckCircle
 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const CROPS = ['Tomato', 'Wheat', 'Rice', 'Onion', 'Potato', 'Cotton', 'Maize', 'Soybean'];
 const STATES = [
@@ -66,13 +67,28 @@ export default function MarketPricePage() {
   const mandis = marketData?.mandis ?? [];
   const avgPrice = marketData?.stateAvgPrice ?? 0;
 
-  // Deterministic mock data to prevent hydration mismatches
-  const mockPrices = Array.from({ length: 30 }, (_, i) => {
-    return 2000 + Math.sin(i / 3) * 300 + (i % 5) * 20;
+  const basePrice = avgPrice > 0 ? avgPrice : 2000;
+  
+  // Deterministic mock historical data tailored to current live price
+  const chartData = Array.from({ length: 30 }, (_, i) => {
+    const dayOffset = 29 - i;
+    const date = new Date();
+    date.setDate(date.getDate() - dayOffset);
+    const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    
+    // Create realistic price fluctuation ending at basePrice
+    // We dampen the fluctuation towards the end so the last point matches the live average closely
+    const dampener = 1 - (i / 30) * 0.5; 
+    const fluctuation = (Math.sin(i / 4) * 0.1 + Math.cos(i / 2) * 0.05) * basePrice * dampener;
+    const dailyModal = Math.round(basePrice - fluctuation); // minus to make the trend converge to basePrice
+    
+    return {
+      date: dateStr,
+      min: Math.round(dailyModal * 0.92),
+      max: Math.round(dailyModal * 1.08),
+      modal: dailyModal,
+    };
   });
-  const maxPrice = Math.max(...mockPrices);
-  const minPrice = Math.min(...mockPrices);
-  const modalPrice = mockPrices[mockPrices.length - 1];
 
   return (
     <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100%', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
@@ -118,29 +134,45 @@ export default function MarketPricePage() {
                 </div>
               </div>
 
-              <div style={{ position: 'relative', height: '200px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: '24px', borderBottom: '1px solid var(--color-bone)' }}>
-                {/* Min/Max/Modal Lines */}
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${(((minPrice - 1800) / 1000) * 100).toFixed(2)}%`, borderTop: '1px dashed #3b82f6', opacity: 0.5, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${(((maxPrice - 1800) / 1000) * 100).toFixed(2)}%`, borderTop: '1px dashed #ef4444', opacity: 0.5, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '24px', height: `${(((modalPrice - 1800) / 1000) * 100).toFixed(2)}%`, borderTop: '1px dashed #22c55e', opacity: 0.5, pointerEvents: 'none' }} />
-
-                {mockPrices.map((price, idx) => {
-                  const heightPx = Math.round(((price - 1800) / 1000) * 150);
-                  return (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '2%', position: 'relative' }}>
-                      <div style={{ width: '100%', height: `${heightPx}px`, backgroundColor: 'var(--color-honey-amber)', borderRadius: '2px 2px 0 0' }} />
-                      {idx % 5 === 0 && (
-                        <span style={{ position: 'absolute', bottom: '-20px', fontSize: '0.7rem', color: 'var(--color-bark)' }}>{idx + 1}</span>
-                      )}
-                    </div>
-                  );
-                })}
+              <div style={{ height: '300px', width: '100%', marginTop: '16px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorModal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 12, fill: '#6b7280' }} 
+                      tickLine={false} 
+                      axisLine={false}
+                      minTickGap={30}
+                    />
+                    <YAxis 
+                      domain={['auto', 'auto']}
+                      tickFormatter={(val) => `₹${val}`}
+                      tick={{ fontSize: 12, fill: '#6b7280' }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      formatter={(value: any, name: any) => [`₹${value}`, String(name).charAt(0).toUpperCase() + String(name).slice(1)]}
+                    />
+                    <Area type="monotone" dataKey="max" stroke="#ef4444" fill="none" strokeDasharray="5 5" />
+                    <Area type="monotone" dataKey="min" stroke="#3b82f6" fill="none" strokeDasharray="5 5" />
+                    <Area type="monotone" dataKey="modal" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorModal)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
 
-              <div style={{ display: 'flex', gap: '16px', marginTop: '16px', fontSize: '0.875rem', color: 'var(--color-saddle)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#3b82f6' }} /> Minimum</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#ef4444' }} /> Maximum</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#22c55e' }} /> Modal</div>
+              <div style={{ display: 'flex', gap: '24px', marginTop: '16px', fontSize: '0.875rem', color: 'var(--color-saddle)', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#3b82f6', borderTop: '2px dashed #3b82f6' }} /> Minimum</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '4px', backgroundColor: '#22c55e' }} /> Modal Average</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '12px', height: '2px', backgroundColor: '#ef4444', borderTop: '2px dashed #ef4444' }} /> Maximum</div>
               </div>
             </div>
 

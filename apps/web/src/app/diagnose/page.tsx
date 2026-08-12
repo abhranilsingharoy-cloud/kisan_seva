@@ -1,40 +1,56 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import {
-  ArrowLeft, Upload, Camera, Leaf, AlertTriangle, Clock,
-  Info, ChevronDown, ChevronUp, RotateCcw, Share2, Loader2,
-  Home, Activity, TrendingUp, Calendar, Bell
-} from 'lucide-react';
 import Link from 'next/link';
-
-type Status = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
+import { 
+  Microscope, 
+  Camera, 
+  Leaf, 
+  AlertTriangle, 
+  CheckCircle, 
+  Clock, 
+  Loader2, 
+  RotateCcw, 
+  ChevronDown, 
+  ChevronUp, 
+  Share2, 
+  ShoppingCart, 
+  Cpu, 
+  Upload,
+  Home,
+  CloudLightning,
+  Map as MapIcon,
+  ShoppingBag,
+  Users
+} from 'lucide-react';
 
 export default function DiagnosePage() {
-  const [status, setStatus] = useState<Status>('idle');
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'done' | 'error'>('idle');
+  const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [showAlternatives, setShowAlternatives] = useState(false);
-  
+  const [expanded, setExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      processFile(file);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setImagePreview(URL.createObjectURL(selectedFile));
+      processImage();
     }
   };
 
-  const processFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string);
-      startDiagnosis();
-    };
-    reader.readAsDataURL(file);
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const selectedFile = e.dataTransfer.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setImagePreview(URL.createObjectURL(selectedFile));
+      processImage();
+    }
   };
 
-  const startDiagnosis = () => {
+  const processImage = () => {
     setStatus('uploading');
     setTimeout(() => {
       setStatus('processing');
@@ -44,262 +60,477 @@ export default function DiagnosePage() {
     }, 1200);
   };
 
-  const resetDiagnosis = () => {
+  const resetForm = () => {
     setStatus('idle');
+    setFile(null);
     setImagePreview(null);
-    setShowAlternatives(false);
-  };
-
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      processFile(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const navItems = [
-    { icon: Home, label: 'Home', href: '/' },
-    { icon: Activity, label: 'Diagnose', href: '/diagnose', active: true },
-    { icon: TrendingUp, label: 'Market', href: '/market' },
-    { icon: Calendar, label: 'Schedule', href: '/schedule' },
-    { icon: Bell, label: 'Alerts', href: '/alerts' },
-  ];
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-parchment)', paddingBottom: '80px' }}>
-      {/* Sticky Top Nav */}
-      <header className="top-nav" style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: 'var(--color-parchment)', borderBottom: '1px solid var(--color-bone)', padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/" className="btn-icon" style={{ padding: '8px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bone)' }} aria-label="Go back">
-            <ArrowLeft size={24} color="var(--color-ink)" />
-          </Link>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontWeight: 600 }}>Crop Disease Detection</h1>
-            <p style={{ margin: 0, fontSize: '0.875rem', fontFamily: 'var(--font-sans)', color: 'var(--color-sage)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              Powered by AI · Results in &lt;5 seconds
-            </p>
-          </div>
+    <div className="layout-container" style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-bg)' }}>
+      {/* Sidebar */}
+      <aside className="ks-sidebar">
+        <div className="brand" style={{ padding: '24px', fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-primary-act)' }}>
+          KisanSeva
         </div>
-      </header>
+        <nav className="nav-menu">
+          <Link href="/dashboard" className="nav-item">
+            <Home size={20} />
+            <span>Dashboard</span>
+          </Link>
+          <Link href="/weather" className="nav-item">
+            <CloudLightning size={20} />
+            <span>Weather & Soil</span>
+          </Link>
+          <Link href="/diagnose" className="nav-item active">
+            <Leaf size={20} />
+            <span>Crop Health</span>
+          </Link>
+          <Link href="/market" className="nav-item">
+            <ShoppingBag size={20} />
+            <span>Marketplace</span>
+          </Link>
+          <Link href="/community" className="nav-item">
+            <Users size={20} />
+            <span>Community</span>
+          </Link>
+        </nav>
+      </aside>
 
-      {/* Main Content Container */}
-      <div className="page-container" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+      {/* Main Content */}
+      <main className="ks-main" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'auto', backgroundColor: 'var(--color-bg)' }}>
+        {/* Page Header */}
+        <header className="page-header" style={{ backgroundColor: '#fff', borderBottom: '1px solid var(--color-border)', padding: '24px' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-primary)', margin: '0 0 8px 0' }}>
+            Crop Health Diagnosis
+          </h1>
+          <p style={{ margin: 0, color: 'var(--color-ink-soft)', fontSize: '0.95rem' }}>
+            Upload a photo of your crop to identify diseases and get treatment recommendations.
+          </p>
+        </header>
+
+        {/* Content Area */}
+        <div className="content-area" style={{ padding: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           
-          {/* LEFT: Image Upload / Preview */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div 
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              style={{ 
-                border: '2px dashed var(--color-bone)',
-                borderRadius: 'var(--radius-md)',
-                padding: '32px',
-                textAlign: 'center',
-                backgroundColor: 'var(--color-parchment)',
-                position: 'relative',
-                overflow: 'hidden',
-                minHeight: '350px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: status === 'idle' ? 'pointer' : 'default',
-                transition: 'border-color 0.2s ease-in-out'
-              }}
-              onClick={() => status === 'idle' && fileInputRef.current?.click()}
-            >
-              {status === 'idle' && !imagePreview && (
-                <>
-                  <Upload size={48} color="var(--color-sage)" style={{ marginBottom: '16px' }} />
-                  <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontSize: '1.25rem', marginBottom: '8px' }}>Drag & Drop Leaf Image</h3>
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-bark)', fontSize: '0.875rem', marginBottom: '24px' }}>or click to browse from your device</p>
-                  
-                  <button 
-                    className="btn btn-primary"
-                    style={{ backgroundColor: 'var(--color-honey-amber)', color: 'var(--color-ink)', padding: '12px 24px', borderRadius: 'var(--radius-sm)', border: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                    onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                  >
-                    <Camera size={20} /> Take Photo
-                  </button>
-                </>
-              )}
-              
-              {imagePreview && (
-                <img src={imagePreview} alt="Crop Leaf" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: status === 'idle' || status === 'done' ? 1 : 0.4 }} />
-              )}
-              
-              {(status === 'uploading' || status === 'processing') && (
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(252, 250, 241, 0.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <Loader2 className="animate-spin" size={48} color="var(--color-sage)" />
-                  <p style={{ marginTop: '16px', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontWeight: 600, fontSize: '1.125rem' }}>
-                    {status === 'uploading' ? 'Uploading Image...' : 'Analyzing with AI...'}
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            {/* Hidden file inputs */}
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} aria-label="Upload leaf image" id="file-upload" />
-            <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} onChange={handleFileChange} style={{ display: 'none' }} aria-label="Take photo of leaf" id="camera-upload" />
-
-            {status === 'done' && (
-              <button 
-                className="btn btn-ghost animate-fade-in"
-                style={{ padding: '12px', border: '1px solid var(--color-bone)', borderRadius: 'var(--radius-sm)', backgroundColor: 'transparent', color: 'var(--color-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600, cursor: 'pointer', width: '100%' }}
-                onClick={resetDiagnosis}
+          {/* Left Panel */}
+          <div className="left-panel" style={{ flex: '1', minWidth: '300px', maxWidth: '480px' }}>
+            {status === 'idle' && (
+              <div 
+                className="upload-zone"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                style={{
+                  border: '2px dashed var(--color-border)',
+                  borderRadius: '16px',
+                  padding: '40px 24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  backgroundColor: '#fff',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onClick={() => fileInputRef.current?.click()}
               >
-                <RotateCcw size={20} /> New Diagnosis
-              </button>
+                <Microscope size={48} style={{ color: 'var(--color-primary-act)', marginBottom: '16px' }} />
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1rem' }}>Drag & drop a leaf photo</h3>
+                <p style={{ margin: '0 0 24px 0', color: 'var(--color-ink-soft)', fontSize: '0.9rem' }}>
+                  or tap to browse your gallery
+                </p>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                />
+                
+                <button 
+                  className="btn btn-primary" 
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  <Camera size={18} />
+                  Take Photo
+                </button>
+
+                <div className="tip-box" style={{
+                  backgroundColor: 'rgba(50,107,0,0.08)',
+                  borderLeft: '3px solid var(--color-primary-act)',
+                  padding: '10px 14px',
+                  borderRadius: '0 8px 8px 0',
+                  textAlign: 'left',
+                  width: '100%',
+                  fontSize: '0.85rem',
+                  color: 'var(--color-ink)'
+                }}>
+                  <strong>Tip:</strong> Good lighting gives 40% better accuracy
+                </div>
+              </div>
             )}
 
-            <div className="alert alert-info" style={{ backgroundColor: '#e0f2fe', borderLeft: '4px solid #0284c7', padding: '16px', borderRadius: 'var(--radius-sm)', display: 'flex', gap: '12px', marginTop: '8px' }}>
-              <Info size={24} color="#0284c7" style={{ flexShrink: 0 }} />
-              <div>
-                <h4 style={{ margin: 0, color: '#0c4a6e', fontWeight: 600, fontSize: '0.875rem', fontFamily: 'var(--font-sans)' }}>Tip for best results</h4>
-                <p style={{ margin: 0, marginTop: '4px', color: '#0c4a6e', fontSize: '0.875rem', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
-                  Ensure the leaf is in focus, well-lit, and fills most of the frame. Include both healthy and affected areas if possible.
-                </p>
+            {status === 'uploading' && (
+              <div 
+                className="upload-zone uploading"
+                style={{
+                  border: '2px solid var(--color-border)',
+                  borderRadius: '16px',
+                  padding: '40px 24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  backgroundColor: '#fff'
+                }}
+              >
+                <Loader2 size={48} className="animate-spin" style={{ color: 'var(--color-primary-act)', marginBottom: '16px' }} />
+                <h3 style={{ margin: '0 0 24px 0', fontSize: '1.1rem' }}>Uploading photo...</h3>
+                <div className="progress" style={{ width: '100%', height: '8px', backgroundColor: 'var(--color-surface-low)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div className="progress-fill" style={{ width: '60%', height: '100%', backgroundColor: 'var(--color-primary-act)', transition: 'width 0.3s ease' }}></div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {status === 'processing' && (
+              <div 
+                className="dark-panel"
+                style={{
+                  borderRadius: '16px',
+                  padding: '40px 24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  backgroundColor: '#1a1a1a',
+                  color: '#fff',
+                  border: '1px solid #333',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Green ring animation placeholder */}
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  border: '2px solid rgba(50, 205, 50, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '24px',
+                  animation: 'pulse 1.5s infinite'
+                }}>
+                  <Cpu size={40} style={{ color: '#32cd32' }} />
+                </div>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: '#fff' }}>
+                  AI Analysing
+                  <span className="animated-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                  </span>
+                </h3>
+                <p style={{ margin: 0, color: '#aaa', fontSize: '0.85rem' }}>
+                  Running MobileNetV3 disease classifier
+                </p>
+                <style>{`
+                  @keyframes pulse {
+                    0% { box-shadow: 0 0 0 0 rgba(50, 205, 50, 0.4); }
+                    70% { box-shadow: 0 0 0 20px rgba(50, 205, 50, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(50, 205, 50, 0); }
+                  }
+                  @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+                  .animated-dots span { animation-name: blink; animation-duration: 1.4s; animation-iteration-count: infinite; animation-fill-mode: both; }
+                  .animated-dots span:nth-child(2) { animation-delay: 0.2s; }
+                  .animated-dots span:nth-child(3) { animation-delay: 0.4s; }
+                `}</style>
+              </div>
+            )}
+
+            {status === 'done' && imagePreview && (
+              <div className="preview-container" style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+                  <img 
+                    src={imagePreview} 
+                    alt="Crop upload" 
+                    style={{ width: '100%', maxHeight: '360px', objectFit: 'cover', display: 'block' }} 
+                  />
+                  {/* Bounding box overlay */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '20%',
+                    left: '30%',
+                    width: '40%',
+                    height: '50%',
+                    border: '2px solid var(--color-amber)',
+                    borderRadius: '4px',
+                    pointerEvents: 'none'
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: '-14px',
+                      left: '-2px',
+                      backgroundColor: 'var(--color-amber)',
+                      color: '#000',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      borderRadius: '2px',
+                      fontFamily: 'monospace'
+                    }}>
+                      DETECTED
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-ink-soft)', fontFamily: 'monospace' }}>
+                    {file?.name || 'rice_leaf_scan_001.jpg'}
+                  </div>
+                  <button 
+                    onClick={resetForm}
+                    style={{ 
+                      background: 'none', 
+                      border: 'none', 
+                      color: 'var(--color-ink-soft)', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                    }}
+                    className="hover-bg-surface-low"
+                  >
+                    <RotateCcw size={14} />
+                    Retake
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* RIGHT: Results Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {status === 'idle' && (
-              <div className="card" style={{ backgroundColor: 'var(--color-bone)', borderRadius: 'var(--radius-md)', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '350px' }}>
-                <div style={{ backgroundColor: 'var(--color-parchment)', padding: '24px', borderRadius: '50%', marginBottom: '24px' }}>
-                  <Leaf size={48} color="var(--color-sage)" />
+          {/* Right Panel */}
+          <div className="right-panel" style={{ flex: '1', minWidth: '320px' }}>
+            {(status === 'idle' || status === 'uploading' || status === 'processing') ? (
+              <div 
+                className="empty-state-card"
+                style={{
+                  height: '100%',
+                  minHeight: '400px',
+                  border: '1px dashed var(--color-border)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'var(--color-surface-low)',
+                  color: 'var(--color-ink-soft)'
+                }}
+              >
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(50,107,0,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '16px'
+                }}>
+                  <Leaf size={32} style={{ color: 'var(--color-primary-act)' }} />
                 </div>
-                <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontSize: '1.5rem', marginBottom: '12px' }}>Ready to Diagnose</h2>
-                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-saddle)', maxWidth: '300px', lineHeight: 1.5 }}>
-                  Upload or snap a photo of a crop leaf to instantly identify diseases and get actionable treatment plans.
-                </p>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-ink)' }}>
+                  {status === 'processing' ? 'Analysing...' : 'Ready to Diagnose'}
+                </h3>
               </div>
-            )}
-
-            {(status === 'uploading' || status === 'processing') && (
-              <div className="card" style={{ backgroundColor: 'var(--color-bone)', borderRadius: 'var(--radius-md)', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '350px' }}>
-                <div className="animate-pulse-ring" style={{ backgroundColor: 'var(--color-sage)', padding: '24px', borderRadius: '50%', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Clock size={48} color="var(--color-parchment)" />
-                </div>
-                <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontSize: '1.5rem', marginBottom: '12px' }}>Analyzing...</h2>
-                <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-saddle)', maxWidth: '300px', lineHeight: 1.5 }}>
-                  Our AI is scanning your leaf against a database of over 400 potential issues.
-                </p>
-              </div>
-            )}
-
-            {status === 'done' && (
-              <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div className="card" style={{ backgroundColor: 'var(--color-parchment)', border: '1px solid var(--color-bone)', borderRadius: 'var(--radius-md)', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-                  
-                  {/* Title & Badges */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                    <div>
-                      <span className="eyebrow eyebrow-amber" style={{ color: 'var(--color-warning)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Analysis Complete</span>
-                      <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontSize: '1.75rem', margin: '4px 0 12px 0' }}>Early Blight (Alternaria Solani)</h2>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        <span className="badge badge-neutral" style={{ backgroundColor: 'var(--color-bone)', color: 'var(--color-ink)', padding: '4px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 500 }}>Crop: Tomato</span>
-                        <span className="badge badge-success" style={{ backgroundColor: '#dcfce7', color: 'var(--color-success)', padding: '4px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 500 }}>Confidence: 91%</span>
-                        <span className="badge badge-warning" style={{ backgroundColor: '#fef3c7', color: 'var(--color-warning)', padding: '4px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 500 }}>Severity: Moderate</span>
+            ) : (
+              <div 
+                className="card results-card"
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: '12px',
+                  border: '1px solid var(--color-border)',
+                  borderLeft: '4px solid var(--color-amber)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ padding: '24px' }}>
+                  {/* Alert Row */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+                    <AlertTriangle size={24} style={{ color: 'var(--color-amber)', flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ flex: 1 }}>
+                      <h2 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-ink)' }}>
+                        Early Stage Rice Blast Detected
+                      </h2>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <span className="badge badge-warning" style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                          92% Confidence
+                        </span>
+                        <span className="badge badge-neutral" style={{ backgroundColor: 'var(--color-surface-low)', color: 'var(--color-ink)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500 }}>
+                          Crop: Rice
+                        </span>
+                        <span className="badge badge-warning" style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 500 }}>
+                          Severity: Moderate
+                        </span>
                       </div>
                     </div>
-                    <AlertTriangle size={32} color="var(--color-warning)" style={{ flexShrink: 0 }} />
                   </div>
-                  
-                  {/* Description */}
-                  <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-saddle)', lineHeight: 1.6, fontSize: '0.9375rem', marginBottom: '24px' }}>
-                    Early blight is a fungal disease that causes characteristic "bullseye" spots on lower leaves. Left untreated, it can spread to the fruit and cause significant yield loss. Immediate intervention is recommended.
+
+                  <p style={{ margin: '0 0 20px 0', color: 'var(--color-ink)', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                    The uploaded image shows characteristic diamond-shaped lesions indicative of Magnaporthe oryzae infection. Immediate action recommended.
                   </p>
 
-                  {/* Treatment Steps */}
-                  <h3 style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontSize: '1.25rem', marginBottom: '16px' }}>Recommended Treatment</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {[
-                      'Prune and safely dispose of all infected lower leaves immediately.',
-                      'Apply a copper-based fungicide or chlorothalonil to prevent further spread.',
-                      'Ensure proper spacing between plants to improve air circulation.',
-                      'Water at the base of plants avoiding wet foliage, preferably in the morning.'
-                    ].map((step, idx) => (
-                      <div key={idx} className="rec-card" style={{ display: 'flex', gap: '16px', padding: '16px', backgroundColor: 'var(--color-bone)', borderRadius: 'var(--radius-sm)' }}>
-                        <div style={{ backgroundColor: 'var(--color-sage)', color: 'var(--color-parchment)', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0, fontSize: '0.875rem' }}>
-                          {idx + 1}
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+
+                  {/* Action Plan */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-ink-soft)', letterSpacing: '0.05em', marginBottom: '12px', fontFamily: 'monospace' }}>
+                      RECOMMENDED ACTION PLAN
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {[
+                        { title: 'Apply Fungicide X', desc: 'Spray affected areas immediately during early morning or late afternoon.' },
+                        { title: 'Reduce Standing Water', desc: 'Lower water levels in the paddy to decrease humidity around the plants.' },
+                        { title: 'Notify Neighbor Farmers', desc: 'Spores travel by wind; alerting nearby farms helps prevent regional outbreak.' }
+                      ].map((step, idx) => (
+                        <div key={idx} style={{ 
+                          backgroundColor: 'var(--color-surface-low)', 
+                          border: '1px solid var(--color-border)', 
+                          borderRadius: '8px', 
+                          padding: '14px 16px',
+                          display: 'flex',
+                          gap: '12px'
+                        }}>
+                          <div style={{ 
+                            width: '24px', 
+                            height: '24px', 
+                            borderRadius: '50%', 
+                            backgroundColor: 'var(--color-primary-act)', 
+                            color: '#fff', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            fontSize: '0.8rem', 
+                            fontWeight: 700,
+                            flexShrink: 0
+                          }}>
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-ink)', marginBottom: '4px' }}>
+                              {step.title}
+                            </div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-ink-soft)', lineHeight: '1.4' }}>
+                              {step.desc}
+                            </div>
+                          </div>
                         </div>
-                        <p style={{ margin: 0, fontFamily: 'var(--font-sans)', color: 'var(--color-ink)', fontSize: '0.9375rem', lineHeight: 1.5 }}>
-                          {step}
-                        </p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
 
+                  <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+
                   {/* Expandable Section */}
-                  <div style={{ marginTop: '24px', borderTop: '1px solid var(--color-bone)', paddingTop: '16px' }}>
+                  <div style={{ marginBottom: '24px' }}>
                     <button 
-                      onClick={() => setShowAlternatives(!showAlternatives)}
-                      style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', color: 'var(--color-ink)', fontSize: '1.125rem', fontWeight: 600 }}
-                      aria-expanded={showAlternatives}
+                      onClick={() => setExpanded(!expanded)}
+                      style={{ 
+                        width: '100%', 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        background: 'none', 
+                        border: 'none', 
+                        padding: '8px 0', 
+                        cursor: 'pointer',
+                        color: 'var(--color-ink)',
+                        fontWeight: 600,
+                        fontSize: '0.95rem'
+                      }}
                     >
                       Prevention & Organic Alternatives
-                      {showAlternatives ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </button>
-                    
-                    {showAlternatives && (
-                      <div className="animate-fade-in" style={{ padding: '16px', backgroundColor: '#f0fdf4', borderRadius: 'var(--radius-sm)', marginTop: '12px', borderLeft: '4px solid var(--color-success)' }}>
-                        <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--color-saddle)', fontFamily: 'var(--font-sans)', fontSize: '0.9375rem', lineHeight: 1.6 }}>
-                          <li style={{ marginBottom: '8px' }}>Use neem oil extract as a natural preventative spray.</li>
-                          <li style={{ marginBottom: '8px' }}>Practice 3-year crop rotation with non-solanaceous crops.</li>
-                          <li>Apply organic compost mulch to prevent soil spores from splashing onto leaves.</li>
-                        </ul>
+                    {expanded && (
+                      <div style={{ padding: '12px 0', fontSize: '0.9rem', color: 'var(--color-ink-soft)', lineHeight: '1.5' }}>
+                        Spray neem oil extract (5ml/L) weekly as organic preventive. Ensure proper row spacing for airflow.
                       </div>
                     )}
                   </div>
 
-                  {/* Feedback and Actions */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--color-bone)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                      <div>
-                        <p style={{ margin: 0, fontFamily: 'var(--font-sans)', color: 'var(--color-saddle)', fontSize: '0.875rem', marginBottom: '8px' }}>Was this diagnosis helpful?</p>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button className="btn btn-ghost" style={{ padding: '6px 16px', border: '1px solid var(--color-bone)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-parchment)', color: 'var(--color-ink)', fontSize: '0.875rem', cursor: 'pointer', fontWeight: 500 }}>Yes</button>
-                          <button className="btn btn-ghost" style={{ padding: '6px 16px', border: '1px solid var(--color-bone)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-parchment)', color: 'var(--color-ink)', fontSize: '0.875rem', cursor: 'pointer', fontWeight: 500 }}>No</button>
-                        </div>
-                      </div>
-                      
-                      <button className="btn btn-sage" style={{ padding: '10px 20px', backgroundColor: 'var(--color-sage)', color: 'var(--color-parchment)', border: 'none', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, cursor: 'pointer' }}>
-                        <Share2 size={18} /> Share Report
-                      </button>
+                  {/* Feedback */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--color-surface-low)', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--color-ink-soft)', fontWeight: 500 }}>Was this helpful?</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: '4px', padding: '4px 12px', fontSize: '0.8rem', cursor: 'pointer' }}>Yes</button>
+                      <button style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: '4px', padding: '4px 12px', fontSize: '0.8rem', cursor: 'pointer' }}>No</button>
                     </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <button className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 16px', border: 'none', borderRadius: '8px', cursor: 'pointer', backgroundColor: 'var(--color-primary)', color: '#fff', fontWeight: 600 }}>
+                      <ShoppingCart size={18} />
+                      Buy Recommended Supplies
+                    </button>
+                    <button className="btn btn-outline" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 16px', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', backgroundColor: 'transparent', color: 'var(--color-ink)', fontWeight: 600 }}>
+                      <Share2 size={18} />
+                      Share with Community
+                    </button>
                   </div>
 
                 </div>
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Bottom Nav for Mobile */}
-      <nav className="bottom-nav lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'var(--color-parchment)', borderTop: '1px solid var(--color-bone)', display: 'flex', justifyContent: 'space-around', padding: '12px 16px', zIndex: 50 }}>
-        {navItems.map((item, idx) => {
-          const Icon = item.icon;
-          return (
-            <Link 
-              href={item.href} 
-              key={idx} 
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: item.active ? 'var(--color-sage)' : 'var(--color-bark)', minWidth: '44px' }}
-            >
-              <Icon size={24} />
-              <span style={{ fontSize: '0.7rem', fontWeight: item.active ? 600 : 400 }}>{item.label}</span>
-            </Link>
-          );
-        })}
+        </div>
+      </main>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="ks-bottom-nav" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, display: 'none', backgroundColor: '#fff', borderTop: '1px solid var(--color-border)' }}>
+        <Link href="/dashboard" className="nav-item">
+          <Home size={24} />
+          <span>Home</span>
+        </Link>
+        <Link href="/diagnose" className="nav-item active">
+          <Leaf size={24} />
+          <span>Crops</span>
+        </Link>
+        <Link href="/market" className="nav-item">
+          <ShoppingBag size={24} />
+          <span>Market</span>
+        </Link>
+        <Link href="/community" className="nav-item">
+          <Users size={24} />
+          <span>Forum</span>
+        </Link>
       </nav>
+      
+      <style>{`
+        @media (max-width: 768px) {
+          .ks-sidebar { display: none !important; }
+          .ks-bottom-nav { display: flex !important; justify-content: space-around; padding: 12px 0; }
+          .ks-main { padding-bottom: 70px; }
+        }
+        .ks-sidebar { width: 250px; border-right: 1px solid var(--color-border); background-color: #fff; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: var(--color-ink-soft); text-decoration: none; font-weight: 500; }
+        .nav-item:hover { background-color: var(--color-surface-low); }
+        .nav-item.active { background-color: rgba(50,107,0,0.08); color: var(--color-primary-act); border-right: 3px solid var(--color-primary-act); }
+        .btn { transition: all 0.2s ease; }
+        .btn:hover { opacity: 0.9; }
+        .hover-bg-surface-low:hover { background-color: var(--color-surface-low) !important; }
+      `}</style>
     </div>
   );
 }

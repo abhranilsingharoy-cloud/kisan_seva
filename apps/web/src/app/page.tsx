@@ -1,550 +1,464 @@
-﻿import Link from 'next/link'
-import { ArrowRight, Leaf, CloudSun, TrendingUp, Phone, Shield, Zap, Users, ChevronRight, Star, MapPin, Bell, MessageSquare } from 'lucide-react'
+'use client';
 
-const STATS = [
-  { value: '10M+', label: 'Farmers Reached' },
-  { value: '94%', label: 'Diagnosis Accuracy' },
-  { value: '2.3s', label: 'Avg. Response Time' },
-  { value: '18+', label: 'Languages Supported' },
-]
+import React, { useState } from 'react';
+import Link from 'next/link';
+import {
+  Microscope,
+  TrendingUp,
+  CloudSun,
+  Droplets,
+  Leaf,
+  Phone,
+  Bell,
+  Globe,
+  Users,
+  Upload,
+  Cpu,
+  CheckCircle,
+  ArrowRight,
+  Menu,
+  X
+} from 'lucide-react';
 
-const FEATURES = [
-  {
-    icon: Leaf,
-    title: 'Instant Crop Disease Detection',
-    desc: 'Photograph any diseased leaf and get a diagnosis within 5 seconds — powered by computer vision trained on 50,000+ field samples.',
-    color: 'var(--color-success)',
-    bg: 'var(--color-success-bg)',
-    cta: 'Try Diagnosis',
-    href: '/diagnose',
-  },
-  {
-    icon: CloudSun,
-    title: 'Smart Irrigation & Fertilizer Schedule',
-    desc: 'Hyperlocal weather + soil-health data combined to give you the exact irrigation amount and fertilizer dose for your specific plot — today.',
-    color: 'var(--color-info)',
-    bg: 'var(--color-info-bg)',
-    cta: 'View Schedule',
-    href: '/schedule',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Live Mandi Price Comparisons',
-    desc: 'Compare real-time prices across 10,000+ mandis before you decide when and where to sell. Never lose to a middleman again.',
-    color: 'var(--color-honey-amber)',
-    bg: 'rgba(240,200,145,0.2)',
-    cta: 'Check Prices',
-    href: '/market',
-  },
-  {
-    icon: Phone,
-    title: 'Works on Any Phone — Even Feature Phones',
-    desc: 'No smartphone? Call our toll-free number or receive a personalised SMS advisory in your language. Full access, zero data cost.',
-    color: 'var(--color-deep-olive)',
-    bg: 'var(--color-bone)',
-    cta: 'Learn More',
-    href: '/ivr',
-  },
-]
-
-const CROPS = [
-  { name: 'Wheat', hi: 'गेहूँ', emoji: '🌾' },
-  { name: 'Rice', hi: 'चावल', emoji: '🌾' },
-  { name: 'Tomato', hi: 'टमाटर', emoji: '🍅' },
-  { name: 'Cotton', hi: 'कपास', emoji: '🌱' },
-  { name: 'Maize', hi: 'मक्का', emoji: '🌽' },
-  { name: 'Potato', hi: 'आलू', emoji: '🥔' },
-  { name: 'Onion', hi: 'प्याज', emoji: '🧅' },
-  { name: 'Soybean', hi: 'सोयाबीन', emoji: '🫘' },
-]
-
-const TESTIMONIALS = [
-  {
-    name: 'Ramesh Patel',
-    location: 'Vidisha, Madhya Pradesh',
-    crop: 'Soybean farmer',
-    quote: 'Pehle mujhe pata nahi tha ki meri fasal mein kya bimari hai. Ab ek photo se turant jawab milta hai aur sahi ilaj bhi.',
-    rating: 5,
-  },
-  {
-    name: 'Lakshmi Devi',
-    location: 'Nalgonda, Telangana',
-    crop: 'Cotton & Chilli',
-    quote: 'Mandi price compare karne se mujhe ₹800 per quintal zyada mila. Pehle siyal mujhe sahi rate nahi batate the.',
-    rating: 5,
-  },
-  {
-    name: 'Sukhwinder Singh',
-    location: 'Ludhiana, Punjab',
-    crop: 'Wheat farmer',
-    quote: 'Irrigation schedule bahut helpful hai. Pani ki bachat hui aur fasal bhi zyada ayi. Bina smartphone ke bhi SMS se kaam chalta hai.',
-    rating: 5,
-  },
-]
-
-const TRUST_SIGNALS = [
-  { icon: Shield, label: 'Free for farmers' },
-  { icon: Zap, label: 'Under 5 sec diagnosis' },
-  { icon: Users, label: 'No middlemen' },
-  { icon: Star, label: '4.8★ rated app' },
-]
-
-export default function HomePage() {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'KisanSeva',
-    url: 'https://kisanseva.app',
-    description: 'Smart crop advisory platform for smallholder farmers — AI disease detection, irrigation scheduling, live mandi prices.',
-    areaServed: 'IN',
-    serviceType: 'Agricultural Advisory',
-  }
+export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      {/* ── Top Nav ─────────────────────── */}
-      <nav className="top-nav" role="navigation" aria-label="Main navigation">
-        <div className="page-container w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label="KisanSeva home">
-            <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ background: 'var(--color-honey-amber)' }}>
-              <Leaf size={16} color="var(--color-ink)" strokeWidth={2} />
-            </div>
-            <span className="font-display font-medium text-xl" style={{ color: 'var(--color-ink)', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', overflowX: 'hidden' }}>
+      
+      {/* FLOATING PILL NAVBAR */}
+      <nav className="ks-nav" style={{ position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 50, width: '90%', maxWidth: '1200px', backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(8px)', borderRadius: '999px', padding: '0.75rem 1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.05)' }}>
+        <div className="ks-nav-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+            <Link href="/" className="ks-nav-logo" style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1a1c18', textDecoration: 'none', letterSpacing: '-0.02em' }}>
               KisanSeva
-            </span>
-          </Link>
-
-          <div className="hidden lg:flex items-center gap-8">
-            {[
-              ['Features', '#features'],
-              ['Crop Guide', '/crop-guide'],
-              ['Mandi Prices', '/market'],
-              ['About', '/about'],
-            ].map(([label, href]) => (
-              <Link key={label} href={href}
-                className="text-sm font-medium transition-colors hover:text-amber-600"
-                style={{ color: 'var(--color-saddle)', fontSize: 'var(--text-body)' }}>
-                {label}
-              </Link>
-            ))}
+            </Link>
+            
+            <div className="ks-nav-links" style={{ display: 'flex' }}>
+              <ul style={{ display: 'flex', gap: '1.5rem', listStyle: 'none', margin: 0, padding: 0 }}>
+                <li><Link href="/" style={{ textDecoration: 'none', color: 'var(--color-ink-mid, #4a4d46)', fontWeight: 500, fontSize: '0.9rem' }}>Home</Link></li>
+                <li><Link href="/diagnose" style={{ textDecoration: 'none', color: 'var(--color-ink-mid, #4a4d46)', fontWeight: 500, fontSize: '0.9rem' }}>Crops</Link></li>
+                <li><Link href="/market" style={{ textDecoration: 'none', color: 'var(--color-ink-mid, #4a4d46)', fontWeight: 500, fontSize: '0.9rem' }}>Markets</Link></li>
+                <li><Link href="/schedule" style={{ textDecoration: 'none', color: 'var(--color-ink-mid, #4a4d46)', fontWeight: 500, fontSize: '0.9rem' }}>Weather</Link></li>
+                <li><Link href="/dashboard" style={{ textDecoration: 'none', color: 'var(--color-ink-mid, #4a4d46)', fontWeight: 500, fontSize: '0.9rem' }}>Dashboard</Link></li>
+              </ul>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">
-              Login
-            </Link>
-            <Link href="/register" className="btn btn-primary btn-sm">
-              Get Started →
-            </Link>
+          <div className="ks-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+             <Link href="/login" className="btn btn-outline btn-sm" style={{ padding: '0.4rem 1rem', borderRadius: '999px', border: '1px solid #d1d5db', textDecoration: 'none', color: '#1a1c18', fontSize: '0.875rem', fontWeight: 600 }}>Login</Link>
+             <Link href="/login" className="btn btn-primary btn-sm" style={{ padding: '0.4rem 1rem', borderRadius: '999px', backgroundColor: '#326b00', color: 'white', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>Register</Link>
           </div>
         </div>
       </nav>
 
-      <main id="main" role="main">
-        {/* ── HERO ────────────────────────── */}
-        <section className="relative overflow-hidden" style={{ background: 'var(--color-parchment)', paddingTop: '80px', paddingBottom: '100px' }}>
-          {/* Subtle background texture */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(240,200,145,0.12) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(122,151,121,0.08) 0%, transparent 50%)'
-          }} />
-
-          <div className="page-container relative">
-            <div className="text-center max-w-4xl mx-auto">
-              {/* Eyebrow */}
-              <div className="eyebrow eyebrow-sage mb-4">
-                Track 03 / AgriTech · IEMH4-AG-01
-              </div>
-
-              {/* Headline */}
-              <h1 className="font-display font-medium mb-6" style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(38px, 6vw, 68px)',
-                lineHeight: 1.05,
-                letterSpacing: '-0.02em',
-                color: 'var(--color-ink)'
-              }}>
-                Your crops deserve a<br />
-                <span style={{ color: 'var(--color-honey-amber)' }}>smart advisor</span> — not guesswork.
-              </h1>
-
-              {/* Subtext */}
-              <p className="mx-auto mb-8 text-body-lg" style={{
-                maxWidth: '580px',
-                color: 'var(--color-saddle)',
-                fontSize: 'var(--text-body-lg)',
-                lineHeight: 1.6
-              }}>
-                Detect crop diseases instantly, get personalised irrigation & fertilizer schedules,
-                and compare live mandi prices — all in your language, on any phone.
-              </p>
-
-              {/* CTA Group */}
-              <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-                <Link href="/register" className="btn btn-primary btn-lg" id="hero-cta-register">
-                  Start for Free →
-                </Link>
-                <Link href="/demo" className="btn btn-ghost btn-lg" id="hero-cta-demo">
-                  Watch Demo
-                </Link>
-              </div>
-
-              {/* Trust Signals */}
-              <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
-                {TRUST_SIGNALS.map(({ icon: Icon, label }) => (
-                  <div key={label} className="flex items-center gap-2" style={{ color: 'var(--color-saddle)', fontSize: 'var(--text-eyebrow)' }}>
-                    <Icon size={14} />
-                    <span>{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Hero Dashboard Preview */}
-            <div className="mt-16 mx-auto max-w-5xl">
-              <div className="panel-dark relative overflow-hidden" style={{ padding: '0', borderRadius: 'var(--radius-md)' }}>
-                {/* Simulated dashboard UI */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <span style={{ color: 'rgba(252,250,241,0.5)', fontSize: '12px', marginLeft: '8px' }}>
-                    kisanseva.app/dashboard
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-y md:divide-y-0 md:divide-x" style={{ divideColor: 'rgba(255,255,255,0.08)' }}>
-                  {/* Disease Alert */}
-                  <div className="p-6">
-                    <div className="eyebrow mb-3" style={{ color: 'var(--color-bark)', fontSize: '11px' }}>DISEASE ALERT</div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-sm flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-danger-bg)' }}>
-                        <Leaf size={20} color="var(--color-danger)" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-sm" style={{ color: 'var(--color-parchment)' }}>Leaf Blight Detected</div>
-                        <div style={{ color: 'var(--color-bark)', fontSize: '12px' }}>Tomato · Plot 2A · 87% confidence</div>
-                        <div className="mt-2">
-                          <span className="badge badge-danger" style={{ fontSize: '10px' }}>High Risk</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Weather */}
-                  <div className="p-6">
-                    <div className="eyebrow mb-3" style={{ color: 'var(--color-bark)', fontSize: '11px' }}>TODAY'S ADVISORY</div>
-                    <div className="flex items-center gap-3">
-                      <CloudSun size={36} color="var(--color-honey-amber)" />
-                      <div>
-                        <div className="font-medium" style={{ color: 'var(--color-parchment)', fontSize: '15px' }}>Irrigate 28mm Today</div>
-                        <div style={{ color: 'var(--color-bark)', fontSize: '12px' }}>32°C · Partly Cloudy · No rain expected</div>
-                      </div>
-                    </div>
-                    <div className="mt-3 p-2 rounded" style={{ background: 'rgba(255,255,255,0.06)', fontSize: '12px', color: 'var(--color-bark)' }}>
-                      Apply DAP 25 kg/acre — Stage: Flowering
-                    </div>
-                  </div>
-
-                  {/* Price */}
-                  <div className="p-6">
-                    <div className="eyebrow mb-3" style={{ color: 'var(--color-bark)', fontSize: '11px' }}>BEST PRICE TODAY</div>
-                    <div>
-                      <div className="font-display font-medium" style={{ fontSize: '28px', color: 'var(--color-honey-amber)', fontFamily: 'var(--font-display)' }}>
-                        ₹2,340<span style={{ fontSize: '14px', color: 'var(--color-bark)' }}>/qtl</span>
-                      </div>
-                      <div style={{ color: 'var(--color-bark)', fontSize: '12px' }}>Azadpur Mandi, Delhi</div>
-                      <div className="flex items-center gap-1 mt-1" style={{ color: 'var(--color-success)', fontSize: '12px' }}>
-                        <TrendingUp size={12} />
-                        <span>₹180 higher than your local mandi</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* HERO SECTION */}
+      <section className="hero-bg" style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '88px', background: 'radial-gradient(circle at top, rgba(251, 191, 36, 0.15) 0%, rgba(50, 107, 0, 0.05) 50%, transparent 100%)', position: 'relative', overflow: 'hidden' }}>
+        
+        <div style={{ maxWidth: '900px', width: '100%', padding: '0 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', zIndex: 10 }}>
+          <div className="section-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 12px', borderRadius: '999px', backgroundColor: 'rgba(50,107,0,0.1)', color: '#326b00', border: '1px solid rgba(50,107,0,0.2)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '1.5rem', textTransform: 'uppercase' }}>
+            Track 03 · AgriTech · IEMH4-AG-01
           </div>
-        </section>
-
-        {/* ── STATS BAR ───────────────────── */}
-        <section style={{ background: 'var(--color-bone)', borderTop: '1px solid var(--color-loam)', borderBottom: '1px solid var(--color-loam)' }}>
-          <div className="page-container py-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              {STATS.map(({ value, label }) => (
-                <div key={label} className="text-center">
-                  <div className="font-display font-medium" style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'clamp(28px, 3vw, 42px)',
-                    color: 'var(--color-ink)',
-                    letterSpacing: '-0.02em',
-                    lineHeight: 1.1
-                  }}>
-                    {value}
-                  </div>
-                  <div className="eyebrow mt-1" style={{ color: 'var(--color-bark)' }}>{label}</div>
-                </div>
-              ))}
-            </div>
+          
+          <h1 style={{ fontSize: 'clamp(2.75rem, 6vw, 4.5rem)', fontWeight: 800, color: '#1a1c18', letterSpacing: '-0.03em', lineHeight: 1.08, margin: '0 0 1.5rem 0' }}>
+            Empower your farm,<br />grow your future
+          </h1>
+          
+          <p style={{ color: 'var(--color-ink-mid, #4a4d46)', fontSize: '1.125rem', maxWidth: '600px', margin: '0 0 2.5rem 0', lineHeight: 1.6 }}>
+            Track prices, get weather updates, and manage crops all in one place.
+          </p>
+          
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link href="/market" className="btn btn-outline btn-lg" style={{ display: 'inline-flex', alignItems: 'center', padding: '0.75rem 1.5rem', borderRadius: '8px', border: '2px solid #e5e7eb', textDecoration: 'none', color: '#1a1c18', fontSize: '1rem', fontWeight: 600 }}>
+              Monitor Prices
+            </Link>
+            <Link href="/diagnose" className="btn btn-primary btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '8px', backgroundColor: '#326b00', color: 'white', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>
+              <Microscope size={20} />
+              Diagnose Crop
+            </Link>
           </div>
-        </section>
+        </div>
 
-        {/* ── FEATURES ────────────────────── */}
-        <section id="features" style={{ background: 'var(--color-parchment)', padding: '80px 0' }}>
-          <div className="page-container">
-            <div className="text-center mb-16">
-              <span className="eyebrow eyebrow-sage mb-4 block">What We Do</span>
-              <h2 className="font-display font-medium" style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(30px, 4vw, 53px)',
-                color: 'var(--color-ink)',
-                letterSpacing: '-0.011em',
-                lineHeight: 1.1,
-              }}>
-                Everything a farmer needs,<br />
-                in one place.
-              </h2>
-            </div>
+        {/* Clean SVG Farm Line-art Illustration */}
+        <div style={{ width: '100%', height: '260px', marginTop: 'auto', position: 'absolute', bottom: 0, left: 0, zIndex: 1 }}>
+          <svg width="100%" height="100%" viewBox="0 0 1440 260" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,200 C320,100 640,300 960,150 C1280,0 1440,150 1440,150 L1440,260 L0,260 Z" fill="rgba(50, 107, 0, 0.03)" />
+            <path d="M0,200 C320,100 640,300 960,150 C1280,0 1440,150 1440,150" stroke="#326b00" strokeWidth="2" strokeOpacity="0.15" fill="none" />
+            <path d="M200,220 C250,200 300,230 350,210" stroke="#326b00" strokeWidth="1.5" strokeOpacity="0.15" fill="none" strokeDasharray="4 4" />
+            <path d="M400,240 C450,220 500,250 550,230" stroke="#326b00" strokeWidth="1.5" strokeOpacity="0.15" fill="none" strokeDasharray="4 4" />
+            <path d="M1000,180 C1050,160 1100,190 1150,170" stroke="#326b00" strokeWidth="1.5" strokeOpacity="0.15" fill="none" strokeDasharray="4 4" />
+            {/* Minimal Tractor */}
+            <g opacity="0.15" transform="translate(700, 200)">
+              <rect x="0" y="10" width="40" height="20" rx="4" stroke="#326b00" strokeWidth="2" fill="none" />
+              <circle cx="10" cy="35" r="8" stroke="#326b00" strokeWidth="2" fill="none" />
+              <circle cx="35" cy="32" r="12" stroke="#326b00" strokeWidth="2" fill="none" />
+              <path d="M5,10 L10,0 L25,0 L30,10" stroke="#326b00" strokeWidth="2" fill="none" />
+            </g>
+            {/* Minimal Plants */}
+            <g opacity="0.15" transform="translate(250, 210)">
+              <path d="M10,20 Q10,10 5,5 M10,20 Q10,10 15,5 M10,20 L10,0" stroke="#326b00" strokeWidth="1.5" fill="none" />
+            </g>
+            <g opacity="0.15" transform="translate(450, 230)">
+              <path d="M10,20 Q10,10 5,5 M10,20 Q10,10 15,5 M10,20 L10,0" stroke="#326b00" strokeWidth="1.5" fill="none" />
+            </g>
+            <g opacity="0.15" transform="translate(1050, 165)">
+              <path d="M10,20 Q10,10 5,5 M10,20 Q10,10 15,5 M10,20 L10,0" stroke="#326b00" strokeWidth="1.5" fill="none" />
+            </g>
+          </svg>
+        </div>
+      </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {FEATURES.map(({ icon: Icon, title, desc, color, bg, cta, href }) => (
-                <div key={title} className="card group" style={{ padding: '32px' }}>
-                  <div className="w-12 h-12 rounded-sm flex items-center justify-center mb-5 transition-transform group-hover:scale-110" style={{ background: bg }}>
-                    <Icon size={22} color={color} strokeWidth={1.5} />
-                  </div>
-                  <h3 className="font-display font-medium mb-3" style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'var(--text-subheading)',
-                    color: 'var(--color-ink)',
-                    lineHeight: 1.3
-                  }}>
-                    {title}
-                  </h3>
-                  <p className="mb-5" style={{ color: 'var(--color-saddle)', lineHeight: 1.6, fontSize: 'var(--text-body)' }}>
-                    {desc}
-                  </p>
-                  <Link href={href} className="inline-flex items-center gap-2 font-medium transition-colors" style={{ color, fontSize: 'var(--text-body)' }}>
-                    {cta} <ArrowRight size={14} />
-                  </Link>
-                </div>
-              ))}
+      {/* FEATURES SECTION */}
+      <section style={{ backgroundColor: 'var(--color-bg, #f9fafb)', padding: '80px 0' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <div className="section-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 12px', borderRadius: '999px', backgroundColor: 'rgba(50,107,0,0.1)', color: '#326b00', border: '1px solid rgba(50,107,0,0.2)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '1rem' }}>
+              ● AGRI INTELLIGENCE PLATFORM
             </div>
-          </div>
-        </section>
-
-        {/* ── CROPS GRID ──────────────────── */}
-        <section style={{ background: 'var(--color-bone)', borderTop: '1px solid var(--color-loam)', padding: '80px 0' }}>
-          <div className="page-container">
-            <div className="text-center mb-12">
-              <span className="eyebrow eyebrow-sage mb-3 block">Supported Crops</span>
-              <h2 className="font-display font-medium" style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(26px, 3.5vw, 42px)',
-                color: 'var(--color-ink)',
-                letterSpacing: '-0.011em'
-              }}>
-                From wheat to tomato — we speak your crop.
-              </h2>
-            </div>
-            <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-0 border border-bone rounded-lg overflow-hidden" style={{ borderColor: 'var(--color-loam)' }}>
-              {CROPS.map(({ name, hi, emoji }) => (
-                <Link key={name} href={`/crop-guide/${name.toLowerCase()}`}
-                  className="group flex flex-col items-center justify-center py-8 px-4 border-b border-r transition-all hover:bg-white"
-                  style={{ borderColor: 'var(--color-loam)', textDecoration: 'none' }}>
-                  <span style={{ fontSize: '32px', marginBottom: '8px' }}>{emoji}</span>
-                  <span className="font-medium text-center" style={{ fontSize: 'var(--text-body)', color: 'var(--color-ink)' }}>{name}</span>
-                  <span style={{ fontSize: '11px', color: 'var(--color-bark)' }}>{hi}</span>
-                  <ChevronRight size={12} className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity" color="var(--color-honey-amber)" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── HOW IT WORKS ────────────────── */}
-        <section style={{ background: 'var(--color-parchment)', padding: '80px 0' }}>
-          <div className="page-container">
-            <div className="text-center mb-16">
-              <span className="eyebrow eyebrow-sage mb-4 block">How It Works</span>
-              <h2 className="font-display font-medium" style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(26px, 3.5vw, 42px)',
-                color: 'var(--color-ink)',
-                letterSpacing: '-0.011em'
-              }}>
-                Three steps to smarter farming.
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-              {/* Connector line desktop */}
-              <div className="hidden md:block absolute top-10 left-1/4 right-1/4 h-px" style={{ background: 'var(--color-loam)' }} />
-              {[
-                { num: '01', title: 'Register Your Farm', desc: 'Add your plots, select crops, enter soil card data or let us auto-fetch it.', icon: MapPin },
-                { num: '02', title: 'Get Smart Advisories', desc: 'Photograph a leaf, check today\'s schedule, or call our toll-free number.', icon: Bell },
-                { num: '03', title: 'Sell at the Right Price', desc: 'Compare mandis in real time and get a price alert when your target is hit.', icon: TrendingUp },
-              ].map(({ num, title, desc, icon: Icon }) => (
-                <div key={num} className="text-center relative">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 relative z-10" style={{ background: 'var(--color-honey-amber)', border: '4px solid var(--color-parchment)' }}>
-                    <Icon size={28} color="var(--color-ink)" />
-                  </div>
-                  <div className="eyebrow mb-2" style={{ color: 'var(--color-bark)' }}>Step {num}</div>
-                  <h3 className="font-display font-medium mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-subheading)', color: 'var(--color-ink)' }}>
-                    {title}
-                  </h3>
-                  <p style={{ color: 'var(--color-saddle)', fontSize: 'var(--text-body)', lineHeight: 1.6 }}>{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── SMS/IVR HIGHLIGHT ──────────── */}
-        <section>
-          <div className="page-container py-12">
-            <div className="panel-dark flex flex-col md:flex-row items-center gap-8">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(232,182,114,0.2)', border: '1px solid rgba(232,182,114,0.3)' }}>
-                <Phone size={28} color="var(--color-honey-amber)" />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <div className="eyebrow mb-2" style={{ color: 'var(--color-bark)' }}>No Smartphone? No Problem.</div>
-                <h3 className="font-display font-medium mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 2.5vw, 30px)', color: 'var(--color-parchment)' }}>
-                  Call 1800-XXX-XXXX (Toll-Free)
-                </h3>
-                <p style={{ color: 'var(--color-bark)', fontSize: 'var(--text-body)' }}>
-                  Get weather, mandi prices, and pest advisories in Hindi, Tamil, Telugu, Kannada, Bengali, and Marathi — no smartphone or internet required.
-                </p>
-              </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="text-center">
-                  <div style={{ fontSize: '11px', color: 'var(--color-bark)', marginBottom: '4px' }}>OR SMS</div>
-                  <div className="btn btn-primary btn-sm">
-                    <MessageSquare size={14} />
-                    SMS "HELP" to 56161
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── TESTIMONIALS ────────────────── */}
-        <section style={{ background: 'var(--color-bone)', borderTop: '1px solid var(--color-loam)', padding: '80px 0' }}>
-          <div className="page-container">
-            <div className="text-center mb-12">
-              <span className="eyebrow eyebrow-sage mb-3 block">Farmer Stories</span>
-              <h2 className="font-display font-medium" style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(26px, 3.5vw, 42px)',
-                color: 'var(--color-ink)',
-                letterSpacing: '-0.011em'
-              }}>
-                Real words from real farmers.
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {TESTIMONIALS.map(({ name, location, crop, quote, rating }) => (
-                <div key={name} className="card" style={{ padding: '28px' }}>
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: rating }).map((_, i) => (
-                      <Star key={i} size={14} fill="var(--color-honey-amber)" color="var(--color-honey-amber)" />
-                    ))}
-                  </div>
-                  <p className="mb-5" style={{ color: 'var(--color-ink)', lineHeight: 1.7, fontSize: 'var(--text-body)', fontStyle: 'italic' }}>
-                    &ldquo;{quote}&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3 pt-4" style={{ borderTop: '1px solid var(--color-bone)' }}>
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-medium" style={{ background: 'var(--color-honey-amber)', color: 'var(--color-ink)', fontSize: 'var(--text-eyebrow)' }}>
-                      {name[0]}
-                    </div>
-                    <div>
-                      <div className="font-medium" style={{ fontSize: 'var(--text-body)', color: 'var(--color-ink)' }}>{name}</div>
-                      <div style={{ fontSize: 'var(--text-caption)', color: 'var(--color-bark)' }}>{location} · {crop}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── CTA STRIP ───────────────────── */}
-        <section style={{ background: 'var(--color-parchment)', padding: '80px 0' }}>
-          <div className="page-container text-center">
-            <span className="eyebrow eyebrow-amber mb-4 block">Start Today</span>
-            <h2 className="font-display font-medium mb-5" style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(28px, 4vw, 53px)',
-              color: 'var(--color-ink)',
-              letterSpacing: '-0.011em'
-            }}>
-              Better yields start with<br />better decisions.
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1c18', margin: '0 0 1rem 0', letterSpacing: '-0.02em' }}>
+              Engineered for Indian Smallholder Farmers
             </h2>
-            <p className="mb-8 mx-auto" style={{ maxWidth: '480px', color: 'var(--color-saddle)', fontSize: 'var(--text-body-lg)' }}>
-              Join over 10 million farmers already using KisanSeva to grow more and earn more.
+            <p style={{ color: 'var(--color-ink-mid, #4a4d46)', fontSize: '1.125rem', maxWidth: '700px', margin: '0 auto' }}>
+              Secure, data-driven tools built to help 140 million smallholder farmers make better decisions.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/register" className="btn btn-primary btn-lg" id="footer-cta-register">
-                Create Free Account →
-              </Link>
-              <Link href="/contact" className="btn btn-ghost btn-lg">
-                Talk to an Agronomist
-              </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            
+            {/* Feature 1 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#eff6ff', color: '#2563eb', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
+                  <Microscope size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>AI ENGINE</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Crop Disease AI</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Upload a photo — get disease name, confidence score, and treatment plan in under 5 seconds.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>38 Diseases</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>MobileNetV3</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>&lt;5s Result</span>
+              </div>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#fffbeb', color: '#d97706', borderRadius: '12px', border: '1px solid #fde68a' }}>
+                  <TrendingUp size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>LIVE MARKET</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Live Mandi Prices</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Real-time Agmarknet prices across 500+ mandis with net-value ranking and distance-based filtering.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Agmarknet Live</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>500+ Mandis</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Distance Ranked</span>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#ecfeff', color: '#0891b2', borderRadius: '12px', border: '1px solid #a5f3fc' }}>
+                  <CloudSun size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>WEATHER AI</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Weather Advisory</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>OpenWeather 7-day forecast with crop-specific irrigation recommendations using ET₀ Hargreaves.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>7-Day Forecast</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>ET₀ Calc</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Spray Windows</span>
+              </div>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#f0fdfa', color: '#0d9488', borderRadius: '12px', border: '1px solid #99f6e4' }}>
+                  <Droplets size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>IRRIGATION</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Smart Scheduling</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Personalised weekly irrigation and fertilizer schedules based on soil health and crop growth stage.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Plot-wise</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>N-P-K Tracking</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Stage Aware</span>
+              </div>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#ecfdf5', color: '#059669', borderRadius: '12px', border: '1px solid #a7f3d0' }}>
+                  <Leaf size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>SOIL HEALTH</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Soil Health Monitor</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Track N-P-K levels, pH, organic carbon and moisture. Integrated with Soil Card Portal.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>N-P-K Bars</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>pH Tracking</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Soil Card</span>
+              </div>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#faf5ff', color: '#9333ea', borderRadius: '12px', border: '1px solid #e9d5ff' }}>
+                  <Phone size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>OUTREACH</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>SMS & IVR Access</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Full advisory access via SMS or missed-call IVR — no smartphone or internet required.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>No Internet</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Hindi Support</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>IVR Ready</span>
+              </div>
+            </div>
+
+            {/* Feature 7 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#fff1f2', color: '#e11d48', borderRadius: '12px', border: '1px solid #fecdd3' }}>
+                  <Bell size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>ALERTS</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Outbreak Detection</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Regional disease outbreak alerts based on aggregated farmer reports and weather patterns.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Regional</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Auto-Alert</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Pattern AI</span>
+              </div>
+            </div>
+
+            {/* Feature 8 */}
+            <div className="feature-card" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ padding: '0.75rem', backgroundColor: '#eef2ff', color: '#4f46e5', borderRadius: '12px', border: '1px solid #c7d2fe' }}>
+                  <Globe size={24} />
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px' }}>MULTI-LANG</span>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#1a1c18' }}>Hindi + English</h3>
+                <p style={{ fontSize: '0.9rem', color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>8 Indian languages supported with automatic transliteration and voice-ready response cards.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '1rem' }}>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>8 Languages</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Transliterate</span>
+                <span style={{ fontSize: '0.75rem', backgroundColor: '#f3f4f6', padding: '2px 8px', borderRadius: '4px', color: '#4b5563' }}>Voice Ready</span>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+
+      {/* STATS SECTION */}
+      <section style={{ backgroundColor: 'white', padding: '80px 0' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 0.5rem 0' }}>MEASURABLE RESULTS</h3>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1c18', margin: 0 }}>Trusted by Farmers Across India</h2>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+            <div className="stat-card" style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#2563eb', color: 'white', padding: '1rem', borderRadius: '50%' }}>
+                <Users size={28} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1e3a8a', lineHeight: 1 }}>50,000+</div>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1e3a8a' }}>Farmers Assisted</div>
+            </div>
+
+            <div className="stat-card" style={{ backgroundColor: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#9333ea', color: 'white', padding: '1rem', borderRadius: '50%' }}>
+                <Microscope size={28} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#581c87', lineHeight: 1 }}>38</div>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: '#581c87' }}>Diseases Detected</div>
+            </div>
+
+            <div className="stat-card" style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#059669', color: 'white', padding: '1rem', borderRadius: '50%' }}>
+                <TrendingUp size={28} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#064e3b', lineHeight: 1 }}>500+</div>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: '#064e3b' }}>Live Mandi Prices</div>
+            </div>
+
+            <div className="stat-card" style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem' }}>
+              <div style={{ backgroundColor: '#f59e0b', color: 'white', padding: '1rem', borderRadius: '50%' }}>
+                <CloudSun size={28} />
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#78350f', lineHeight: 1 }}>7 Days</div>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: '#78350f' }}>Weather Forecast</div>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
-      {/* ── FOOTER ──────────────────────── */}
-      <footer role="contentinfo" style={{ background: 'var(--color-charcoal-olive)', color: 'var(--color-parchment)', padding: '60px 0 40px' }}>
-        <div className="page-container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-7 h-7 rounded-sm flex items-center justify-center" style={{ background: 'var(--color-honey-amber)' }}>
-                  <Leaf size={13} color="var(--color-ink)" />
-                </div>
-                <span className="font-display font-medium" style={{ fontFamily: 'var(--font-display)', fontSize: '18px', color: 'var(--color-parchment)' }}>
-                  KisanSeva
-                </span>
+      {/* HOW IT WORKS SECTION */}
+      <section style={{ backgroundColor: 'var(--color-bg, #f9fafb)', padding: '80px 0' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', display: 'flex', flexWrap: 'wrap', gap: '4rem' }}>
+          
+          <div style={{ flex: '1 1 30%', minWidth: '300px' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1rem' }}>SIMPLE 3-STEP PROCESS</div>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1c18', margin: '0 0 1.5rem 0', lineHeight: 1.1 }}>From Photo to Treatment Plan in Seconds</h2>
+            <p style={{ color: '#4a4d46', fontSize: '1.125rem', lineHeight: 1.6 }}>
+              Our streamlined AI engine allows you to simply point your camera and get instantaneous actionable advice.
+            </p>
+          </div>
+
+          <div style={{ flex: '1 1 60%', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            
+            <div className="step-card" style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: '-1rem', top: '-1rem', fontSize: '8rem', fontWeight: 900, color: '#f3f4f6', zIndex: 0, lineHeight: 1, userSelect: 'none' }}>01</div>
+              <div style={{ backgroundColor: '#fffbeb', color: '#d97706', padding: '1rem', borderRadius: '16px', zIndex: 1, border: '1px solid #fef3c7' }}>
+                <Upload size={32} />
               </div>
-              <p style={{ fontSize: 'var(--text-body)', color: 'var(--color-bark)', lineHeight: 1.7, maxWidth: '220px' }}>
-                Smart crop advisory for India&apos;s smallholder farmers. Free forever for individual farmers.
+              <div style={{ zIndex: 1 }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#d97706', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>STEP 1</div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1c18', margin: '0 0 0.5rem 0' }}>Take a Photo</h3>
+                <p style={{ color: '#4a4d46', margin: 0 }}>Point your camera at the affected crop leaf or stem</p>
+              </div>
+            </div>
+
+            <div className="step-card" style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: '-1rem', top: '-1rem', fontSize: '8rem', fontWeight: 900, color: '#f3f4f6', zIndex: 0, lineHeight: 1, userSelect: 'none' }}>02</div>
+              <div style={{ backgroundColor: '#f8fafc', color: '#475569', padding: '1rem', borderRadius: '16px', zIndex: 1, border: '1px solid #e2e8f0' }}>
+                <Cpu size={32} />
+              </div>
+              <div style={{ zIndex: 1 }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>STEP 2</div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1c18', margin: '0 0 0.5rem 0' }}>AI Analyses</h3>
+                <p style={{ color: '#4a4d46', margin: 0 }}>Our MobileNetV3 model identifies disease with 91%+ accuracy</p>
+              </div>
+            </div>
+
+            <div className="step-card" style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '16px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: '-1rem', top: '-1rem', fontSize: '8rem', fontWeight: 900, color: '#f3f4f6', zIndex: 0, lineHeight: 1, userSelect: 'none' }}>03</div>
+              <div style={{ backgroundColor: 'rgba(50,107,0,0.1)', color: '#326b00', padding: '1rem', borderRadius: '16px', zIndex: 1, border: '1px solid rgba(50,107,0,0.2)' }}>
+                <CheckCircle size={32} />
+              </div>
+              <div style={{ zIndex: 1 }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#326b00', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>STEP 3</div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1c18', margin: '0 0 0.5rem 0' }}>Get Treatment</h3>
+                <p style={{ color: '#4a4d46', margin: 0 }}>Receive step-by-step treatment, prevention tips, and nearest agri-input shop</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* CTA GRID */}
+      <section style={{ backgroundColor: 'white', padding: '80px 0' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a1c18', textAlign: 'center', margin: '0 0 3rem 0' }}>Choose Your Path</h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <Link href="/diagnose" style={{ textDecoration: 'none', display: 'block', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem', padding: '2rem', transition: 'transform 0.2s, box-shadow 0.2s', color: 'inherit' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '3rem' }}>🔬</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, backgroundColor: '#eff6ff', color: '#2563eb', padding: '4px 12px', borderRadius: '999px' }}>AI Powered</span>
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1a1c18', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Diagnose Crop <ArrowRight size={20} /></h3>
+              <p style={{ color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Upload a photo and get AI-powered disease detection in under 5 seconds.</p>
+            </Link>
+
+            <Link href="/market" style={{ textDecoration: 'none', display: 'block', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem', padding: '2rem', transition: 'transform 0.2s, box-shadow 0.2s', color: 'inherit' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '3rem' }}>📈</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 12px', borderRadius: '999px' }}>Live Data</span>
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1a1c18', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Check Mandi Prices <ArrowRight size={20} /></h3>
+              <p style={{ color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Live Agmarknet prices from 500+ mandis ranked by net value to your farm.</p>
+            </Link>
+
+            <Link href="/schedule" style={{ textDecoration: 'none', display: 'block', backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '1rem', padding: '2rem', transition: 'transform 0.2s, box-shadow 0.2s', color: 'inherit' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '3rem' }}>📅</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, backgroundColor: '#fffbeb', color: '#d97706', padding: '4px 12px', borderRadius: '999px' }}>Personalised</span>
+              </div>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1a1c18', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Farm Schedule <ArrowRight size={20} /></h3>
+              <p style={{ color: '#4a4d46', margin: 0, lineHeight: 1.5 }}>Get your personalised weekly irrigation and fertilizer schedule based on weather.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ backgroundColor: '#1a2e16', color: 'white', padding: '60px 0', position: 'relative', overflow: 'hidden' }}>
+        {/* Background Subtle Line Art */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.05, pointerEvents: 'none' }}>
+           <svg width="100%" height="100%" viewBox="0 0 1440 300" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,200 C320,100 640,300 960,150 C1280,0 1440,150 1440,150 L1440,300 L0,300 Z" fill="white" />
+            <path d="M0,200 C320,100 640,300 960,150 C1280,0 1440,150 1440,150" stroke="white" strokeWidth="2" fill="none" />
+          </svg>
+        </div>
+
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '3rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '3rem', marginBottom: '2rem' }}>
+            <div style={{ flex: '1 1 300px' }}>
+              <Link href="/" style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', textDecoration: 'none', letterSpacing: '-0.02em', display: 'block', marginBottom: '1rem' }}>
+                KisanSeva
+              </Link>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', maxWidth: '300px', lineHeight: 1.6, margin: '0 0 1.5rem 0' }}>
+                Empowering Indian smallholder farmers with actionable, data-driven insights.
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', margin: 0 }}>
+                &copy; {new Date().getFullYear()} KisanSeva. All rights reserved.
               </p>
             </div>
 
-            {[
-              { title: 'Product', links: ['Features', 'Crop Guide', 'Mandi Prices', 'IVR / SMS'] },
-              { title: 'Farmers', links: ['Register', 'Login', 'Download App', 'Toll-Free: 1800-XXX-XXXX'] },
-              { title: 'Company', links: ['About', 'Contact', 'Privacy Policy', 'Terms of Use'] },
-            ].map(({ title, links }) => (
-              <div key={title}>
-                <div className="eyebrow mb-4" style={{ color: 'var(--color-bark)' }}>{title}</div>
-                <ul className="space-y-2">
-                  {links.map((link) => (
-                    <li key={link}>
-                      <span style={{ fontSize: 'var(--text-body)', color: 'var(--color-saddle)', cursor: 'pointer' }} className="hover:text-parchment transition-colors">
-                        {link}
-                      </span>
-                    </li>
-                  ))}
+            <div style={{ display: 'flex', gap: '4rem', flexWrap: 'wrap' }}>
+              <div>
+                <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'white', marginBottom: '1.5rem' }}>Platform</h4>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <li><Link href="/" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '0.9rem' }}>Home</Link></li>
+                  <li><Link href="/diagnose" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '0.9rem' }}>Diagnose Crop</Link></li>
+                  <li><Link href="/market" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '0.9rem' }}>Mandi Prices</Link></li>
+                  <li><Link href="/schedule" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '0.9rem' }}>Farm Schedule</Link></li>
+                  <li><Link href="/agent" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '0.9rem' }}>AI Agent</Link></li>
                 </ul>
               </div>
-            ))}
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <p style={{ fontSize: 'var(--text-caption)', color: 'var(--color-bark)' }}>
-              © 2026 KisanSeva. All rights reserved. IEMH4-AG-01 Track 03 / AgriTech
-            </p>
-            <p style={{ fontSize: 'var(--text-caption)', color: 'var(--color-bark)' }}>
-              Built for India&apos;s 140M smallholder farmers.
-            </p>
+          <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            Built for Track 03 AgriTech · IEMH4-AG-01 · Powered by Gemini, Groq, OpenWeather, Agmarknet
           </div>
         </div>
       </footer>
-    </>
-  )
+
+    </div>
+  );
 }

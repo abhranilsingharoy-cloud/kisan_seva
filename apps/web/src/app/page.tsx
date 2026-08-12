@@ -9,7 +9,7 @@ import AgriPillarCards from '@/components/home/AgriPillarCards'
 import AgriHowItWorks from '@/components/home/AgriHowItWorks'
 import AgriStats from '@/components/home/AgriStats'
 import Link from 'next/link'
-import { ArrowRight, Leaf, Phone, MapPin, Github } from 'lucide-react'
+import { ArrowRight, Leaf, Phone, MapPin, GitBranch } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -118,7 +118,7 @@ export default function HomePage() {
                 <div className="mt-4 flex items-center gap-3">
                   <a href="https://github.com/abhranilsingharoy-cloud/kisan_seva" target="_blank" rel="noopener noreferrer"
                     className="p-2 rounded-lg border border-slate-700 hover:border-slate-500 text-slate-500 hover:text-slate-300 transition-all">
-                    <Github className="w-4 h-4" />
+                    <GitBranch className="w-4 h-4" />
                   </a>
                   <a href="tel:+1800-KISAN" className="p-2 rounded-lg border border-slate-700 hover:border-slate-500 text-slate-500 hover:text-slate-300 transition-all">
                     <Phone className="w-4 h-4" />

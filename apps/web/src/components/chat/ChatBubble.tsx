@@ -107,8 +107,8 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
     <div className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#65a30d] to-[#4d7c0f] flex items-center justify-center shrink-0 mb-1">
-          <span className="text-white text-[10px] font-black">KS</span>
+        <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mb-1 overflow-hidden border border-slate-200 shadow-sm">
+          <img src="/chatbot-avatar.jpg" alt="KS" className="w-full h-full object-cover" />
         </div>
       )}
 

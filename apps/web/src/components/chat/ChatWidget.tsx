@@ -93,10 +93,12 @@ export default function ChatWidget() {
             <X className="w-6 h-6 text-white" />
           ) : (
             <>
-              <MessageCircle className="w-6 h-6 text-[#65a30d]" />
+              <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center p-[2px]">
+                <img src="/chatbot-avatar.jpg" alt="Chat" className="w-full h-full object-cover rounded-full" />
+              </div>
               {/* Unread indicator dot */}
               {messages.length === 0 && (
-                <span className="absolute top-0 right-0 w-3 h-3 bg-amber-400 rounded-full border-2 border-white" />
+                <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-amber-400 rounded-full border-2 border-white" />
               )}
             </>
           )}
@@ -109,8 +111,8 @@ export default function ChatWidget() {
           {/* Header */}
           <div className="bg-white border-b border-slate-100 px-4 py-3.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#65a30d]/10 flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-[#65a30d]" />
+              <div className="w-9 h-9 rounded-full bg-[#65a30d]/10 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 shadow-sm">
+                <img src="/chatbot-avatar.jpg" alt="KisanSeva Saathi" className="w-full h-full object-cover" />
               </div>
               <div>
                 <p className="text-slate-900 font-extrabold text-sm leading-none">KisanSeva Saathi</p>
@@ -179,8 +181,8 @@ export default function ChatWidget() {
             {/* Loading indicator */}
             {isLoading && (
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                  <span className="text-slate-500 text-[10px] font-black">KS</span>
+                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                  <img src="/chatbot-avatar.jpg" alt="KS" className="w-full h-full object-cover" />
                 </div>
                 <div className="bg-white border border-slate-200 shadow-sm rounded-2xl rounded-bl-sm px-4 py-3">
                   <div className="flex items-center gap-1">

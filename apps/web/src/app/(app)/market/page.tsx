@@ -7,7 +7,16 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const CROPS = ['Tomato', 'Wheat', 'Rice', 'Onion', 'Potato', 'Cotton', 'Maize', 'Soybean'];
+const ALL_COMMODITIES = [
+  'Amaranthus', 'Amla(Nelli Kai)', 'Apple', 'Arhar (Tur/Red Gram)', 'Ashgourd', 'Bajra(Pearl Millet)', 'Banana', 'Barley (Jau)',
+  'Bengal Gram(Gram)(Whole)', 'Bitter gourd', 'Black Gram (Urd Beans)', 'Bottle gourd', 'Brinjal', 'Cabbage', 
+  'Capsicum', 'Carrot', 'Castor Seed', 'Cauliflower', 'Coconut', 'Coriander(Leaves)', 'Cotton', 'Cowpea (Lobia)',
+  'Cucumber(Kheera)', 'Drumstick', 'Garlic', 'Ginger', 'Green Chilli', 'Green Gram (Moong)', 'Groundnut', 
+  'Guava', 'Jack Fruit', 'Jowar(Sorghum)', 'Jute', 'Lemon', 'Lentil (Masur)', 'Maize', 'Mango', 'Mustard', 
+  'Okra', 'Onion', 'Orange', 'Paddy(Dhan)', 'Papaya', 'Peas(Green)', 'Pineapple', 'Pomegranate', 'Potato', 
+  'Pumpkin', 'Radish', 'Ragi (Finger Millet)', 'Rice', 'Soybean', 'Spinach', 'Sweet Potato', 'Tomato', 'Turmeric',
+  'Water Melon', 'Wheat'
+].sort();
 const STATES = [
   '',
   // 28 States
@@ -21,7 +30,7 @@ const STATES = [
 ];
 
 export default function MarketPricePage() {
-  const [selectedCrop, setSelectedCrop] = useState(CROPS[0]);
+  const [selectedCrop, setSelectedCrop] = useState('Tomato');
   const [selectedState, setSelectedState] = useState('');
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
   const [alertTargetPrice, setAlertTargetPrice] = useState('2500');
@@ -67,7 +76,8 @@ export default function MarketPricePage() {
   const mandis = marketData?.mandis ?? [];
   const avgPrice = marketData?.stateAvgPrice ?? 0;
 
-  const basePrice = avgPrice > 0 ? avgPrice : 2000;
+  const cropSeed = selectedCrop.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const basePrice = avgPrice > 0 ? avgPrice : 1500 + (cropSeed % 2000);
   
   // Deterministic mock historical data tailored to current live price
   const chartData = Array.from({ length: 30 }, (_, i) => {
@@ -77,9 +87,13 @@ export default function MarketPricePage() {
     const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
     
     // Create realistic price fluctuation ending at basePrice
-    // We dampen the fluctuation towards the end so the last point matches the live average closely
+    // Use cropSeed to change the frequency and phase of the sine waves so each crop has a unique shape
     const dampener = 1 - (i / 30) * 0.5; 
-    const fluctuation = (Math.sin(i / 4) * 0.1 + Math.cos(i / 2) * 0.05) * basePrice * dampener;
+    const freq1 = (cropSeed % 5 + 2) / 10; 
+    const freq2 = (cropSeed % 7 + 3) / 10; 
+    const phase = cropSeed % Math.PI;
+    
+    const fluctuation = (Math.sin(i * freq1 + phase) * 0.1 + Math.cos(i * freq2) * 0.05) * basePrice * dampener;
     const dailyModal = Math.round(basePrice - fluctuation); // minus to make the trend converge to basePrice
     
     return {
@@ -100,7 +114,18 @@ export default function MarketPricePage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', flex: 1 }}>
             <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: '300px' }}>
               <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-saddle)' }} />
-              <input type="text" className="input" placeholder="Search for crops (e.g., Wheat, Rice, Tomatoes)..." style={{ width: '100%', paddingLeft: '36px' }} />
+              <input 
+                type="text" 
+                list="crop-list"
+                className="input" 
+                placeholder="Search any crop (e.g. Wheat)..." 
+                style={{ width: '100%', paddingLeft: '36px' }}
+                value={selectedCrop}
+                onChange={(e) => setSelectedCrop(e.target.value)}
+              />
+              <datalist id="crop-list">
+                {ALL_COMMODITIES.map(c => <option key={c} value={c} />)}
+              </datalist>
             </div>
             
             <select className="input" value={selectedState} onChange={(e) => setSelectedState(e.target.value)} style={{ flex: '1 1 150px', maxWidth: '200px' }}>
@@ -177,17 +202,25 @@ export default function MarketPricePage() {
             </div>
 
             {/* Pinned Commodities */}
-            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
+            <div className="hide-scroll" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
               {[
-                { name: 'Wheat', price: '₹2,850', change: '+2.5% (+₹70)', isUp: true, emoji: '🌾', bg: '#fef3c7' },
-                { name: 'Rice (Basmati)', price: '₹4,100', change: '-1.2% (-₹50)', isUp: false, emoji: '🍚', bg: '#e0f2fe' },
-                { name: 'Tomatoes', price: '₹1,500', change: '+5.0% (+₹75)', isUp: true, emoji: '🍅', bg: '#fee2e2' },
-                { name: 'Onions', price: '₹2,200', change: '-0.5% (-₹10)', isUp: false, emoji: '🧅', bg: '#f3e8ff' },
+                { name: 'Wheat', price: '₹2,850', change: '+2.5% (+₹70)', isUp: true, img: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=100&q=80', bg: '#fef3c7' },
+                { name: 'Rice', price: '₹4,100', change: '-1.2% (-₹50)', isUp: false, img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=100&q=80', bg: '#e0f2fe' },
+                { name: 'Tomato', price: '₹1,500', change: '+5.0% (+₹75)', isUp: true, img: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=100&q=80', bg: '#fee2e2' },
+                { name: 'Onion', price: '₹2,200', change: '-0.5% (-₹10)', isUp: false, img: 'https://images.unsplash.com/photo-1620574387735-3624d75b2dfc?w=100&q=80', bg: '#f3e8ff' },
+                { name: 'Potato', price: '₹1,100', change: '+1.5% (+₹15)', isUp: true, img: 'https://images.unsplash.com/photo-1518977956812-cd3bdadaad31?w=100&q=80', bg: '#ffedd5' },
+                { name: 'Cotton', price: '₹6,500', change: '+3.2% (+₹200)', isUp: true, img: 'https://images.unsplash.com/photo-1601329025664-e4e6e8e5543a?w=100&q=80', bg: '#f1f5f9' },
+                { name: 'Soybean', price: '₹4,800', change: '-2.1% (-₹100)', isUp: false, img: 'https://images.unsplash.com/photo-1620601614798-75b293126fdb?w=100&q=80', bg: '#fef9c3' },
               ].map(item => (
-                <div key={item.name} className="card" style={{ flex: '0 0 200px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div 
+                  key={item.name} 
+                  className="card" 
+                  onClick={() => setSelectedCrop(item.name)}
+                  style={{ flex: '0 0 200px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', border: selectedCrop === item.name ? '2px solid var(--color-honey-amber)' : '1px solid transparent', transition: 'all 0.2s' }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
-                      {item.emoji}
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: item.bg, overflow: 'hidden' }}>
+                      <img src={item.img} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{item.name}</span>
                   </div>

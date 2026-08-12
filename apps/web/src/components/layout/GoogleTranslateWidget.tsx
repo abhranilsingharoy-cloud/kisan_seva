@@ -15,11 +15,13 @@ export default function GoogleTranslateWidget({ className = "" }: { className?: 
   useEffect(() => {
     // Define the global callback function required by Google Translate
     window.googleTranslateElementInit = () => {
-      if (window.google?.translate?.TranslateElement) {
+      const el = document.getElementById("google_translate_element");
+      // Prevent duplicate instances if called multiple times
+      if (el && el.childElementCount === 0 && window.google?.translate?.TranslateElement) {
         new window.google.translate.TranslateElement(
           {
             pageLanguage: "en",
-            includedLanguages: "en,hi,bn,te,ta,mr,gu,kn,ml,pa,or,es,fr,ar", // Major Indian languages + English/Spanish/French/Arabic
+            includedLanguages: "en,hi,bn,te,ta,mr,gu,kn,ml,pa,or,es,fr,ar",
             layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false,
           },
@@ -27,6 +29,11 @@ export default function GoogleTranslateWidget({ className = "" }: { className?: 
         );
       }
     };
+
+    // If the script is already loaded from a previous route, trigger it manually
+    if (window.google?.translate?.TranslateElement) {
+       window.googleTranslateElementInit();
+    }
   }, []);
 
   return (

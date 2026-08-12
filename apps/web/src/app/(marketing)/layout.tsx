@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ChatWidget from '@/components/chat/ChatWidget'
+import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget'
 import './marketing.css'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {

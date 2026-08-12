@@ -17,11 +17,11 @@ const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
 }
 
 const PESTS = [
-  { icon: '🦗', name: 'Aphids', desc: 'Small insects that suck sap, causing leaf curling.', color: '#f0fdf4' },
-  { icon: '🌽', name: 'Stem Borer', desc: 'Larvae that bore into stems, weakening the plant.', color: '#fffbeb' },
-  { icon: '🍄', name: 'Powdery Mildew', desc: 'White powdery spots on leaves and stems.', color: '#faf5ff' },
-  { icon: '🪲', name: 'Whitefly', desc: 'Tiny white flies that weaken plants by feeding.', color: '#eff6ff' },
-  { icon: '🐛', name: 'Caterpillar', desc: 'Defoliating larvae attacking leaves and fruits.', color: '#fff1f2' },
+  { img: 'https://images.unsplash.com/photo-1580255866894-358043644f80?w=400&q=80', name: 'Aphids', desc: 'Small insects that suck sap, causing leaf curling and yellowing.' },
+  { img: 'https://images.unsplash.com/photo-1596489376170-c7ba184a5be7?w=400&q=80', name: 'Stem Borer', desc: 'Larvae that bore into stems, weakening the plant.' },
+  { img: 'https://images.unsplash.com/photo-1605367623588-4f7db910d540?w=400&q=80', name: 'Powdery Mildew', desc: 'White powdery spots on leaves and stems reducing yield.' },
+  { img: 'https://images.unsplash.com/photo-1616719582531-15582c3c90cb?w=400&q=80', name: 'Whitefly', desc: 'Tiny white flies that weaken plants by feeding and spreading virus.' },
+  { img: 'https://images.unsplash.com/photo-1498144846853-60ca2d43853b?w=400&q=80', name: 'Armyworm', desc: 'Defoliating larvae attacking leaves and fruits rapidly.' },
 ]
 
 export default function DiagnosePage() {
@@ -309,7 +309,9 @@ export default function DiagnosePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, overflow: 'hidden' }}>
                   {PESTS.slice(pestIndex, pestIndex + VISIBLE).map((pest, i) => (
                     <div key={i} style={{ background: '#fff', borderRadius: 14, border: '1px solid #e8ede7', padding: '20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <div style={{ width: 64, height: 64, borderRadius: 14, background: pest.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>{pest.icon}</div>
+                      <div style={{ width: '100%', height: 140, borderRadius: 10, overflow: 'hidden', background: '#f3f4f6', flexShrink: 0 }}>
+                        <img src={pest.img} alt={pest.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
                       <div>
                         <div style={{ fontSize: '1rem', fontWeight: 700, color: '#111827', marginBottom: 5 }}>{pest.name}</div>
                         <div style={{ fontSize: '0.8125rem', color: '#6b7280', lineHeight: 1.55, marginBottom: 10 }}>{pest.desc}</div>

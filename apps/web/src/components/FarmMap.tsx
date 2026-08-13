@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Polygon, Rectangle, Popup, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Rectangle, Popup, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -107,6 +107,15 @@ function MapController({ targetLocation }: { targetLocation: [number, number] | 
   return null;
 }
 
+function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      onMapClick?.(e.latlng.lat, e.latlng.lng);
+    }
+  });
+  return null;
+}
+
 function getColor(health: number, isNDVI: boolean): string {
   if (!isNDVI) return '#ffffff';
   if (health >= 80) return '#16a34a';
@@ -124,9 +133,10 @@ interface FarmMapProps {
   zones: Zone[];
   onZoneSelect?: (zone: Zone | null) => void;
   targetLocation: [number, number] | null;
+  onMapClick?: (lat: number, lng: number) => void;
 }
 
-export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation }: FarmMapProps) {
+export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, onMapClick }: FarmMapProps) {
   const defaultCenter: [number, number] = [30.9192, 75.8570];
 
   // Memoize the pixel grids so they only recalculate if the base zone data changes
@@ -141,6 +151,7 @@ export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation }:
     <div style={{ height: '100%', width: '100%' }}>
       <MapContainer center={defaultCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
         <MapController targetLocation={targetLocation} />
+        <MapClickHandler onMapClick={onMapClick} />
 
         {/* Google Maps Hybrid Imagery (Satellite + Labels) */}
         <TileLayer

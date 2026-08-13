@@ -1,13 +1,9 @@
 /**
  * KisanSeva — Live Weather API Route
- * Fetches current weather + 7-day forecast from OpenWeatherMap
+ * Fetches current weather + 10-day forecast from Open-Meteo (Free, No API Key)
  * for a given lat/lon. Used by Schedule page and WeatherAdvisoryAgent.
  */
 import { NextRequest, NextResponse } from 'next/server'
-
-const OW_KEY     = process.env.NEXT_PUBLIC_OPENWEATHER_KEY || ''
-const OW_BASE    = 'https://api.openweathermap.org/data/2.5'
-const OW_GEO     = 'https://api.openweathermap.org/geo/1.0'
 
 // Crop coefficient (Kc) table for ET-based irrigation estimation
 const KC_TABLE: Record<string, number> = {
@@ -16,12 +12,31 @@ const KC_TABLE: Record<string, number> = {
   default: 1.00,
 }
 
+// WMO Weather interpretation codes
+function decodeWMO(code: number) {
+  if (code === 0) return { desc: 'Clear sky', icon: '01d' }
+  if (code === 1) return { desc: 'Mainly clear', icon: '02d' }
+  if (code === 2) return { desc: 'Partly cloudy', icon: '03d' }
+  if (code === 3) return { desc: 'Overcast', icon: '04d' }
+  if ([45, 48].includes(code)) return { desc: 'Fog', icon: '50d' }
+  if ([51, 53, 55].includes(code)) return { desc: 'Drizzle', icon: '09d' }
+  if ([56, 57].includes(code)) return { desc: 'Freezing Drizzle', icon: '09d' }
+  if ([61, 63, 65].includes(code)) return { desc: 'Rain', icon: '10d' }
+  if ([66, 67].includes(code)) return { desc: 'Freezing Rain', icon: '13d' }
+  if ([71, 73, 75].includes(code)) return { desc: 'Snow fall', icon: '13d' }
+  if (code === 77) return { desc: 'Snow grains', icon: '13d' }
+  if ([80, 81, 82].includes(code)) return { desc: 'Rain showers', icon: '09d' }
+  if ([85, 86].includes(code)) return { desc: 'Snow showers', icon: '13d' }
+  if (code === 95) return { desc: 'Thunderstorm', icon: '11d' }
+  if ([96, 99].includes(code)) return { desc: 'Thunderstorm with hail', icon: '11d' }
+  return { desc: 'Clear sky', icon: '01d' }
+}
+
 function estimateIrrigation(
   tempMax: number, tempMin: number, humidity: number,
   windSpeed: number, rainfall: number, crop: string, stageFactor = 1.0
 ): number {
-  // Hargreaves simplified ET₀ (mm/day)
-  const Ra = 15.0  // approx extraterrestrial radiation MJ/m²/day (mid-lat, summer)
+  const Ra = 15.0  // approx extraterrestrial radiation MJ/m²/day
   const et0 = 0.0023 * (tempMax - tempMin) ** 0.5 * ((tempMax + tempMin) / 2 + 17.8) * Ra * 0.408
   const kc  = (KC_TABLE[crop.toLowerCase()] ?? KC_TABLE.default) * stageFactor
   const etc = et0 * kc
@@ -29,7 +44,26 @@ function estimateIrrigation(
   return netIrrigation
 }
 
-function diseaseRisk(humidity: number, tempAvg: number, rainfall: number) {
+// Crop-specific disease & pest risk profiles
+const CROP_PEST_MAP: Record<string, { pest: string; fungal: string; bacterialCond: string }> = {
+  tomato:  { pest: 'aphids and fruit borers', fungal: 'early blight (Alternaria)', bacterialCond: 'bacterial wilt' },
+  wheat:   { pest: 'aphids and yellow rust', fungal: 'powdery mildew', bacterialCond: 'leaf blight' },
+  rice:    { pest: 'stem borers and BPH', fungal: 'blast disease (Magnaporthe)', bacterialCond: 'bacterial leaf blight' },
+  onion:   { pest: 'thrips and leaf miners', fungal: 'purple blotch (Alternaria)', bacterialCond: 'neck rot' },
+  cotton:  { pest: 'whitefly and bollworm', fungal: 'grey mildew', bacterialCond: 'angular leaf spot' },
+  potato:  { pest: 'aphids and tuber moth', fungal: 'late blight (Phytophthora)', bacterialCond: 'blackleg' },
+  maize:   { pest: 'fall armyworm and stem borer', fungal: 'grey leaf spot', bacterialCond: 'bacterial stalk rot' },
+  soybean: { pest: 'pod borers and whitefly', fungal: 'rust (Phakopsora)', bacterialCond: 'bacterial pustule' },
+  default: { pest: 'aphids', fungal: 'fungal leaf spots', bacterialCond: 'bacterial blight' },
+}
+
+function getCropProfile(crop: string) {
+  const key = Object.keys(CROP_PEST_MAP).find(k => crop.toLowerCase().includes(k)) || 'default'
+  return CROP_PEST_MAP[key]
+}
+
+function diseaseRisk(humidity: number, tempAvg: number, rainfall: number, crop: string) {
+  const profile = getCropProfile(crop)
   const fungalRisk =
     humidity > 85 && tempAvg >= 18 && tempAvg <= 30 ? 'high'
     : humidity > 70 && tempAvg >= 15 ? 'moderate'
@@ -40,7 +74,20 @@ function diseaseRisk(humidity: number, tempAvg: number, rainfall: number) {
 
   const pestRisk = tempAvg > 35 ? 'moderate' : 'low'
 
-  return { fungalRisk, bacterialRisk, pestRisk }
+  return { fungalRisk, bacterialRisk, pestRisk, profile }
+}
+
+// Crop-specific irrigation tips
+const IRRIGATION_TIPS: Record<string, string> = {
+  tomato:  'Apply via drip at root zone, avoid wetting foliage to prevent blight.',
+  wheat:   'Use flood or furrow irrigation; critical at tillering and grain-fill stages.',
+  rice:    'Maintain 5cm standing water in paddy fields. Drain before harvest.',
+  onion:   'Furrow or drip irrigation preferred. Avoid overhead watering near bulbing stage.',
+  cotton:  'Drip irrigation at 0.6–0.8 ET. Critical during boll formation.',
+  potato:  'Sprinkler or furrow. Keep soil moist but avoid waterlogging to prevent rot.',
+  maize:   'Flood or furrow; critical at tasseling and silking. Avoid moisture stress.',
+  soybean: 'Drip or sprinkler at 0.7 ET. Critical at flowering and pod fill stages.',
+  default: 'Irrigate based on soil moisture. Avoid over-irrigation to prevent root rot.',
 }
 
 export async function GET(req: NextRequest) {
@@ -51,29 +98,25 @@ export async function GET(req: NextRequest) {
   const crop  = searchParams.get('crop') || 'default'
   const stage = searchParams.get('stage') || 'vegetative'
 
-  if (!OW_KEY) {
-    return NextResponse.json({ error: 'OpenWeather API key not configured' }, { status: 500 })
-  }
-
   try {
     let resolvedLat = lat
     let resolvedLon = lon
     let locationName = city || 'Your Location'
 
-    // ── Geocode city name if lat/lon not provided ─────────
+    // ── Geocode city name if lat/lon not provided using Open-Meteo ─────────
     if ((!lat || !lon) && city) {
       const geoResp = await fetch(
-        `${OW_GEO}/direct?q=${encodeURIComponent(city)},IN&limit=1&appid=${OW_KEY}`,
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&format=json`,
         { signal: AbortSignal.timeout(8000) }
       )
       if (!geoResp.ok) throw new Error('Geocoding failed')
       const geoData = await geoResp.json()
-      if (!geoData.length) {
+      if (!geoData.results || !geoData.results.length) {
         return NextResponse.json({ error: `City not found: ${city}` }, { status: 404 })
       }
-      resolvedLat = geoData[0].lat.toString()
-      resolvedLon = geoData[0].lon.toString()
-      locationName = `${geoData[0].name}, ${geoData[0].state || 'India'}`
+      resolvedLat = geoData.results[0].latitude.toString()
+      resolvedLon = geoData.results[0].longitude.toString()
+      locationName = `${geoData.results[0].name}, ${geoData.results[0].country || ''}`
     }
 
     if (!resolvedLat || !resolvedLon) {
@@ -82,84 +125,65 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    // ── Fetch current weather + 5-day forecast ────────────
-    const [currentResp, forecastResp] = await Promise.all([
-      fetch(
-        `${OW_BASE}/weather?lat=${resolvedLat}&lon=${resolvedLon}&appid=${OW_KEY}&units=metric`,
-        { signal: AbortSignal.timeout(8000) }
-      ),
-      fetch(
-        `${OW_BASE}/forecast?lat=${resolvedLat}&lon=${resolvedLon}&appid=${OW_KEY}&units=metric&cnt=40`,
-        { signal: AbortSignal.timeout(8000) }
-      ),
-    ])
-
-    if (!currentResp.ok || !forecastResp.ok) {
-      throw new Error(`OpenWeather error: ${currentResp.status} / ${forecastResp.status}`)
+    // ── Fetch 10-day forecast and current weather from Open-Meteo ────────────
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${resolvedLat}&longitude=${resolvedLon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=10`
+    
+    const weatherResp = await fetch(weatherUrl, { signal: AbortSignal.timeout(8000) })
+    if (!weatherResp.ok) {
+      throw new Error(`Open-Meteo error: ${weatherResp.status}`)
     }
 
-    const current  = await currentResp.json()
-    const forecast = await forecastResp.json()
+    const data = await weatherResp.json()
 
     // ── Process current weather ───────────────────────────
+    const cwmo = decodeWMO(data.current.weather_code)
     const now = {
-      temp:        Math.round(current.main.temp),
-      feelsLike:   Math.round(current.main.feels_like),
-      humidity:    current.main.humidity,
-      windSpeed:   Math.round(current.wind.speed * 3.6), // m/s → km/h
-      rainfall24h: current.rain?.['1h'] ?? current.rain?.['3h'] ?? 0,
-      description: current.weather[0].description,
-      icon:        current.weather[0].icon,
-      locationName: current.name || locationName,
-      country:     current.sys.country,
+      temp:        Math.round(data.current.temperature_2m),
+      feelsLike:   Math.round(data.current.apparent_temperature),
+      humidity:    data.current.relative_humidity_2m,
+      windSpeed:   Math.round(data.current.wind_speed_10m),
+      rainfall24h: data.current.precipitation,
+      rainChance:  data.current.precipitation > 0 ? 85 : 15, // Simplified rain chance
+      description: cwmo.desc,
+      icon:        cwmo.icon,
+      locationName: locationName,
     }
 
-    // ── Group forecast into daily summaries (noon entry) ──
-    const dailyMap = new Map<string, any>()
-    for (const item of forecast.list) {
-      const date = item.dt_txt.split(' ')[0]
-      const hour = parseInt(item.dt_txt.split(' ')[1])
-      // Prefer noon reading; first reading as fallback
-      if (!dailyMap.has(date) || hour === 12) {
-        dailyMap.set(date, item)
-      }
-    }
-
+    // ── Process daily forecast ────────────────────────────
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-    const daily = Array.from(dailyMap.values()).slice(0, 7).map(item => {
-      const d    = new Date(item.dt * 1000)
-      const rain = item.rain?.['3h'] ?? 0
+    const daily = data.daily.time.map((timeStr: string, idx: number) => {
+      const d = new Date(timeStr)
+      const maxTemp = data.daily.temperature_2m_max[idx]
+      const minTemp = data.daily.temperature_2m_min[idx]
+      const rain = data.daily.precipitation_sum[idx]
+      const windMax = data.daily.wind_speed_10m_max[idx]
+      const wmo = decodeWMO(data.daily.weather_code[idx])
 
-      // Irrigation estimate for this day
       const irrigMm = estimateIrrigation(
-        item.main.temp_max ?? item.main.temp,
-        item.main.temp_min ?? item.main.temp - 8,
-        item.main.humidity,
-        item.wind.speed,
-        rain,
-        crop,
+        maxTemp, minTemp, 60, // 60% avg humidity assumed for daily
+        windMax, rain, crop,
         stage === 'germination' ? 0.5 : stage === 'harvest' ? 0.8 : 1.0
       )
 
-      const risk = diseaseRisk(item.main.humidity, item.main.temp, rain)
+      const risk = diseaseRisk(60, (maxTemp + minTemp) / 2, rain, crop)
 
       return {
-        date:        item.dt_txt.split(' ')[0],
+        date:        timeStr,
         dayName:     days[d.getDay()],
-        isToday:     item.dt_txt.split(' ')[0] === new Date().toISOString().split('T')[0],
-        maxTemp:     Math.round(item.main.temp_max ?? item.main.temp),
-        minTemp:     Math.round(item.main.temp_min ?? item.main.temp - 8),
-        humidity:    item.main.humidity,
+        isToday:     idx === 0,
+        maxTemp:     Math.round(maxTemp),
+        minTemp:     Math.round(minTemp),
+        humidity:    60,
         rainfall:    Math.round(rain * 10) / 10,
-        windSpeed:   Math.round(item.wind.speed * 3.6),
-        description: item.weather[0].description,
-        icon:        item.weather[0].icon,
+        windSpeed:   Math.round(windMax),
+        description: wmo.desc,
+        icon:        wmo.icon,
         irrigationMm: irrigMm,
         shouldIrrigate: irrigMm > 5,
         diseaseRisk: risk,
-        sprayWindow: item.wind.speed < 4 && item.main.humidity < 75
+        sprayWindow: windMax < 15 && rain < 1 
           ? 'Ideal spray conditions (early morning)'
-          : item.wind.speed > 5
+          : windMax > 20
           ? 'Avoid spraying — too windy'
           : 'Acceptable',
       }
@@ -180,6 +204,33 @@ export async function GET(req: NextRequest) {
         : todayData.irrigationMm > 20
         ? `Irrigate ${todayData.irrigationMm}mm urgently — high evapotranspiration.`
         : `Moderate conditions. Irrigate ${todayData.irrigationMm}mm if soil feels dry.`,
+      // Crop-aware, weather-aware advisory text
+      irrigation: (() => {
+        const profile = getCropProfile(crop)
+        const tipKey = Object.keys(IRRIGATION_TIPS).find(k => crop.toLowerCase().includes(k)) || 'default'
+        const tip = IRRIGATION_TIPS[tipKey]
+        if (now.rainfall24h > 10) return `Good rainfall today (${now.rainfall24h}mm). Skip irrigation for ${crop}. Watch for waterlogging. ${tip}`
+        if (todayData.irrigationMm > 20) return `⚠️ Irrigate ${todayData.irrigationMm}mm urgently — high evapotranspiration for ${crop} today. ${tip}`
+        if (todayData.irrigationMm > 0) return `Apply ${todayData.irrigationMm}mm of water for ${crop} if topsoil feels dry. ${tip}`
+        return `Soil moisture looks adequate for ${crop}. ${tip}`
+      })(),
+      diseaseRisk: (() => {
+        const profile = todayData.diseaseRisk.profile
+        if (todayData.diseaseRisk.fungalRisk === 'high')
+          return `⚠️ High risk of ${profile.fungal} due to humidity & temperature. Spray Mancozeb or Copper Oxychloride preventively on ${crop}. Scout for ${profile.pest}.`
+        if (todayData.diseaseRisk.fungalRisk === 'moderate')
+          return `Moderate risk. Watch for early signs of ${profile.fungal}. Check for ${profile.pest} especially under leaves.`
+        if (todayData.diseaseRisk.bacterialRisk === 'moderate')
+          return `${profile.bacterialCond} risk elevated due to warm, moist conditions. Remove infected plants promptly.`
+        if (todayData.diseaseRisk.pestRisk === 'moderate')
+          return `High temperature may attract ${profile.pest}. Scout field early morning for ${crop}.`
+        return `Low risk conditions for ${crop}. Standard weekly scouting for ${profile.pest} recommended.`
+      })(),
+      sprayAdvice: (() => {
+        if (todayData.sprayWindow === 'Avoid spraying — too windy') return `🌬️ Wind speed too high today. Reschedule spray for ${crop} to early morning (06:00–08:00) on a calmer day.`
+        if (todayData.sprayWindow.includes('Ideal')) return `✅ Ideal spray conditions today (early morning). Apply fungicide / pesticide for ${crop} between 06:00–08:00 AM.`
+        return `Acceptable spray window. Avoid afternoon; prefer early morning to reduce evaporation.`
+      })()
     } : null
 
     return NextResponse.json({

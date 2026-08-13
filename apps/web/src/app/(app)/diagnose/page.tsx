@@ -92,6 +92,34 @@ export default function DiagnosePage() {
       
       setDiagnosisData(result.data)
       setStatus('done')
+
+      // Save to recent scans
+      try {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const base64Img = reader.result as string
+          const newScan = {
+            crop: 'Your Crop - Just Scanned',
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            badge: result.data.severity === 'High' || result.data.severity === 'Moderate' ? `Action Required: ${result.data.disease}` : 'Healthy',
+            img: base64Img,
+            diagnosis: result.data
+          }
+          
+          const existingStr = localStorage.getItem('kisanseva_recent_scans')
+          let savedScans = []
+          if (existingStr) {
+             const parsed = JSON.parse(existingStr)
+             savedScans = parsed.filter((s: any) => !s.img.includes('/images/diagnose/scan_') && !s.img.includes('unsplash'))
+          }
+          savedScans.unshift(newScan)
+          savedScans = savedScans.slice(0, 3)
+          localStorage.setItem('kisanseva_recent_scans', JSON.stringify(savedScans))
+        }
+        reader.readAsDataURL(compressedFile)
+      } catch (e) {
+        console.error('Failed to save scan', e)
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Something went wrong')
       setStatus('error')

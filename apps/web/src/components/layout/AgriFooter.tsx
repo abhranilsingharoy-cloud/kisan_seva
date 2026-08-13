@@ -85,7 +85,7 @@ export default function AgriFooter() {
               <div className="text-slate-900 font-bold mb-1">Resources</div>
               <Link href="#" className="hover:text-[#2A854B] transition-colors">Disease Library</Link>
               <Link href="#" className="hover:text-[#2A854B] transition-colors">Price Guide</Link>
-              <Link href="#" className="hover:text-[#2A854B] transition-colors">Privacy Policy</Link>
+              <Link href="/privacy" className="hover:text-[#2A854B] transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-[#2A854B] transition-colors">Govt Schemes</Link>
             </div>
           </div>
@@ -99,8 +99,8 @@ export default function AgriFooter() {
             <span>Built for India's Farmers.</span>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-slate-900 transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-slate-900 transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-slate-900 transition-colors">Terms</Link>
             <button
               onClick={scrollToTop}
               className="flex items-center gap-1.5 text-slate-900 hover:text-[#2A854B] transition-colors ml-4 font-bold"

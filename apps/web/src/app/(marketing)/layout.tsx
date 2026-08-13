@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import ChatWidget from '@/components/chat/ChatWidget'
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget'
@@ -10,7 +11,12 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <header className="fixed top-0 left-0 right-0 z-[100] w-full pointer-events-none">
         <div className="max-w-[1376px] mx-auto px-8 pt-6 pointer-events-auto">
           <nav className="navbar">
-            <div className="logo">AgriSmart</div>
+            <Link href="/" className="logo flex items-center gap-2 outline-none focus:outline-none">
+              <div className="relative w-7 h-7 rounded-lg overflow-hidden shrink-0">
+                <Image src="/icon.jpg" alt="KisanSeva Logo" fill className="object-cover" />
+              </div>
+              <span>AgriSmart</span>
+            </Link>
             <ul className="nav-links">
               <li><Link href="/">Home</Link></li>
               <li><Link href="/diagnose">Crops</Link></li>

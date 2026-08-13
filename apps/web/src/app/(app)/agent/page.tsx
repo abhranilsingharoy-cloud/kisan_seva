@@ -623,7 +623,7 @@ Final Output`}</pre>
           { label: 'Diagnose', icon: <Activity size={20} />, active: false },
           { label: 'Market', icon: <TrendingUp size={20} />, active: false },
           { label: 'AI Chat', icon: <Bot size={20} />, active: true },
-          { label: 'Schedule', icon: <Calendar size={20} />, active: false },
+          { label: 'My Plots', icon: <Calendar size={20} />, active: false },
         ].map((item, i) => (
           <button 
             key={i} 

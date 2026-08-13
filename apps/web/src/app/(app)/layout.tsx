@@ -25,7 +25,7 @@ const APP_LINKS = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Diagnose', href: '/diagnose', icon: Search },
   { name: 'Market', href: '/market', icon: TrendingUp },
-  { name: 'Schedule', href: '/schedule', icon: Calendar },
+  { name: 'My Plots', href: '/schedule', icon: Calendar },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'AI Agent', href: '/agent', icon: Bot },
 ];

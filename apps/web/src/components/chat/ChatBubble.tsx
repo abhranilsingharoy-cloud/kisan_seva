@@ -22,7 +22,7 @@ const ACTION_LABELS: Record<string, { label: string; href: string; hi: string }>
     href: "/market",
   },
   schedule: {
-    label: "View Schedule",
+    label: "View My Plots",
     hi: "कार्यक्रम देखें",
     href: "/schedule",
   },

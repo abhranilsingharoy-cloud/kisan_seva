@@ -50,19 +50,37 @@ export default function AgriFAQ() {
           const isOpen = openId === faq.question;
           return (
             <StaggerChild key={faq.question} preset="stagger-child">
-              <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm">
+              <div 
+                className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${
+                  isOpen 
+                    ? "border-[#84cc16]/40 shadow-md shadow-[#84cc16]/5 ring-1 ring-[#84cc16]/20" 
+                    : "border-slate-200/80 shadow-sm hover:border-slate-300 hover:shadow"
+                }`}
+              >
                 <button
                   onClick={() => setOpenId(isOpen ? null : faq.question)}
-                  className="w-full px-5 py-3.5 text-left flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors"
+                  className={`w-full px-5 py-4 text-left flex items-center justify-between gap-4 transition-colors ${
+                    isOpen ? "bg-gradient-to-r from-[#f7fee7]/50 to-transparent" : "hover:bg-slate-50/50"
+                  }`}
                 >
-                  <span className="text-sm font-semibold text-slate-900">{faq.question}</span>
-                  <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180 text-[#65a30d]" : ""}`} />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-4 pt-1 text-xs text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30">
-                    {faq.answer}
+                  <span className={`text-sm font-semibold transition-colors duration-300 ${isOpen ? "text-[#4d7c0f]" : "text-slate-800"}`}>
+                    {faq.question}
+                  </span>
+                  <div className={`p-1 rounded-full transition-colors duration-300 ${isOpen ? "bg-[#84cc16]/10" : "bg-transparent"}`}>
+                    <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-[#65a30d]" : "text-slate-400"}`} />
                   </div>
-                )}
+                </button>
+                
+                <div 
+                  className="grid transition-all duration-300 ease-in-out" 
+                  style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+                >
+                  <div className="overflow-hidden">
+                    <div className="px-5 pb-5 pt-1 text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-gradient-to-b from-slate-50/50 to-transparent">
+                      {faq.answer}
+                    </div>
+                  </div>
+                </div>
               </div>
             </StaggerChild>
           );

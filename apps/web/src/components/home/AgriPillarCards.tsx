@@ -75,7 +75,7 @@ export default function AgriPillarCards() {
           emoji="📈"
         />
         <PillarCard
-          title="Farm Schedule"
+          title="My Plots"
           description="Get personalised weekly irrigation and fertilizer schedules based on soil health and weather."
           href="/schedule"
           cardStyle="hover:border-amber-300"

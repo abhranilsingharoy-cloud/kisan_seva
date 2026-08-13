@@ -67,12 +67,12 @@ export default function FarmerTestimonials() {
 
   useEffect(() => {
     if (isPaused) return;
-    const t = window.setInterval(() => {
+    const t = window.setTimeout(() => {
       setActiveIndex((p) => (p + 1) % FARMER_STORIES.length);
       setKey(k => k + 1);
     }, AUTO_SWIPE_MS);
-    return () => window.clearInterval(t);
-  }, [isPaused]);
+    return () => window.clearTimeout(t);
+  }, [isPaused, activeIndex]);
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">

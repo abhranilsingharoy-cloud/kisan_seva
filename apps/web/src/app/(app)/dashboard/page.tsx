@@ -81,7 +81,7 @@ export default function DashboardPage() {
         plots.forEach((plot, i) => { if (results[i]?.success) map[plot.id] = results[i] })
         setPlotWeather(map)
 
-        const mkt = await fetch(`/api/market?commodity=${encodeURIComponent(plots[0].crop)}`)
+        const mkt = await fetch(`/api/v1/market?commodity=${encodeURIComponent(plots[0].crop)}`)
           .then(r => r.json()).catch(() => null)
         if (mkt?.success) setMarketData(mkt)
       } catch (e) {

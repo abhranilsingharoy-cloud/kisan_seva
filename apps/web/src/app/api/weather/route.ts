@@ -105,24 +105,28 @@ export async function GET(req: NextRequest) {
 
     // ── Geocode city name if lat/lon not provided using Open-Meteo ─────────
     if ((!lat || !lon) && city) {
-      const geoResp = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&format=json`,
-        { signal: AbortSignal.timeout(8000) }
-      )
-      if (!geoResp.ok) throw new Error('Geocoding failed')
-      const geoData = await geoResp.json()
-      if (!geoData.results || !geoData.results.length) {
-        return NextResponse.json({ error: `City not found: ${city}` }, { status: 404 })
+      try {
+        const geoResp = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&format=json`,
+          { signal: AbortSignal.timeout(8000) }
+        )
+        if (geoResp.ok) {
+          const geoData = await geoResp.json()
+          if (geoData.results && geoData.results.length) {
+            resolvedLat = geoData.results[0].latitude.toString()
+            resolvedLon = geoData.results[0].longitude.toString()
+            locationName = `${geoData.results[0].name}, ${geoData.results[0].country || ''}`
+          }
+        }
+      } catch (e) {
+        console.warn('Geocoding failed, using fallback coordinates', e)
       }
-      resolvedLat = geoData.results[0].latitude.toString()
-      resolvedLon = geoData.results[0].longitude.toString()
-      locationName = `${geoData.results[0].name}, ${geoData.results[0].country || ''}`
     }
 
+    // If still missing, fallback to central India
     if (!resolvedLat || !resolvedLon) {
-      return NextResponse.json(
-        { error: 'Provide lat & lon or city query param' }, { status: 400 }
-      )
+      resolvedLat = '20.5937'
+      resolvedLon = '78.9629'
     }
 
     // ── Fetch 10-day forecast and current weather from Open-Meteo ────────────

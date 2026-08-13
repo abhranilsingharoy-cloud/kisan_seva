@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
@@ -104,7 +104,7 @@ function generateZonesForLocation(lat: number, lng: number, realData: RealData |
 
 const DEFAULT_CENTER: [number, number] = [30.9192, 75.8570];
 
-function useLiveTelemetry(targetLocation: [number, number] | null) {
+function useLiveTelemetry(targetLocation: [number, number] | null, isArable: boolean = true) {
   const [zones, setZones] = useState<Zone[]>([]);
   const [lastSync, setLastSync] = useState<Date>(new Date());
   const [realWeatherData, setRealWeatherData] = useState<RealData | null>(null);
@@ -113,6 +113,12 @@ function useLiveTelemetry(targetLocation: [number, number] | null) {
   // 1. Fetch REAL Open-Meteo Data on location change
   useEffect(() => {
     const fetchRealData = async () => {
+      if (!isArable) {
+        setZones([]);
+        setRealWeatherData(null);
+        return;
+      }
+
       setIsFetchingRealData(true);
       const center = targetLocation || DEFAULT_CENTER;
       try {
@@ -129,7 +135,6 @@ function useLiveTelemetry(targetLocation: [number, number] | null) {
         setZones(generateZonesForLocation(center[0], center[1], realData));
       } catch (error) {
         console.error("Open-Meteo fetch failed:", error);
-        // Fallback
         setZones(generateZonesForLocation(center[0], center[1], null));
       } finally {
         setIsFetchingRealData(false);
@@ -137,7 +142,7 @@ function useLiveTelemetry(targetLocation: [number, number] | null) {
     };
 
     fetchRealData();
-  }, [targetLocation]);
+  }, [targetLocation, isArable]);
 
   // 2. Continuous telemetry ping (minor sensor noise over the real data)
   useEffect(() => {
@@ -183,13 +188,14 @@ export default function TopographyPage() {
   
   const [targetLocation, setTargetLocation] = useState<[number, number] | null>(null);
   const [locationName, setLocationName] = useState('Ludhiana District, Punjab, India');
+  const [isArable, setIsArable] = useState(true);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // Connect Live Telemetry powered by REAL OPEN-METEO DATA
-  const { zones, lastSync, realWeatherData, isFetchingRealData } = useLiveTelemetry(targetLocation);
+  const { zones, lastSync, realWeatherData, isFetchingRealData } = useLiveTelemetry(targetLocation, isArable);
   
   const averageHealth = zones.length > 0 ? (zones.reduce((acc, z) => acc + z.health, 0) / zones.length).toFixed(1) : "0.0";
 
@@ -218,20 +224,28 @@ export default function TopographyPage() {
   const handleMapClick = async (lat: number, lng: number) => {
     setTargetLocation([lat, lng]);
     setSelectedZone(null); 
-    setLocationName("Fetching Real Data...");
+    setLocationName("Analyzing terrain...");
     
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
         headers: { 'Accept': 'application/json', 'User-Agent': 'KisanSeva-Web-App' }
       });
       const data = await res.json();
-      if (data && data.display_name) {
-        setLocationName(data.display_name.split(',').slice(0, 3).join(','));
+      
+      if (data && data.error) {
+        setLocationName("Ocean / Unmapped Territory");
+        setIsArable(false);
       } else {
-        setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+        setIsArable(true);
+        if (data && data.display_name) {
+          setLocationName(data.display_name.split(',').slice(0, 3).join(','));
+        } else {
+          setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+        }
       }
     } catch (e) {
       setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+      setIsArable(true);
     }
   };
 
@@ -252,6 +266,7 @@ export default function TopographyPage() {
         setLocationName(result.display_name.split(',').slice(0, 3).join(','));
         setSearchQuery('');
         setSelectedZone(null); 
+        setIsArable(true);
       } else {
         alert("Location not found.");
       }
@@ -408,13 +423,21 @@ export default function TopographyPage() {
               </div>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '3rem', fontWeight: 900, lineHeight: 1, color: Number(averageHealth) > 70 ? '#10b981' : (Number(averageHealth) > 40 ? '#eab308' : '#ef4444') }}>{averageHealth}%</span>
-            </div>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
-              <StatPill label="Healthy" value={`${zones.filter(z=>z.health>=60).length} Zones`} color="#10b981" />
-              <StatPill label="Critical" value={`${zones.filter(z=>z.health<60).length} Zones`} color="#ef4444" />
-            </div>
+            {!isArable ? (
+              <div style={{ padding: '10px 0', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertTriangle size={18} /> No Arable Land Detected
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '3rem', fontWeight: 900, lineHeight: 1, color: Number(averageHealth) > 70 ? '#10b981' : (Number(averageHealth) > 40 ? '#eab308' : '#ef4444') }}>{averageHealth}%</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+                  <StatPill label="Healthy" value={`${zones.filter(z=>z.health>=60).length} Zones`} color="#10b981" />
+                  <StatPill label="Critical" value={`${zones.filter(z=>z.health<60).length} Zones`} color="#ef4444" />
+                </div>
+              </>
+            )}
           </div>
 
           <div style={{ backgroundColor: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '18px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', pointerEvents: 'auto' }}>

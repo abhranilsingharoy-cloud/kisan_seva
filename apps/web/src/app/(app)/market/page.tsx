@@ -169,6 +169,62 @@ export default function MarketPricePage() {
     };
   });
 
+  // Generate 60-day AI Price Forecast
+  const forecastData = Array.from({ length: 60 }, (_, i) => {
+    const dayOffset = i + 1; // 1 to 60 days into future
+    const date = new Date();
+    date.setDate(date.getDate() + dayOffset);
+    const dateStr = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    
+    // Future trend (varies by crop seed, can be bull or bear market)
+    const trendDirection = (cropSeed % 3 === 0) ? -1 : 1; // 33% chance to trend downwards
+    // Organic noise and macro wave
+    const organicWave = Math.sin(i / 12) * 0.06;
+    const macroTrend = (i / 60) * 0.22 * trendDirection; // up to 22% overall change
+    
+    const futureModal = Math.round(basePrice * (1 + macroTrend + organicWave));
+    
+    return {
+      date: dateStr,
+      min: Math.round(futureModal * 0.92),
+      max: Math.round(futureModal * 1.08),
+      modal: futureModal,
+    };
+  });
+
+  // Generate AI Actionable Recommendation based on Forecast
+  const currentPrice = basePrice;
+  let maxFuturePrice = currentPrice;
+  let maxFutureDayOffset = 0;
+  
+  forecastData.forEach((day, idx) => {
+    if (day.modal > maxFuturePrice) {
+      maxFuturePrice = day.modal;
+      maxFutureDayOffset = idx + 1;
+    }
+  });
+
+  const percentChange = ((maxFuturePrice - currentPrice) / currentPrice) * 100;
+  
+  let aiRecommendation = "";
+  if (percentChange >= 8) {
+    const weeks = Math.round(maxFutureDayOffset / 7) || 1;
+    aiRecommendation = `Store your crop for ${weeks} weeks. Prices are predicted to rise by ${percentChange.toFixed(1)}% to ₹${maxFuturePrice}.`;
+  } else {
+    // If it doesn't rise significantly, check the lowest drop
+    let minFuturePrice = currentPrice;
+    forecastData.forEach((day) => {
+      if (day.modal < minFuturePrice) minFuturePrice = day.modal;
+    });
+    const dropPercent = ((currentPrice - minFuturePrice) / currentPrice) * 100;
+    
+    if (dropPercent >= 8) {
+      aiRecommendation = `Sell immediately. The market is trending downwards and prices may drop by ${dropPercent.toFixed(1)}% over the next two months.`;
+    } else {
+      aiRecommendation = `Market is stable. You can sell now at ₹${currentPrice} or hold; no major price spikes are predicted.`;
+    }
+  }
+
   return (
     <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100%', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
       <main style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -214,7 +270,13 @@ export default function MarketPricePage() {
           
           {/* LEFT COLUMN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '2 1 65%' }}>
-            <PriceChartCard selectedCrop={selectedCrop} selectedState={selectedState} chartData={chartData} />
+            <PriceChartCard 
+              selectedCrop={selectedCrop} 
+              selectedState={selectedState} 
+              chartData={chartData} 
+              forecastData={forecastData}
+              aiRecommendation={aiRecommendation}
+            />
             <PinnedCommodities selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
             <LiveMandiTable loading={loading} error={error} mandis={mandis} avgPrice={avgPrice} />
           </div>

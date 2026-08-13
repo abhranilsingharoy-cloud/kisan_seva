@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import OfflineIndicator from '@/components/layout/OfflineIndicator'
 
 export const metadata: Metadata = {
   title: {
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-white text-slate-900">
+        <OfflineIndicator />
         {children}
       </body>
     </html>

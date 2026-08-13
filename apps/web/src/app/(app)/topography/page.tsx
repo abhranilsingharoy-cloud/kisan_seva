@@ -19,6 +19,7 @@ import {
   LocateFixed,
   Radio
 } from 'lucide-react';
+import CommunitySOS from '@/components/CommunitySOS';
 
 const FarmMap = dynamic(() => import('@/components/FarmMap'), {
   ssr: false,
@@ -394,7 +395,7 @@ export default function TopographyPage() {
         )}
 
         {/* Live Analytics Panel */}
-        <div style={{ position: 'absolute', top: '20px', right: '20px', width: '320px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '12px', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '20px', bottom: '20px', right: '20px', width: '320px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '12px', pointerEvents: 'none' }}>
 
           {realWeatherData && (
             <div style={{ backgroundColor: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(14px)', border: '1px solid #3b82f6', borderRadius: '12px', padding: '16px', boxShadow: '0 8px 32px rgba(59,130,246,0.15)', pointerEvents: 'auto' }}>
@@ -440,13 +441,20 @@ export default function TopographyPage() {
             )}
           </div>
 
-          <div style={{ backgroundColor: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '18px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', pointerEvents: 'auto' }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, backgroundColor: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '18px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', pointerEvents: 'auto' }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '14px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
               <AlertTriangle size={13} /> Telemetry Alerts
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            
+            <style>{`
+              .alert-scroll::-webkit-scrollbar { width: 4px; }
+              .alert-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+              .alert-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+            `}</style>
+            
+            <div className="alert-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', paddingRight: '4px' }}>
               {liveAlerts.slice(0, 3).map((a, i) => (
-                <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px', backgroundColor: a.bg, border: `1px solid ${a.border}`, borderRadius: '8px' }}>
+                <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px', backgroundColor: a.bg, border: `1px solid ${a.border}`, borderRadius: '8px', flexShrink: 0 }}>
                   <div style={{ flexShrink: 0, marginTop: '1px' }}>{a.icon}</div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '0.82rem', color: a.color, marginBottom: '3px' }}>{a.title}</div>
@@ -459,6 +467,7 @@ export default function TopographyPage() {
 
         </div>
 
+        <CommunitySOS />
       </div>
     </div>
   );

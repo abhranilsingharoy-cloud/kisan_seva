@@ -1,5 +1,14 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
+// @ts-expect-error next-pwa lacks type definitions
+import withPWAInit from 'next-pwa';
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  disable: false, // Force PWA in dev so user can see it
+  register: true,
+  skipWaiting: true,
+});
 
 const nextConfig: NextConfig = {
   // ─── Performance ──────────────────────────────────────────
@@ -65,7 +74,7 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withPWA(nextConfig), {
   // ─── Sentry build-time options ────────────────────────────
   org:     'na-w3p',
   project: 'javascript-nextjs',

@@ -20,7 +20,8 @@ import {
   QrCode,
   FlaskConical,
   ChevronRight,
-  Map
+  Map,
+  Wallet
 } from 'lucide-react';
 import ChatWidget from '@/components/chat/ChatWidget';
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
@@ -38,6 +39,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/blockchain': 'Traceability',
   '/agent': 'AI Agent',
   '/topography': 'Farm Topography',
+  '/finance': 'Agri-Credit & Lending',
   '/settings': 'Settings',
 };
 
@@ -49,6 +51,7 @@ const APP_LINKS = [
   { name: 'Market', href: '/market', icon: TrendingUp },
   { name: 'My Plots', href: '/schedule', icon: Calendar },
   { name: 'Farm Map', href: '/topography', icon: Map },
+  { name: 'Agri-Credit', href: '/finance', icon: Wallet },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'Equipment', href: '/rentals', icon: Tractor },
   { name: 'Traceability', href: '/blockchain', icon: QrCode },

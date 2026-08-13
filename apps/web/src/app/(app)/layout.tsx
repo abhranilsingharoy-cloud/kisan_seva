@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   UserCircle,
-  Landmark
+  Landmark,
+  Bot
 } from 'lucide-react';
 import ChatWidget from '@/components/chat/ChatWidget';
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
@@ -26,6 +27,7 @@ const APP_LINKS = [
   { name: 'Market', href: '/market', icon: TrendingUp },
   { name: 'Schedule', href: '/schedule', icon: Calendar },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
+  { name: 'AI Agent', href: '/agent', icon: Bot },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

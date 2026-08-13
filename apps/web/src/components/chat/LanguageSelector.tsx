@@ -21,7 +21,7 @@ export default function LanguageSelector() {
     setLanguage(lang);
     clearMessages();
     // Small delay so state settles before greeting fires
-    setTimeout(() => sendGreeting(lang), 150);
+    setTimeout(() => sendGreeting(lang), 400);
   };
 
   return (

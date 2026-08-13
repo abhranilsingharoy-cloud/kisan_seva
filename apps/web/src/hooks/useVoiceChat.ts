@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useEffect } from "react";
+import type React from "react";
 import { useChatStore, ChatLanguage } from "@/lib/chatStore";
 
 const LANG_CODE_MAP: Record<ChatLanguage, string> = {
@@ -16,22 +17,86 @@ const GREETINGS: Record<ChatLanguage, string> = {
   bn: "নমস্কার! আমি কিষান সেবা সাথী। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি? আপনি আমাকে ফসলের রোগ, বাজারের দাম বা সরকারি স্কিম সম্পর্কে জিজ্ঞাসা করতে পারেন।",
 };
 
-// Best voice for language — waits for voices list to populate (Chrome async)
-function getBestVoice(synth: SpeechSynthesis, lang: ChatLanguage): SpeechSynthesisVoice | null {
+// Google Translate TTS language codes
+const GTTS_LANG_MAP: Record<ChatLanguage, string> = {
+  en: 'en',
+  hi: 'hi',
+  bn: 'bn',
+};
+
+// Check if browser has a native voice for this language
+function hasNativeVoice(synth: SpeechSynthesis, lang: ChatLanguage): boolean {
   const voices = synth.getVoices();
-  const code = LANG_CODE_MAP[lang];
-  const primary = code.split("-")[0]; // "hi", "en"
+  const primary = LANG_CODE_MAP[lang].split("-")[0];
+  return voices.some((v) => v.lang.toLowerCase().startsWith(primary));
+}
 
-  // 1. Exact locale match
-  const exact = voices.find((v) => v.lang.toLowerCase() === code.toLowerCase());
-  if (exact) return exact;
+// Build Google Translate TTS URL — works without API key, max 200 chars per request
+function buildGTTSUrl(text: string, lang: ChatLanguage): string {
+  const encoded = encodeURIComponent(text.slice(0, 200));
+  // Use our Next.js API proxy to bypass browser CORS restrictions
+  return `/api/v1/tts?text=${encoded}&lang=${GTTS_LANG_MAP[lang]}`;
+}
 
-  // 2. Same primary language
-  const sameRoot = voices.find((v) => v.lang.toLowerCase().startsWith(primary));
-  if (sameRoot) return sameRoot;
+// Speak using HTML Audio element (Google Translate TTS)
+async function speakWithGTTS(
+  text: string,
+  lang: ChatLanguage,
+  audioRef: React.MutableRefObject<HTMLAudioElement | null>,
+  onStart: () => void,
+  onEnd: () => void
+) {
+  if (audioRef.current) {
+    audioRef.current.pause();
+    audioRef.current = null;
+  }
 
-  // 3. Fallback: null means browser default
-  return null;
+  // Strip markdown and emojis
+  const cleanText = text
+    .replace(/[#*`_~]/g, '')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+
+  if (!cleanText) { onEnd(); return; }
+
+  // Split into chunks of max 180 chars at sentence boundaries
+  const chunks: string[] = [];
+  const sentences = cleanText.match(/[^.!?।,:\n]+[.!?।,:\n]*/g) || [cleanText];
+  let current = '';
+  for (const s of sentences) {
+    if ((current + s).length > 180) {
+      if (current) chunks.push(current.trim());
+      current = s;
+    } else {
+      current += s;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+
+  onStart();
+  let i = 0;
+
+  const playNext = async () => {
+    if (i >= chunks.length) { onEnd(); return; }
+    const url = buildGTTSUrl(chunks[i], lang);
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => { i++; playNext(); };
+    audio.onerror = () => { i++; playNext(); };
+    try { await audio.play(); } catch { i++; playNext(); }
+  };
+
+  await playNext();
+}
+
+// Best native voice for English
+function getBestEnVoice(synth: SpeechSynthesis): SpeechSynthesisVoice | null {
+  const voices = synth.getVoices();
+  const google = voices.find((v) => v.name.includes("Google") && v.lang.startsWith("en"));
+  if (google) return google;
+  return voices.find((v) => v.lang.startsWith("en")) || null;
 }
 
 export function useVoiceChat(onTranscript?: (text: string) => void) {
@@ -49,6 +114,8 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
 
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const voicesCachedRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -76,36 +143,91 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     typeof window !== "undefined" &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
+  const isCancelledRef = useRef<boolean>(false);
+
   const speak = useCallback(
     (text: string, lang: ChatLanguage = language) => {
-      if (!synthRef.current || !text.trim()) return;
-      synthRef.current.cancel();
+      if (!text.trim()) return;
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = LANG_CODE_MAP[lang];
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
+      // ── For Hindi and Bengali: use Google Translate TTS (reliable, no voice pack needed) ──
+      if (lang === 'hi' || lang === 'bn') {
+        // Stop any existing Web Speech and GTTS
+        synthRef.current?.cancel();
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+        // Reset cancelled flag so Web Speech doesn't think it's cancelled
+        isCancelledRef.current = false;
 
-      // Attempt to find best voice; if none found browser uses default with lang hint
-      const voice = getBestVoice(synthRef.current, lang);
-      if (voice) {
-        utterance.voice = voice;
+        speakWithGTTS(
+          text,
+          lang,
+          audioRef,
+          () => setSpeaking(true),
+          () => setSpeaking(false)
+        );
+        return;
       }
 
-      utterance.onstart = () => setSpeaking(true);
-      utterance.onend = () => setSpeaking(false);
-      utterance.onerror = (e) => {
-        setSpeaking(false);
-      };
+      // ── For English: use native Web Speech API ──
+      if (!synthRef.current) return;
+      synthRef.current.cancel();
+      isCancelledRef.current = false;
 
-      synthRef.current.speak(utterance);
+      // Stop any GTTS audio
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+
+      setTimeout(() => {
+        const cleanText = text
+          .replace(/[#*`_~]/g, '')
+          .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+          .replace(/[\u{1F000}-\u{1FFFF}]/gu, '');
+
+        const chunks = cleanText.match(/[^.!?\n]+[.!?\n]*/g) || [cleanText];
+        let currentIndex = 0;
+
+        const speakNextChunk = () => {
+          if (!synthRef.current || isCancelledRef.current || currentIndex >= chunks.length) {
+            setSpeaking(false);
+            utteranceRef.current = null;
+            return;
+          }
+
+          const chunkText = chunks[currentIndex].trim();
+          if (!chunkText || !/[a-zA-Z0-9]/.test(chunkText)) {
+            currentIndex++;
+            speakNextChunk();
+            return;
+          }
+
+          const utterance = new SpeechSynthesisUtterance(chunkText);
+          utteranceRef.current = utterance;
+          utterance.lang = 'en-IN';
+          utterance.rate = 0.9;
+          utterance.pitch = 1.0;
+          const voice = getBestEnVoice(synthRef.current);
+          if (voice) utterance.voice = voice;
+          if (currentIndex === 0) setSpeaking(true);
+          utterance.onend = () => { currentIndex++; speakNextChunk(); };
+          utterance.onerror = (e) => {
+            if (e.error !== 'interrupted') console.warn('TTS error:', e.error);
+            currentIndex++;
+            speakNextChunk();
+          };
+          synthRef.current.speak(utterance);
+        };
+
+        speakNextChunk();
+      }, 50);
     },
     [language, setSpeaking]
   );
 
   const stopSpeaking = useCallback(() => {
+    isCancelledRef.current = true;
     synthRef.current?.cancel();
+    // Also stop GTTS audio if playing
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setSpeaking(false);
+    utteranceRef.current = null;
   }, [setSpeaking]);
 
   const sendMessage = useCallback(
@@ -121,28 +243,48 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
         text: m.text,
       }));
 
+      const FALLBACK_ERROR: Record<string, string> = {
+        en: "Sorry, I couldn't connect to the server. Please try again.",
+        hi: "क्षमा करें, सर्वर से कनेक्ट नहीं हो सका। कृपया दोबारा कोशिश करें।",
+        bn: "দুঃখিত, সার্ভারের সাথে সংযোগ করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+      };
+
       try {
-        const res = await fetch(`/api/agent/chat`, {
+        const res = await fetch(`/api/v1/agent/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: text, language, context: { history } }),
+          body: JSON.stringify({ query: text, language, plot_id: undefined }),
+          signal: AbortSignal.timeout(30_000),
         });
 
         const data = await res.json();
+
+        // If server returned an error status, show language-aware fallback
+        if (!res.ok) {
+          console.error("[Chat API] Error response:", res.status, data);
+          throw new Error(data?.error || `Server error ${res.status}`);
+        }
         
         // Parse the nested result structure from our API
-        const replyText = data?.result?.text || "I'm sorry, I couldn't understand that.";
+        const replyText = data?.result?.text ||
+          (language === "hi"
+            ? "माफ़ करें, मैं आपका प्रश्न समझ नहीं पाया। कृपया दोबारा पूछें।"
+            : language === "bn"
+            ? "দুঃখিত, আমি আপনার প্রশ্ন বুঝতে পারিনি। দয়া করে আবার জিজ্ঞাসা করুন।"
+            : "I'm sorry, I couldn't understand that. Please try again.");
 
-        addMessage({
-          role: "model",
-          text: replyText,
-          // Extract actions if present in the text structure in the future
-        });
+        addMessage({ role: "model", text: replyText });
 
-        // Auto-speak the response
-        speak(replyText, language);
-      } catch {
-        const errMsg = "Sorry, I couldn't connect to the server. Please try again.";
+        // Clean markdown for speech so TTS doesn't read asterisks and hashtags
+        const speechText = replyText
+          .replace(/[#*`_~]/g, '')
+          .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+          .replace(/\n+/g, '. ')
+          .trim();
+
+        speak(speechText, language);
+      } catch (err: any) {
+        const errMsg = FALLBACK_ERROR[language] || FALLBACK_ERROR.en;
         addMessage({ role: "model", text: errMsg });
         speak(errMsg, language);
       } finally {
@@ -152,61 +294,121 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     [messages, language, addMessage, setLoading, speak]
   );
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (!isSpeechSupported) return;
+
+    // Stop any ongoing TTS before recording
+    synthRef.current?.cancel();
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setSpeaking(false);
+
+    // Explicitly request microphone permission first to force the browser prompt.
+    // Some browsers fail to show the prompt when only SpeechRecognition is called.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop the tracks immediately since we only needed the permission prompt to trigger
+      stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.warn("Microphone access denied via getUserMedia:", err);
+      addMessage({
+        role: "model",
+        text: language === "hi"
+          ? "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग में माइक की अनुमति दें।"
+          : language === "bn"
+          ? "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজার সেটিংসে মাইক অনুমতি দিন।"
+          : "Microphone permission denied. Please allow mic access in browser settings.",
+      });
+      return;
+    }
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = true;       // keeps listening until .stop() is called
-    recognition.interimResults = true;   // show live interim text in the input
+    recognition.continuous = false;      // Auto-stops after user finishes speaking
+    recognition.interimResults = true;   // Show live interim text while speaking
     recognition.lang = LANG_CODE_MAP[language];
+    recognition.maxAlternatives = 1;
+
+    let finalTranscript = "";
 
     recognition.onstart = () => setListening(true);
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
+
+    recognition.onerror = (event: any) => {
+      console.warn("[SpeechRecognition] Error:", event.error);
+      setListening(false);
+      // Show helpful message for mic permission denial
+      if (event.error === "not-allowed") {
+        addMessage({
+          role: "model",
+          text: language === "hi"
+            ? "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग में माइक की अनुमति दें।"
+            : language === "bn"
+            ? "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজার সেটিংসে মাইক অনুমতি দিন।"
+            : "Microphone permission denied. Please allow mic access in browser settings.",
+        });
+      }
+    };
 
     recognition.onresult = (event: any) => {
-      // Build running transcript from all results
       let interim = "";
-      let finalText = "";
+      finalTranscript = "";
 
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalText += result[0].transcript + " ";
+          finalTranscript += result[0].transcript + " ";
         } else {
           interim += result[0].transcript;
         }
       }
 
-      // Show live text in the textarea via callback
-      const displayText = (finalText + interim).trim();
+      // Show live text in the textarea while user is speaking
+      const displayText = (finalTranscript + interim).trim();
       if (onTranscript && displayText) {
         onTranscript(displayText);
       }
     };
 
-    recognitionRef.current = recognition;
-    recognition.start();
-  }, [language, isSpeechSupported, onTranscript, setListening]);
+    recognition.onend = () => {
+      setListening(false);
+      const trimmed = finalTranscript.trim();
+      if (trimmed) {
+        // Auto-send the final recognised speech
+        onTranscript?.(""); // Clear the textarea
+        sendMessage(trimmed);
+      }
+    };
 
-  // Stop listening and finalise — whatever is in the input textarea stays there for user to send
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("[SpeechRecognition] Start failed:", e);
+      setListening(false);
+    }
+  }, [language, isSpeechSupported, onTranscript, setListening, setSpeaking, addMessage, sendMessage]);
+
+  // Stop listening early — will trigger onend which auto-sends
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
     setListening(false);
-    // NOTE: we intentionally do NOT auto-send here.
-    // The transcript is in the textarea — user clicks Send or presses Enter.
   }, [setListening]);
 
   const sendGreeting = useCallback(
     (lang: ChatLanguage) => {
       const greeting = GREETINGS[lang];
       addMessage({ role: "model", text: greeting, action: null });
-      speak(greeting, lang);
+      // Directly call speakWithGTTS for Hindi/Bengali to avoid stale closure bugs with the speak callback
+      if (lang === 'hi' || lang === 'bn') {
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+        synthRef.current?.cancel();
+        speakWithGTTS(greeting, lang, audioRef, () => setSpeaking(true), () => setSpeaking(false));
+      } else {
+        speak(greeting, lang);
+      }
     },
-    [addMessage, speak]
+    [addMessage, speak, setSpeaking]
   );
 
   return {

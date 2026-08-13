@@ -34,6 +34,7 @@ const AGENTS = [
 export default function AgentChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [selectedLang, setSelectedLang] = useState('en');
   const [isThinking, setIsThinking] = useState(false);
   const [activeThinkingAgents, setActiveThinkingAgents] = useState<string[]>([]);
   const [showArchitecture, setShowArchitecture] = useState(false);
@@ -51,12 +52,12 @@ export default function AgentChatPage() {
   // ── Real API call with Gemini fallback ──────────────────
   const callAgentAPI = async (query: string) => {
     try {
-      const resp = await fetch('/api/agent/chat', {
+      const resp = await fetch('/api/v1/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query,
-          language: 'en',
+          language: selectedLang,
           user_id: 'demo-farmer-001',
           context: {},
         }),
@@ -233,13 +234,20 @@ export default function AgentChatPage() {
           {/* Language Selector */}
           <div>
             <h2 className="text-xs uppercase tracking-wider mb-3 font-semibold text-gray-400">Language</h2>
-            <div className="flex gap-2">
-              {['EN', 'हिं', 'தமி', 'తెలు'].map((lang, i) => (
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { label: 'EN', code: 'en' }, 
+                { label: 'हिं', code: 'hi' }, 
+                { label: 'বাং', code: 'bn' },
+                { label: 'தமி', code: 'ta' }, 
+                { label: 'తెలు', code: 'te' }
+              ].map((lang, i) => (
                 <button 
                   key={i} 
-                  className={`px-3 py-1 text-xs rounded-md font-medium ${i === 0 ? 'bg-gray-700 text-white' : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'}`}
+                  onClick={() => setSelectedLang(lang.code)}
+                  className={`px-3 py-1 text-xs rounded-md font-medium ${selectedLang === lang.code ? 'bg-gray-700 text-white' : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'}`}
                 >
-                  {lang}
+                  {lang.label}
                 </button>
               ))}
             </div>
@@ -600,7 +608,7 @@ Final Output`}</pre>
             </div>
             <div className="text-center mt-2">
               <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--color-bark, #96897b)' }}>
-                Responses in English · हिंदी · தமிழ் · తెలుగు
+                Responses in English · हिंदी · বাংলা · தமிழ் · తెలుగు
               </span>
             </div>
           </div>

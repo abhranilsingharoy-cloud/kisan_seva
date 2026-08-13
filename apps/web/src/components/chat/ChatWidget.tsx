@@ -210,10 +210,14 @@ export default function ChatWidget() {
                   placeholder={
                     isListening
                       ? language === "hi"
-                        ? "🎙️ सुन रहा हूं..."
-                        : "🎙️ Listening..."
+                        ? "🎙️ सुन रहा हूं... रुकने पर भेज देगा"
+                        : language === "bn"
+                        ? "🎙️ শুনছি... থামলেই পাঠাবে"
+                        : "🎙️ Listening... will send when you stop"
                       : language === "hi"
                       ? "यहाँ टाइप करें या माइक दबाएं..."
+                      : language === "bn"
+                      ? "এখানে টাইপ করুন বা মাইক চাপুন..."
                       : "Type or click mic to speak..."
                   }
                   className={`w-full resize-none px-3.5 py-2.5 border rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent max-h-24 overflow-y-auto leading-snug transition-colors ${
@@ -269,9 +273,13 @@ export default function ChatWidget() {
                 {isListening
                   ? language === "hi"
                     ? "🔴 सुन रहा हूं... रोकने के लिए दबाएं"
+                    : language === "bn"
+                    ? "🔴 শুনছি... থামাতে চাপুন"
                     : "🔴 Listening... click to stop"
                   : language === "hi"
                   ? "🎙️ बोलने के लिए माइक दबाएं"
+                  : language === "bn"
+                  ? "🎙️ কথা বলতে মাইক চাপুন"
                   : "🎙️ Click mic to speak"}
               </p>
             )}

@@ -1,13 +1,13 @@
 /**
  * KisanSeva — Next.js AI Chat API Route
  * Server-side route that proxies to the ML service agent API,
- * or calls Gemini directly as a fallback.
+ * or calls Groq directly as a fast, reliable fallback.
  */
 import { NextRequest, NextResponse } from 'next/server'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
-const GEMINI_MODEL   = 'gemini-3.5-flash'
+const GROQ_API_KEY   = process.env.GROQ_API_KEY || ''
+const GROQ_MODEL     = 'llama-3.3-70b-versatile'
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, language, user_id, plot_id, context }),
-        signal: AbortSignal.timeout(25_000),
+        signal: AbortSignal.timeout(3_000),
       })
 
       if (mlResp.ok) {
@@ -32,80 +32,80 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(data)
       }
     } catch (mlErr) {
-      console.warn('[AI Chat] ML service unavailable, falling back to Gemini direct:', mlErr)
+      console.warn('[AI Chat] ML service unavailable, falling back to Groq:', mlErr)
     }
 
-    // ── Fallback: Call Gemini directly ────────────────────
-    if (!GEMINI_API_KEY) {
+    // ── Fallback: Call Groq directly ────────────────────
+    if (!GROQ_API_KEY) {
+      // Return a smart mock response if no API key is provided
+      let mockText = 'This is a mock response because the GROQ_API_KEY is not set in your .env.local file. Please add it for real AI responses.';
+      
+      if (language === 'hi') {
+        mockText = 'यह एक डमी उत्तर है क्योंकि आपकी .env.local फ़ाइल में GROQ_API_KEY सेट नहीं है। असली AI उत्तरों के लिए कृपया इसे जोड़ें।';
+      } else if (language === 'bn') {
+        mockText = 'এটি একটি মক উত্তর কারণ আপনার .env.local ফাইলে GROQ_API_KEY সেট করা নেই। আসল এআই উত্তরের জন্য দয়া করে এটি যোগ করুন।';
+      }
+
       return NextResponse.json({
-        agent_name: 'KisanSeva AI',
-        success: false,
-        result: { text: 'AI service is temporarily unavailable. Please try again shortly.' },
-        confidence: 0,
+        agent_name: 'KisanSeva AI (Offline Mode)',
+        success: true,
+        result: { text: mockText, type: 'general_advisory', provider: 'mock' },
+        confidence: 1,
         language,
-        processing_time_ms: 0,
-        error: 'No AI provider available',
+        processing_time_ms: 100,
+        sources: ['Mock DB']
       })
     }
 
     const systemPrompt = `You are KisanSeva AI, an expert agricultural advisor for smallholder farmers in India.
 Provide concise, actionable advice about crops, diseases, irrigation, fertilizers, and market prices.
-You MUST reply entirely in the language corresponding to this language code: ${language} (e.g., if 'hi', reply strictly in Hindi using Devanagari script).
-When answering in Hindi or regional languages, use simple vocabulary farmers understand.
-Always prioritise safety — for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.
-Current context: language=${language}, plot_id=${plot_id || 'unknown'}`
+You MUST reply entirely in the language corresponding to this language code: ${language}.
+- If language is 'hi', reply in Hindi using Devanagari script (हिंदी में उत्तर दें).
+- If language is 'bn', reply in Bengali using Bengali script (বাংলায় উত্তর দিন).
+- If language is 'en', reply in English.
+Use simple vocabulary that farmers understand. Keep answers concise and practical.
+Always prioritise safety — for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.`
 
-    const geminiResp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: 'user', parts: [{ text: query }] }],
-          generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 1024,
-            topP: 0.95,
-          },
-          safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-          ],
-        }),
-        signal: AbortSignal.timeout(20_000),
-      }
-    )
+    const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: query },
+        ],
+        temperature: 0.3,
+        max_tokens: 1024,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    })
 
-    if (!geminiResp.ok) {
-      const err = await geminiResp.text()
-      console.error('[Gemini] API error:', err)
-      throw new Error(`Gemini API error: ${geminiResp.status}`)
+    if (!groqResp.ok) {
+      const err = await groqResp.text()
+      console.error('[Groq] API error:', err)
+      throw new Error(`Groq API error: ${groqResp.status}`)
     }
 
-    const geminiData = await geminiResp.json()
-    const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
-    const usage = geminiData?.usageMetadata ?? {}
+    const groqData = await groqResp.json()
+    const text = groqData?.choices?.[0]?.message?.content ?? ''
 
     return NextResponse.json({
-      agent_name: 'KisanSeva AI (Gemini)',
+      agent_name: 'KisanSeva AI (Groq)',
       success: true,
       result: {
         text,
         type: 'general_advisory',
-        provider: 'gemini',
+        provider: 'groq',
       },
-      confidence: 0.85,
+      confidence: 0.9,
       language,
       processing_time_ms: 0,
-      sources: ['Gemini 2.0 Flash'],
+      sources: ['Groq llama-3.3-70b'],
       follow_up_actions: [],
-      usage: {
-        prompt_tokens: usage.promptTokenCount ?? 0,
-        completion_tokens: usage.candidatesTokenCount ?? 0,
-      },
     })
 
   } catch (err: any) {

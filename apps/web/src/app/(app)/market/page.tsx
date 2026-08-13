@@ -8,6 +8,7 @@ import LiveMandiTable from '@/components/features/market/LiveMandiTable';
 import TopGainersLosers from '@/components/features/market/TopGainersLosers';
 import MarketNews from '@/components/features/market/MarketNews';
 import PriceAlertManager from '@/components/features/market/PriceAlertManager';
+import MarketCalculator from '@/components/features/market/MarketCalculator';
 
 const ALL_COMMODITIES = [
   'Amaranthus', 'Amla(Nelli Kai)', 'Apple', 'Arhar (Tur/Red Gram)', 'Ashgourd', 'Bajra(Pearl Millet)', 'Banana', 'Barley (Jau)',
@@ -63,17 +64,68 @@ export default function MarketPricePage() {
       const seed = selectedCrop.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
       const base = 1500 + (seed % 2000);
       
+      const mandiPool = [
+        { name: 'Azadpur', state: 'Delhi', district: 'Delhi' },
+        { name: 'Vashi', state: 'Maharashtra', district: 'Mumbai' },
+        { name: 'Lasalgaon', state: 'Maharashtra', district: 'Nashik' },
+        { name: 'Ghazipur', state: 'Uttar Pradesh', district: 'Ghazipur' },
+        { name: 'Keshod', state: 'Gujarat', district: 'Junagadh' },
+        { name: 'Neemuch', state: 'Madhya Pradesh', district: 'Neemuch' },
+        { name: 'Gondal', state: 'Gujarat', district: 'Rajkot' },
+        { name: 'Unjha', state: 'Gujarat', district: 'Mehsana' },
+        { name: 'Karnal', state: 'Haryana', district: 'Karnal' },
+        { name: 'Bhatinda', state: 'Punjab', district: 'Bhatinda' },
+        { name: 'Indore', state: 'Madhya Pradesh', district: 'Indore' },
+        { name: 'Pune', state: 'Maharashtra', district: 'Pune' },
+        { name: 'Ahmedabad', state: 'Gujarat', district: 'Ahmedabad' },
+        { name: 'Jaipur', state: 'Rajasthan', district: 'Jaipur' },
+        { name: 'Kolar', state: 'Karnataka', district: 'Kolar' },
+        { name: 'Chittoor', state: 'Andhra Pradesh', district: 'Chittoor' },
+        { name: 'Erode', state: 'Tamil Nadu', district: 'Erode' },
+        { name: 'Nizamabad', state: 'Telangana', district: 'Nizamabad' },
+        { name: 'Raipur', state: 'Chhattisgarh', district: 'Raipur' },
+        { name: 'Burdwan', state: 'West Bengal', district: 'Purba Bardhaman' }
+      ];
+
+      // Shuffle deterministically
+      const shuffled = [...mandiPool].sort((a, b) => {
+        const sA = (a.name.charCodeAt(0) + seed) % 10;
+        const sB = (b.name.charCodeAt(0) + seed) % 10;
+        return sA - sB;
+      });
+
+      // Filter by state if selected
+      const filteredPool = selectedState ? shuffled.filter(m => m.state === selectedState) : shuffled;
+      
+      const generatedMandis = filteredPool.slice(0, 15).map((m, i) => {
+        const volatility = (seed % (i + 2)) / 10; // 0.0 to 0.5
+        const isPremium = i % 3 === 0;
+        const vsAvg = isPremium ? (volatility * 25) : -(volatility * 20); // -10% to +12.5% variation
+        const modal = Math.round(base * (1 + vsAvg / 100));
+        
+        return {
+          id: `m${i}`,
+          name: m.name,
+          state: m.state,
+          district: m.district,
+          min: Math.round(modal * 0.92),
+          max: Math.round(modal * 1.15),
+          modal: modal,
+          vsAveragePct: parseFloat(vsAvg.toFixed(1)),
+          variety: isPremium ? 'Premium (Grade A)' : 'Standard (FAQ)',
+          quality: isPremium ? 'Excellent' : 'Average',
+          arrivals: Math.round((seed % 50) * 10 + (1000 / (i + 1))) + ' Tonnes'
+        };
+      });
+
+      // Sort by vsAveragePct descending
+      generatedMandis.sort((a, b) => b.vsAveragePct - a.vsAveragePct);
+
       setMarketData({
         success: true,
         stateAvgPrice: base,
         spreadPct: 4.5,
-        mandis: [
-          { id: 'm1', name: 'Azadpur', state: 'Delhi', district: 'Delhi', min: Math.round(base * 0.95), max: Math.round(base * 1.05), modal: Math.round(base * 1.02), vsAveragePct: 2.0 },
-          { id: 'm2', name: 'Vashi', state: 'Maharashtra', district: 'Mumbai', min: Math.round(base * 0.90), max: Math.round(base * 1.10), modal: Math.round(base * 1.05), vsAveragePct: 5.0 },
-          { id: 'm3', name: 'Keshod', state: 'Gujarat', district: 'Junagadh', min: Math.round(base * 0.98), max: Math.round(base * 1.15), modal: Math.round(base * 1.08), vsAveragePct: 8.0 },
-          { id: 'm4', name: 'Lasalgaon', state: 'Maharashtra', district: 'Nashik', min: Math.round(base * 0.80), max: Math.round(base * 0.95), modal: Math.round(base * 0.90), vsAveragePct: -10.0 },
-          { id: 'm5', name: 'Ghazipur', state: 'Delhi', district: 'Delhi', min: Math.round(base * 0.85), max: Math.round(base * 0.92), modal: Math.round(base * 0.88), vsAveragePct: -12.0 },
-        ]
+        mandis: generatedMandis
       });
       setError(null);
     } finally {
@@ -170,6 +222,9 @@ export default function MarketPricePage() {
           {/* RIGHT COLUMN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '1 1 35%' }}>
             <TopGainersLosers marketData={marketData} />
+
+            {/* Profit Calculator */}
+            <MarketCalculator currentPrice={avgPrice} cropName={selectedCrop} />
 
             {/* Market News Component */}
             <MarketNews />

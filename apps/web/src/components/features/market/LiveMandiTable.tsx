@@ -22,6 +22,7 @@ export default function LiveMandiTable({ loading, error, mandis, avgPrice }: Liv
               <tr style={{ textAlign: 'left', color: 'var(--color-saddle)' }}>
                 <th style={{ padding: '12px' }}>Mandi Name</th>
                 <th style={{ padding: '12px' }}>State</th>
+                <th style={{ padding: '12px' }}>Arrivals</th>
                 <th style={{ padding: '12px' }}>Min</th>
                 <th style={{ padding: '12px' }}>Modal</th>
                 <th style={{ padding: '12px' }}>Max</th>
@@ -36,6 +37,7 @@ export default function LiveMandiTable({ loading, error, mandis, avgPrice }: Liv
                   <tr key={m.id} className={isBest ? 'best' : ''} style={{ borderBottom: '1px solid var(--color-bone)', backgroundColor: isBest ? 'rgba(34, 197, 94, 0.05)' : 'transparent' }}>
                     <td style={{ padding: '12px', fontWeight: 500 }}>{m.name} {isBest && <span className="badge badge-success" style={{ marginLeft: '8px' }}>Best</span>}</td>
                     <td style={{ padding: '12px' }}>{m.state}</td>
+                    <td style={{ padding: '12px', color: 'var(--color-bark)' }}>{m.arrivals || 'N/A'}</td>
                     <td style={{ padding: '12px', color: 'var(--color-bark)' }}>₹{m.min}</td>
                     <td style={{ padding: '12px', fontWeight: 600 }}>₹{m.modal}</td>
                     <td style={{ padding: '12px', color: 'var(--color-bark)' }}>₹{m.max}</td>

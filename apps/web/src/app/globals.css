@@ -1,37 +1,53 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
-/* ─── Custom brand tokens for Tailwind v4 ───────────────────────────────── */
-@theme {
-  --color-brand:      #65a30d;
-  --color-brand-dark: #4d7c0f;
-}
-
-/* ─── Exact JanSuvidha CSS from globals.css ────────────────────────────── */
-
-/* Category accent colors */
+/* ─── KisanSeva Design Tokens ───────────────────────────────── */
 :root {
-  --color-health: #ec4899;
-  --color-housing: #f59e0b;
-  --color-education: #3b82f6;
-  --color-civic: #6366f1;
-  --color-safety: #1e3a8a;
+  /* Brand */
+  --color-brand:       #65a30d;
+  --color-brand-dark:  #4d7c0f;
+  --color-brand-light: #f0fdf4;
 
-  --gradient-mint: #d9f5e8;
+  /* Neutral palette (used across all pages) */
+  --color-parchment:   #f5f7f2;
+  --color-bone:        #e5e9e1;
+  --color-ink:         #1e2d1a;
+  --color-saddle:      #2d4a22;
+  --color-bark:        #5a7a50;
+
+  /* Typography */
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
+
+  /* Category accent colors */
+  --color-health:    #ec4899;
+  --color-housing:   #f59e0b;
+  --color-education: #3b82f6;
+  --color-civic:     #6366f1;
+  --color-safety:    #1e3a8a;
+
+  /* Gradients */
+  --gradient-mint:  #d9f5e8;
   --gradient-cream: #fdf6e8;
   --gradient-blush: #fbe4e8;
 
+  /* Elevation shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05);
+
   /* Footer palette */
-  --footer-navy: #050A30;
-  --footer-midnight: #0a1040;
-  --footer-purple: #120830;
-  --footer-indigo: #1a0a40;
-  --footer-glow-blue: #4f8ff7;
-  --footer-soft-indigo: #818cf8;
-  --footer-gold: #fbbf24;
-  --footer-glass: rgba(15, 23, 60, 0.55);
+  --footer-navy:         #050A30;
+  --footer-midnight:     #0a1040;
+  --footer-purple:       #120830;
+  --footer-indigo:       #1a0a40;
+  --footer-glow-blue:    #4f8ff7;
+  --footer-soft-indigo:  #818cf8;
+  --footer-gold:         #fbbf24;
+  --footer-glass:        rgba(15, 23, 60, 0.55);
   --footer-glass-border: rgba(79, 143, 247, 0.12);
-  --footer-text: #94a3b8;
-  --footer-text-bright: #e2e8f0;
+  --footer-text:         #94a3b8;
+  --footer-text-bright:  #e2e8f0;
 
   /* Landing page shadows */
   --landing-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
@@ -42,7 +58,53 @@
 
 /* ─── Base resets ───────────────────────────────────────────────────────── */
 html, body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+}
+
+/* ─── Global Components ─────────────────────────────────────────────────── */
+.card {
+  background: white;
+  border: 1px solid var(--color-bone);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-bone);
+  border-radius: 8px;
+  background: white;
+  font-family: var(--font-sans);
+  transition: all 0.2s;
+}
+
+.input:focus {
+  outline: 2px solid var(--color-brand);
+  border-color: transparent;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-brand);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--color-brand-dark);
 }
 
 /* ─── Landing page shadows ─────────────────────────────────────────────── */

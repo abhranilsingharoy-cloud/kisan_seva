@@ -77,7 +77,6 @@ export async function GET(req: NextRequest) {
     const url = `${AGMARKNET_BASE}?${params.toString()}`
     const resp = await fetch(url, {
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(12000),
     })
 
     if (!resp.ok) {

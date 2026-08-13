@@ -107,8 +107,7 @@ export async function GET(req: NextRequest) {
     if ((!lat || !lon) && city) {
       try {
         const geoResp = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&format=json`,
-          { signal: AbortSignal.timeout(8000) }
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&format=json`
         )
         if (geoResp.ok) {
           const geoData = await geoResp.json()
@@ -132,7 +131,7 @@ export async function GET(req: NextRequest) {
     // ── Fetch 10-day forecast and current weather from Open-Meteo ────────────
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${resolvedLat}&longitude=${resolvedLon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=10`
     
-    const weatherResp = await fetch(weatherUrl, { signal: AbortSignal.timeout(8000) })
+    const weatherResp = await fetch(weatherUrl)
     if (!weatherResp.ok) {
       throw new Error(`Open-Meteo error: ${weatherResp.status}`)
     }

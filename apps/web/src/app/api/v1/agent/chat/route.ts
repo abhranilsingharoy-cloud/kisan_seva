@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, language, user_id, plot_id, context }),
-        signal: AbortSignal.timeout(3_000),
       })
 
       if (mlResp.ok) {

@@ -40,9 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200">
         <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#65a30d] to-[#4d7c0f] flex items-center justify-center text-white font-bold text-lg">
-            K
-          </div>
+          <img src="/icon.jpg" alt="KisanSeva Logo" className="w-8 h-8 rounded-lg object-cover shadow-sm" />
           <span className="font-bold text-xl tracking-tight text-slate-800">KisanSeva</span>
         </div>
         
@@ -90,9 +88,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu size={24} />
             </button>
             <div className="md:hidden flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-[#65a30d] to-[#4d7c0f] flex items-center justify-center text-white font-bold text-sm">
-                K
-              </div>
+              <img src="/icon.jpg" alt="KisanSeva Logo" className="w-7 h-7 rounded-md object-cover shadow-sm" />
               <span className="font-bold text-lg tracking-tight text-slate-800">KisanSeva</span>
             </div>
             {/* Desktop Page Title */}
@@ -162,9 +158,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             
             <div className="p-6 flex items-center gap-3 border-b border-slate-100">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#65a30d] to-[#4d7c0f] flex items-center justify-center text-white font-bold text-lg">
-                K
-              </div>
+              <img src="/icon.jpg" alt="KisanSeva Logo" className="w-8 h-8 rounded-lg object-cover shadow-sm" />
               <span className="font-bold text-xl tracking-tight text-slate-800">KisanSeva</span>
             </div>
             

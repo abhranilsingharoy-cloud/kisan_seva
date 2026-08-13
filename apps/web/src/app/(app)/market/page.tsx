@@ -7,6 +7,7 @@ import PinnedCommodities from '@/components/features/market/PinnedCommodities';
 import LiveMandiTable from '@/components/features/market/LiveMandiTable';
 import TopGainersLosers from '@/components/features/market/TopGainersLosers';
 import MarketNews from '@/components/features/market/MarketNews';
+import PriceAlertManager from '@/components/features/market/PriceAlertManager';
 
 const ALL_COMMODITIES = [
   'Amaranthus', 'Amla(Nelli Kai)', 'Apple', 'Arhar (Tur/Red Gram)', 'Ashgourd', 'Bajra(Pearl Millet)', 'Banana', 'Barley (Jau)',
@@ -34,20 +35,6 @@ const STATES = [
 export default function MarketPricePage() {
   const [selectedCrop, setSelectedCrop] = useState('Tomato');
   const [selectedState, setSelectedState] = useState('');
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
-  const [alertTargetPrice, setAlertTargetPrice] = useState('2500');
-  const [alertType, setAlertType] = useState('above');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const handleSetAlert = () => {
-    if (!alertTargetPrice) return;
-    const newAlert = { crop: selectedCrop, state: selectedState || 'All States', price: alertTargetPrice, type: alertType, date: new Date().toISOString() };
-    const existing = JSON.parse(localStorage.getItem('kisan_seva_price_alerts') || '[]');
-    localStorage.setItem('kisan_seva_price_alerts', JSON.stringify([...existing, newAlert]));
-    setIsAlertModalOpen(false);
-    setToastMessage(`Alert set: ${selectedCrop} ${alertType} ₹${alertTargetPrice}`);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
 
   // Live market data state
   const [marketData, setMarketData] = useState<any>(null);
@@ -163,9 +150,11 @@ export default function MarketPricePage() {
             <input type="text" className="input" readOnly value={today} style={{ width: '120px', color: 'var(--color-saddle)', backgroundColor: 'var(--color-bone)' }} />
           </div>
 
-          <button className="btn btn-primary btn-sm" onClick={() => setIsAlertModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Bell size={16} /> Set Price Alert
-          </button>
+          <PriceAlertManager 
+            selectedCrop={selectedCrop} 
+            selectedState={selectedState} 
+            currentPrice={avgPrice} 
+          />
         </div>
 
         {/* Main Grid */}
@@ -188,48 +177,6 @@ export default function MarketPricePage() {
           </div>
         </div>
       </main>
-
-      {/* Alert Modal */}
-      {isAlertModalOpen && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '16px' }}>
-          <div className="modal-box card" style={{ backgroundColor: '#fff', padding: '24px', width: '100%', maxWidth: '400px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', margin: 0, fontSize: '1.25rem' }}>Set Price Alert</h2>
-              <button onClick={() => setIsAlertModalOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-bark)' }}><X size={20} /></button>
-            </div>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: 'var(--color-saddle)' }}>Commodity</label>
-              <div className="input" style={{ backgroundColor: 'var(--color-bone)', padding: '8px 12px' }}>{selectedCrop} in {selectedState || 'All States'}</div>
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: 'var(--color-saddle)' }}>Target Price (₹/quintal)</label>
-              <input type="number" className="input" value={alertTargetPrice} onChange={(e) => setAlertTargetPrice(e.target.value)} style={{ width: '100%' }} />
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: 'var(--color-saddle)' }}>Alert Condition</label>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="radio" checked={alertType === 'above'} onChange={() => setAlertType('above')} /> Goes above</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="radio" checked={alertType === 'below'} onChange={() => setAlertType('below')} /> Drops below</label>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button className="btn btn-ghost" onClick={() => setIsAlertModalOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSetAlert}>Set Alert</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', backgroundColor: 'var(--color-success)', color: 'white', padding: '12px 24px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 1000, fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Bell size={18} /> {toastMessage}
-        </div>
-      )}
-
     </div>
   );
 }

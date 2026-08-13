@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
     const url = `${AGMARKNET_BASE}?${params.toString()}`
     const resp = await fetch(url, {
       headers: { 'Accept': 'application/json' },
+      next: { revalidate: 3600 },
     })
 
     if (!resp.ok) {

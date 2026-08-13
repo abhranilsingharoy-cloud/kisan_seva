@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Landmark, Search, Filter, ShieldCheck, FileText, Banknote, Tractor, ArrowRight, ExternalLink, Leaf } from 'lucide-react'
+import { Landmark, Search, Filter, ShieldCheck, FileText, Banknote, Tractor, ArrowRight, ExternalLink, Leaf, Droplets, Sun, Sprout, TrendingUp, Zap, Truck, BadgeIndianRupee } from 'lucide-react'
 
 // Types
 type SchemeCategory = 'All' | 'Financial Support' | 'Insurance' | 'Equipment' | 'Organic'
@@ -75,6 +75,83 @@ const SCHEMES_DB: Scheme[] = [
     color: '#b45309', // amber-700
     url: 'https://agrimachinery.nic.in/'
   },
+  {
+    id: 'pmksy',
+    title: 'Pradhan Mantri Krishi Sinchayee Yojana (PMKSY)',
+    category: 'Equipment',
+    amount: 'Varies by component',
+    description: 'Aims to enhance physical access of water on farm and expand cultivable area under assured irrigation, improve on-farm water use efficiency, introduce sustainable water conservation practices.',
+    eligibility: ['All farmers', 'Priority to small & marginal farmers', 'Must have cultivable land'],
+    icon: <Droplets size={28} />,
+    color: '#0284c7', // sky-600
+    url: 'https://pmksy.gov.in/'
+  },
+  {
+    id: 'enam',
+    title: 'National Agriculture Market (e-NAM)',
+    category: 'Financial Support',
+    amount: 'Free Platform',
+    description: 'A pan-India electronic trading portal which networks the existing APMC mandis to create a unified national market for agricultural commodities.',
+    eligibility: ['Farmers registered in APMC', 'Valid ID and bank details', 'Quality testing of produce'],
+    icon: <TrendingUp size={28} />,
+    color: '#6366f1', // indigo-500
+    url: 'https://enam.gov.in/'
+  },
+  {
+    id: 'shc',
+    title: 'Soil Health Card Scheme',
+    category: 'Organic',
+    amount: 'Free Testing',
+    description: 'Promotes soil test based nutrient management. Issues soil health cards to farmers with recommendations on appropriate dosage of nutrients and fertilizers.',
+    eligibility: ['All farmers across India', 'Soil sample collected by local admin'],
+    icon: <Sprout size={28} />,
+    color: '#d97706', // amber-600
+    url: 'https://soilhealth.dac.gov.in/'
+  },
+  {
+    id: 'pmkusum',
+    title: 'PM-KUSUM Scheme',
+    category: 'Equipment',
+    amount: 'Up to 60% Subsidy',
+    description: 'Ensures energy security for farmers in India, along with honoring India\'s commitment to increase the share of installed capacity of electric power from non-fossil-fuel sources.',
+    eligibility: ['Individual farmers/groups/cooperatives', 'Land available for solar pump installation', 'Valid bank account'],
+    icon: <Sun size={28} />,
+    color: '#eab308', // yellow-500
+    url: 'https://pmkusum.mnre.gov.in/'
+  },
+  {
+    id: 'aif',
+    title: 'Agriculture Infrastructure Fund (AIF)',
+    category: 'Financial Support',
+    amount: 'Up to ₹2 Crore loan',
+    description: 'Financing facility for investment in viable projects for post-harvest management Infrastructure and community farming assets through interest subvention and financial support.',
+    eligibility: ['Primary Agricultural Credit Societies (PACS)', 'Farmer Producer Organizations (FPOs)', 'Agri-entrepreneurs and Startups'],
+    icon: <Landmark size={28} />,
+    color: '#059669', // emerald-600
+    url: 'https://agriinfra.dac.gov.in/'
+  },
+  {
+    id: 'pmaasha',
+    title: 'PM-AASHA',
+    category: 'Financial Support',
+    amount: 'MSP Guarantee',
+    description: 'Pradhan Mantri Annadata Aay SanraksHan Abhiyan guarantees remunerative prices for the produce to farmers.',
+    eligibility: ['Registered farmers', 'Cultivating pulses, oilseeds, and copra', 'Producing fair average quality (FAQ) grade'],
+    icon: <BadgeIndianRupee size={28} />,
+    color: '#7e22ce', // purple-700
+    url: 'https://agricoop.nic.in/'
+  },
+  {
+    id: 'midh',
+    title: 'Mission for Integrated Dev. of Horticulture (MIDH)',
+    category: 'Financial Support',
+    amount: 'Varies by component',
+    description: 'Holistic growth of the horticulture sector encompassing fruits, vegetables, root & tuber crops, mushrooms, spices, flowers, aromatic plants, coconut, cashew, cocoa and bamboo.',
+    eligibility: ['Farmers growing horticultural crops', 'FPOs, Cooperatives', 'Agri-entrepreneurs'],
+    icon: <Truck size={28} />,
+    color: '#14b8a6', // teal-500
+    url: 'https://midh.gov.in/'
+  }
 ]
 
 export default function SchemesPage() {

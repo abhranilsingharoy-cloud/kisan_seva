@@ -84,3 +84,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to broadcast alert' }, { status: 500 });
   }
 }
+

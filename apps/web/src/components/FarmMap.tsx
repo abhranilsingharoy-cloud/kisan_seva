@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Polygon, Rectangle, Popup, Marker, useMap, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+// Removed local css import to avoid Turbopack image resolution bugs
+// import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -149,6 +150,7 @@ export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, o
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <MapContainer center={defaultCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
         <MapController targetLocation={targetLocation} />
         <MapClickHandler onMapClick={onMapClick} />
@@ -231,3 +233,4 @@ function renderPopup(zone: Zone) {
     </div>
   );
 }
+

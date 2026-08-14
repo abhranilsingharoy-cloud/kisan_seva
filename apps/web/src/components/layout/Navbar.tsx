@@ -24,7 +24,7 @@ export default function Navbar() {
             />
           </div>
           <span className="text-xl font-extrabold text-[#1f8742] tracking-tight leading-none group-hover/logo:opacity-90 transition-opacity">
-            AgriSmart
+            KisanSeva
           </span>
         </Link>
 
@@ -67,3 +67,4 @@ export default function Navbar() {
     </header>
   );
 }
+

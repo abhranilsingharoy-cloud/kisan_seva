@@ -1,4 +1,4 @@
-﻿// @ts-ignore: node:sqlite is available in Node 26 runtime but not in @types/node v20
+// @ts-ignore: node:sqlite is available in Node 26 runtime but not in @types/node v20
 import { DatabaseSync } from 'node:sqlite';
 import { NextResponse } from 'next/server';
 import path from 'path';
@@ -55,3 +55,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to disburse loan' }, { status: 500 });
   }
 }
+

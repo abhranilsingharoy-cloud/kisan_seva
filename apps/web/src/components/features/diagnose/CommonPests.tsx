@@ -201,3 +201,4 @@ export default function CommonPests({ pestIndex, setPestIndex }: CommonPestsProp
     </>
   )
 }
+

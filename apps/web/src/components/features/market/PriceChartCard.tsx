@@ -118,3 +118,4 @@ export default function PriceChartCard({ selectedCrop, selectedState, chartData,
     </div>
   )
 }
+

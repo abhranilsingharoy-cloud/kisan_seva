@@ -76,3 +76,4 @@ export default function TopGainersLosers({ marketData }: TopGainersLosersProps) 
     </div>
   )
 }
+

@@ -30,7 +30,7 @@ export default function TermsPage() {
           <p><strong>Last Updated:</strong> August 2026</p>
           
           <p>
-            Please read these Terms of Service ("Terms") carefully before using the KisanSeva website and mobile application (the "Service") operated by AgriSmart Solutions.
+            Please read these Terms of Service ("Terms") carefully before using the KisanSeva website and mobile application (the "Service") operated by KisanSeva Solutions.
           </p>
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">1. Acceptance of Terms</h2>
@@ -58,7 +58,7 @@ export default function TermsPage() {
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">5. Intellectual Property</h2>
           <p>
-            The Service and its original content, features, and functionality are and will remain the exclusive property of AgriSmart Solutions and its licensors. The Service is protected by copyright, trademark, and other laws of India.
+            The Service and its original content, features, and functionality are and will remain the exclusive property of KisanSeva Solutions and its licensors. The Service is protected by copyright, trademark, and other laws of India.
           </p>
 
           <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Changes to Terms</h2>
@@ -70,3 +70,4 @@ export default function TermsPage() {
     </div>
   );
 }
+

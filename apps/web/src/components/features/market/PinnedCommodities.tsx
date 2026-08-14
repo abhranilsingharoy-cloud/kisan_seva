@@ -88,3 +88,4 @@ export default function PinnedCommodities({ selectedCrop, setSelectedCrop }: Pin
     </div>
   )
 }
+

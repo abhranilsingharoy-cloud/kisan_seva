@@ -1,4 +1,4 @@
-ï»¿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,7 +24,7 @@ The user has uploaded a photo of a Government of India Soil Health Card or a soi
 
 Your task has two parts:
 
-PART 1 â€” EXTRACT SOIL VALUES:
+PART 1 — EXTRACT SOIL VALUES:
 Carefully read the image and extract these soil parameters. If a value is not visible, use a realistic estimate for Indian agricultural soil:
 - Nitrogen (N) in kg/ha
 - Phosphorus (P) in kg/ha
@@ -35,7 +35,7 @@ Carefully read the image and extract these soil parameters. If a value is not vi
 - Zinc (Zn) in mg/kg
 - Iron (Fe) in mg/kg
 
-PART 2 â€” AI AGRONOMIST DIAGNOSIS:
+PART 2 — AI AGRONOMIST DIAGNOSIS:
 Based on the extracted values, generate:
 1. An overall health score (0-100)
 2. A single paragraph diagnosis in plain farmer-friendly language
@@ -104,3 +104,4 @@ Return ONLY valid JSON with NO markdown, NO code fences. Use this exact schema:
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+

@@ -59,15 +59,16 @@ export default function AgriFooter() {
               <div>
                 <div className="mb-2 text-slate-900 font-bold">🌿 KisanSeva Engine</div>
                 <div className="text-slate-600 text-xs leading-relaxed">
-                  Powered by Google Gemini 2.5<br />
-                  &amp; MobileNetV3 Vision AI
+                  Google Gemini 2.5 & MobileNetV3<br />
+                  Groq LPU™ AI Inference
                 </div>
               </div>
               <div>
                 <div className="mb-2 text-slate-900 font-bold">Live Data Sources</div>
                 <div className="text-slate-600 text-xs leading-relaxed">
                   AGMARKNET Mandi Prices<br />
-                  OpenWeather Forecasts
+                  OpenWeather Forecasts<br />
+                  MapTiler Cloud Imagery
                 </div>
               </div>
             </div>
@@ -77,16 +78,17 @@ export default function AgriFooter() {
               <div className="text-slate-900 font-bold mb-1">Features</div>
               <Link href="/diagnose" className="hover:text-[#2A854B] transition-colors">AI Crop Diagnosis</Link>
               <Link href="/market" className="hover:text-[#2A854B] transition-colors">Live Mandi Prices</Link>
+              <Link href="/topography" className="hover:text-[#2A854B] transition-colors">Live AI Crop Maps</Link>
               <Link href="/schedule" className="hover:text-[#2A854B] transition-colors">Smart Irrigation</Link>
             </div>
 
             {/* Column 3: Resources */}
             <div className="flex flex-col gap-4 text-slate-600">
               <div className="text-slate-900 font-bold mb-1">Resources</div>
-              <Link href="#" className="hover:text-[#2A854B] transition-colors">Disease Library</Link>
-              <Link href="#" className="hover:text-[#2A854B] transition-colors">Price Guide</Link>
+              <Link href="/disease-library" className="hover:text-[#2A854B] transition-colors">Disease Library</Link>
+              <Link href="/price-guide" className="hover:text-[#2A854B] transition-colors">Price Guide</Link>
               <Link href="/privacy" className="hover:text-[#2A854B] transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-[#2A854B] transition-colors">Govt Schemes</Link>
+              <Link href="/govt-schemes" className="hover:text-[#2A854B] transition-colors">Govt Schemes</Link>
             </div>
           </div>
         </div>
@@ -94,7 +96,7 @@ export default function AgriFooter() {
         {/* Bottom copyright line */}
         <div className="pt-8 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-6 text-[11px] sm:text-xs text-slate-500 font-medium tracking-wide">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
-            <span>© 2026 AgriSmart.</span>
+            <span>© 2026 KisanSeva.</span>
             <span className="hidden sm:inline">·</span>
             <span>Built for India's Farmers.</span>
           </div>
@@ -113,3 +115,4 @@ export default function AgriFooter() {
     </footer>
   );
 }
+

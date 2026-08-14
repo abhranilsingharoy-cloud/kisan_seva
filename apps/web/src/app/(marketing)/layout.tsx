@@ -15,7 +15,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               <div className="relative w-7 h-7 rounded-lg overflow-hidden shrink-0">
                 <Image src="/icon.jpg" alt="KisanSeva Logo" fill className="object-cover" />
               </div>
-              <span>AgriSmart</span>
+              <span>KisanSeva</span>
             </Link>
             <ul className="nav-links">
               <li><Link href="/">Home</Link></li>
@@ -39,3 +39,4 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     </>
   )
 }
+

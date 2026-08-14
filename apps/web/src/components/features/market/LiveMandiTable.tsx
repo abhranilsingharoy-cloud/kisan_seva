@@ -57,3 +57,4 @@ export default function LiveMandiTable({ loading, error, mandis, avgPrice }: Liv
     </div>
   )
 }
+

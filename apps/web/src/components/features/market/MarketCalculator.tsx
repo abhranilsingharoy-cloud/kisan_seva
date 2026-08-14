@@ -65,3 +65,4 @@ export default function MarketCalculator({ currentPrice, cropName }: MarketCalcu
     </div>
   );
 }
+

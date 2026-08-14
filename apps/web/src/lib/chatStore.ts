@@ -50,3 +50,4 @@ export const useChatStore = create<ChatStore>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   clearMessages: () => set({ messages: [] }),
 }));
+

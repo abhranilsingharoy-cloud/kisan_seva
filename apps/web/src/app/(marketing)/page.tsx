@@ -14,9 +14,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import FloatingChatbot from "@/components/home/FloatingChatbot";
+import AgriMapVisualization from "@/components/home/AgriMapVisualization";
 
 export default function HomePage() {
   return (
+    <>
     <FullPageScroller>
       {/* ── 0. HERO ── */}
       <div className="w-full h-full marketing-wrapper flex flex-col pt-24 relative overflow-hidden">
@@ -49,7 +51,7 @@ export default function HomePage() {
           <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-transparent z-10 pointer-events-none" />
           <Image
             src="/hero-illustration.png"
-            alt="AgriSmart Platform Illustration"
+            alt="KisanSeva Platform Illustration"
             width={1200}
             height={600}
             className="w-full max-w-5xl h-full object-contain object-bottom mix-blend-darken"
@@ -135,6 +137,11 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* ── 6.5. MAP VISUALIZATION ── */}
+      <div className="w-full h-full bg-slate-50 flex flex-col justify-center pt-28 pb-4">
+        <AgriMapVisualization />
+      </div>
+
       {/* ── 6. FARMER TESTIMONIALS ── */}
       <div className="w-full h-full bg-white flex flex-col justify-center pt-28 pb-4">
         <FarmerTestimonials />
@@ -150,9 +157,10 @@ export default function HomePage() {
         <AgriFooter />
       </div>
 
+    </FullPageScroller>
       {/* Floating AI Chatbot Widget */}
       <FloatingChatbot />
-    </FullPageScroller>
+    </>
   );
 }
 
@@ -191,3 +199,4 @@ function PillarCard({
     </StaggerChild>
   );
 }
+

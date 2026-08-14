@@ -112,3 +112,4 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
     return NextResponse.json({ success: false, error: error.message || 'Diagnosis failed' }, { status: 500 });
   }
 }
+

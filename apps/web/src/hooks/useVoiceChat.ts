@@ -424,3 +424,4 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     sendGreeting,
   };
 }
+

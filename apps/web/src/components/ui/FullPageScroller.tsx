@@ -325,3 +325,4 @@ export default function FullPageScroller({ children }: { children: ReactNode }) 
     </div>
   );
 }
+

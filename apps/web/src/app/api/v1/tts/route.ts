@@ -37,3 +37,4 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Error generating audio', { status: 500 });
   }
 }
+

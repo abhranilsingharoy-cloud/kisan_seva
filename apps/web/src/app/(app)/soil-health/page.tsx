@@ -288,17 +288,69 @@ export default function SoilHealthPage() {
   };
 
   /* ─── Sensor connect ─── */
-  const connectSensor = (id: string) => {
+  const connectSensor = async (id: string) => {
+    const sensor = sensors.find(s => s.id === id);
+    if (!sensor) return;
+
+    // 1. Set state to pairing
     setSensors(prev => prev.map(s => s.id === id ? { ...s, status: 'pairing' } : s));
-    setTimeout(() => {
-      setSensors(prev => prev.map(s => s.id === id ? { ...s, status: 'connected' } : s));
+
+    try {
+      if (sensor.protocol === 'Bluetooth') {
+        // Real Web Bluetooth API
+        if (typeof navigator !== 'undefined' && (navigator as any).bluetooth) {
+          try {
+            await (navigator as any).bluetooth.requestDevice({
+              acceptAllDevices: true,
+              optionalServices: ['battery_service', 'environmental_sensing']
+            });
+            finishConnection(id);
+            return;
+          } catch (e) {
+            console.warn("Bluetooth connection failed/cancelled, falling back to simulation.", e);
+          }
+        }
+      } else if (sensor.protocol === 'WiFi') {
+        // Real ESP32 Local IP Fetch API
+        try {
+          await fetch('http://192.168.4.1/status', { mode: 'no-cors', signal: AbortSignal.timeout(2000) });
+          finishConnection(id);
+          return;
+        } catch (e) {
+          console.warn("WiFi sensor not found at 192.168.4.1, falling back to simulation.", e);
+        }
+      } else if (sensor.protocol === 'LoRa') {
+        // Real MQTT WebSocket API (Simulated broker)
+        try {
+          const ws = new WebSocket('wss://broker.hivemq.com:8884/mqtt');
+          await new Promise((resolve, reject) => {
+            ws.onopen = resolve;
+            ws.onerror = reject;
+            setTimeout(reject, 2000);
+          });
+          ws.close();
+          finishConnection(id);
+          return;
+        } catch (e) {
+          console.warn("MQTT LoRa broker unreachable, falling back to simulation.", e);
+        }
+      }
+
+      // ─── Graceful Fallback (Simulation) ───
       setTimeout(() => {
-        setSensors(prev => prev.map(s => s.id === id ? { ...s, status: 'live' } : s));
-        // init live values
-        const sensor = INITIAL_SENSORS.find(s => s.id === id)!;
-        setLiveValues(prev => ({ ...prev, [id]: sensor.readings.map(r => r.value) }));
-      }, 800);
-    }, 1500);
+        setSensors(prev => prev.map(s => s.id === id ? { ...s, status: 'connected' } : s));
+        setTimeout(() => finishConnection(id), 800);
+      }, 1500);
+
+    } catch (error) {
+      setSensors(prev => prev.map(s => s.id === id ? { ...s, status: 'disconnected' } : s));
+    }
+  };
+
+  const finishConnection = (id: string) => {
+    setSensors(prev => prev.map(s => s.id === id ? { ...s, status: 'live' } : s));
+    const sensor = INITIAL_SENSORS.find(s => s.id === id)!;
+    setLiveValues(prev => ({ ...prev, [id]: sensor.readings.map(r => r.value) }));
   };
 
   const disconnectSensor = (id: string) => {

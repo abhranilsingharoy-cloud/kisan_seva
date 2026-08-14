@@ -71,7 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <aside className="hidden md:flex flex-col w-64 shrink-0" style={{ background: 'linear-gradient(180deg, #1a2e1a 0%, #1e3a1e 60%, #162816 100%)', boxShadow: '4px 0 24px rgba(0,0,0,0.18)' }}>
         
         {/* Brand */}
-        <div className="px-5 py-6 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-5 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ background: 'rgba(101,163,13,0.25)', borderRadius: '10px', padding: '6px', border: '1px solid rgba(101,163,13,0.35)' }}>
             <img src="/icon.jpg" alt="KisanSeva" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', display: 'block' }} />
           </div>
@@ -82,12 +82,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Live status pill */}
-        <div style={{ margin: '12px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ margin: '8px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#84cc16', display: 'inline-block', boxShadow: '0 0 6px #84cc16', animation: 'none' }} />
           <span style={{ fontSize: '0.75rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
         </div>
         
-        <nav style={{ flex: 1, padding: '4px 12px 12px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <nav style={{ flex: 1, padding: '2px 12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {APP_LINKS.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -95,7 +95,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 key={link.name} 
                 href={link.href}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
                   borderRadius: '10px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.9rem',
                   fontWeight: isActive ? 700 : 500,
                   backgroundColor: isActive ? 'rgba(101,163,13,0.22)' : 'transparent',
@@ -114,10 +114,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom user card */}
-        <div style={{ margin: '0 12px 12px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div style={{ margin: '0 12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <Link
             href="/settings"
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', textDecoration: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.15s', backgroundColor: 'transparent' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '10px', textDecoration: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.15s', backgroundColor: 'transparent' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; }}
           >

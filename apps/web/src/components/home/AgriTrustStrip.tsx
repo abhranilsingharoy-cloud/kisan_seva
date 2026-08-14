@@ -50,7 +50,7 @@ export default function AgriTrustStrip() {
 
         <StaggerChild preset="stagger-child-scale">
           <Link
-            href="/schemes"
+            href="/govt-schemes"
             className="p-2.5 rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 hover:bg-slate-100 text-slate-700 flex flex-col items-center justify-center text-center transition-all group"
           >
             <div className="text-[11px] font-bold flex items-center gap-1">
@@ -63,7 +63,7 @@ export default function AgriTrustStrip() {
       </StaggerReveal>
 
       <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-        <Link href="/schemes" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+        <Link href="/govt-schemes" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
           <span>Check Your Eligibility</span>
           <ArrowRight className="w-4 h-4" />
         </Link>

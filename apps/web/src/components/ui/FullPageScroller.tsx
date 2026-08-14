@@ -208,7 +208,18 @@ export default function FullPageScroller({ children }: { children: ReactNode }) 
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [N]);
+  }); // Intentionally missing dependency array so goTo is fresh
+
+  // ── External Navigation Events ───────────────────────────────────────────────
+  useEffect(() => {
+    const handleScrollToTop = () => {
+      if (cur.current !== 0) {
+        goTo(0, -1);
+      }
+    };
+    window.addEventListener("kisanseva-scroll-to-top", handleScrollToTop);
+    return () => window.removeEventListener("kisanseva-scroll-to-top", handleScrollToTop);
+  }); // Intentionally missing dependency array so goTo is fresh
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (

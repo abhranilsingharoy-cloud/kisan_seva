@@ -7,7 +7,12 @@ import { Mail, ArrowUp } from "lucide-react";
 
 export default function AgriFooter() {
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const isFullPage = document.getElementById("fullpage-scroller-root");
+    if (isFullPage) {
+      window.dispatchEvent(new CustomEvent("kisanseva-scroll-to-top"));
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (

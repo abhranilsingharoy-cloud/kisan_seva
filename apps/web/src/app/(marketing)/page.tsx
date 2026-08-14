@@ -80,7 +80,7 @@ export default function HomePage() {
             </h2>
             <div className="h-px w-16 bg-gradient-to-l from-transparent to-slate-300" />
           </ScrollReveal>
-          <StaggerReveal className="grid grid-cols-1 md:grid-cols-3 gap-6" delay={0.1}>
+          <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" delay={0.1}>
             <PillarCard
               id="diagnose"
               title="Diagnose Crop"
@@ -113,6 +113,39 @@ export default function HomePage() {
               hoverColor="group-hover:text-amber-600"
               badgeColor="bg-amber-50 text-amber-700 border-amber-100"
               emoji="📅"
+            />
+            <PillarCard
+              id="topography"
+              title="Live AI Maps"
+              description="Explore real-time AI agricultural alerts and crop health across India using our interactive Groq-powered map."
+              href="/topography"
+              cardStyle="hover:border-rose-300"
+              iconBg="bg-rose-50 text-rose-600 border border-rose-100"
+              hoverColor="group-hover:text-rose-600"
+              badgeColor="bg-rose-50 text-rose-700 border-rose-100"
+              emoji="🗺️"
+            />
+            <PillarCard
+              id="soil"
+              title="Soil Health"
+              description="Analyze your soil's macronutrients and receive custom fertilizer recommendations for optimal crop yield."
+              href="/soil-health"
+              cardStyle="hover:border-orange-300"
+              iconBg="bg-orange-50 text-orange-600 border border-orange-100"
+              hoverColor="group-hover:text-orange-600"
+              badgeColor="bg-orange-50 text-orange-700 border-orange-100"
+              emoji="🌱"
+            />
+            <PillarCard
+              id="schemes"
+              title="Govt Schemes"
+              description="Discover official agricultural schemes, apply for subsidies, and learn about financial support available for your farm."
+              href="/govt-schemes"
+              cardStyle="hover:border-cyan-300"
+              iconBg="bg-cyan-50 text-cyan-600 border border-cyan-100"
+              hoverColor="group-hover:text-cyan-600"
+              badgeColor="bg-cyan-50 text-cyan-700 border-cyan-100"
+              emoji="🏛️"
             />
           </StaggerReveal>
         </div>

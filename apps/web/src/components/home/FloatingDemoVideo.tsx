@@ -19,7 +19,7 @@ export default function FloatingDemoVideo() {
           
           {/* Tooltip */}
           <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white text-gray-800 text-sm font-semibold py-2 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-gray-100">
-            Watch Demo
+            Watch Video
             <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-white rotate-45 border-l border-b border-gray-100"></div>
           </div>
         </button>

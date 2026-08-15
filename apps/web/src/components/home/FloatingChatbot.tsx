@@ -70,20 +70,25 @@ export default function FloatingChatbot() {
       
       {/* Chat Button */}
       {!isOpen && (
-        <button 
-          onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-[#166534] hover:bg-[#14532d] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group"
-        >
-          <MessageSquare size={24} />
-          {/* Notification Dot */}
-          <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full"></span>
+        <div className="relative animate-float">
+          {/* Glowing ping ring behind the button */}
+          <div className="absolute inset-0 bg-[#166534] rounded-full animate-ping opacity-25"></div>
           
-          {/* Tooltip */}
-          <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-gray-800 text-sm font-semibold py-2 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-gray-100">
-            Chat with AI
-            <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-white rotate-45 border-r border-t border-gray-100"></div>
-          </div>
-        </button>
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="w-14 h-14 bg-[#166534] hover:bg-[#14532d] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group z-10"
+          >
+            <MessageSquare size={24} className="group-hover:scale-110 transition-transform duration-300" />
+            {/* Notification Dot */}
+            <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
+            
+            {/* Tooltip */}
+            <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white text-gray-800 text-sm font-semibold py-2 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-gray-100">
+              Chat with AI
+              <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-white rotate-45 border-r border-t border-gray-100"></div>
+            </div>
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
@@ -182,9 +187,17 @@ export default function FloatingChatbot() {
           from { opacity: 0; transform: translateY(10px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
         .animate-fade-in-up {
           animation: fadeInUp 0.25s ease-out forwards;
           transform-origin: bottom right;
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
         }
       `}</style>
     </div>

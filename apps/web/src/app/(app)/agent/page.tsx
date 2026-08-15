@@ -176,7 +176,7 @@ export default function AgentChatPage() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden font-sans rounded-tl-xl md:rounded-none" style={{ backgroundColor: 'var(--color-parchment, #fcfaf1)', color: 'var(--color-ink, #211b15)' }}>
+    <div className="flex flex-1 min-h-0 w-full flex-col lg:flex-row overflow-hidden font-sans rounded-tl-xl md:rounded-none" style={{ backgroundColor: 'var(--color-parchment, #fcfaf1)', color: 'var(--color-ink, #211b15)' }}>
       
       {/* LEFT SIDEBAR (Desktop) */}
       <div className="hidden lg:flex w-80 flex-col flex-shrink-0 border-r border-gray-800" style={{ backgroundColor: 'var(--color-charcoal-olive, #252a23)', color: 'var(--color-parchment, #fcfaf1)' }}>

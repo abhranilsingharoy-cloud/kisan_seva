@@ -4,11 +4,26 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
+  Home, 
+  LayoutDashboard,
+  Search, 
+  TrendingUp, 
+  Calendar, 
   Settings, 
   Bell, 
   Menu,
   X,
+  UserCircle,
+  Landmark,
+  Bot,
+  Tractor,
+  QrCode,
+  FlaskConical,
   ChevronRight,
+  Map,
+  Wallet,
+  Wifi,
+  Users,
   LogOut
 } from 'lucide-react';
 import ChatWidget from '@/components/chat/ChatWidget';
@@ -16,21 +31,50 @@ import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 import GlobalCalculatorWidget from '@/components/layout/GlobalCalculatorWidget';
 import { signout } from '@/app/actions/auth';
 
+const PAGE_TITLES: Record<string, string> = {
+  '/': 'Home',
+  '/dashboard': 'My Dashboard',
+  '/diagnose': 'Crop Diagnose',
+  '/soil-health': 'Soil Health',
+  '/market': 'Market Prices',
+  '/schedule': 'My Plots',
+  '/schemes': 'Govt. Schemes',
+  '/rentals': 'Equipment',
+  '/blockchain': 'Traceability',
+  '/iot': 'IoT Sensors',
+  '/agent': 'AI Agent',
+  '/topography': 'Farm Topography',
+  '/finance': 'Agri-Credit & Lending',
+  '/settings': 'Settings',
+};
+
+const APP_LINKS = [
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Diagnose', href: '/diagnose', icon: Search },
+  { name: 'Soil Health', href: '/soil-health', icon: FlaskConical },
+  { name: 'Market', href: '/market', icon: TrendingUp },
+  { name: 'My Plots', href: '/schedule', icon: Calendar },
+  { name: 'Farm Map', href: '/topography', icon: Map },
+  { name: 'Agri-Credit', href: '/finance', icon: Wallet },
+  { name: 'Schemes', href: '/schemes', icon: Landmark },
+  { name: 'Equipment', href: '/rentals', icon: Tractor },
+  { name: 'Traceability', href: '/blockchain', icon: QrCode },
+  { name: 'Kisan Sabha', href: '/community', icon: Users },
+  { name: 'AI Agent', href: '/agent', icon: Bot },
+];
+
 export default function AppLayoutClient({ 
   children, 
-  profile, 
-  appLinks, 
-  pageTitles 
+  profile
 }: { 
   children: React.ReactNode, 
-  profile: any,
-  appLinks: any[],
-  pageTitles: Record<string, string>
+  profile: any
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const pageTitle = pageTitles[pathname] || 'KisanSeva';
+  const pageTitle = PAGE_TITLES[pathname] || 'KisanSeva';
   
   const initial = profile?.name ? profile.name.charAt(0).toUpperCase() : '?';
 
@@ -58,7 +102,7 @@ export default function AppLayoutClient({
         </div>
         
         <nav style={{ flex: 1, padding: '2px 12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {appLinks.map((link) => {
+          {APP_LINKS.map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
             return (
@@ -155,7 +199,7 @@ export default function AppLayoutClient({
       {/* MOBILE BOTTOM NAV — only show 5 key tabs */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-40">
         <div className="flex justify-around items-center h-16">
-          {appLinks.slice(0, 5).map((link) => {
+          {APP_LINKS.slice(0, 5).map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
             return (
@@ -196,7 +240,7 @@ export default function AppLayoutClient({
             </div>
             
             <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-              {appLinks.map((link) => {
+              {APP_LINKS.map((link) => {
                 const isActive = pathname === link.href;
                 const Icon = link.icon;
                 return (

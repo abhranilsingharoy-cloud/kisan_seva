@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import Image from "next/image";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -48,7 +48,7 @@ export default function Navbar() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
-          <SignedOut>
+          <Show when="signed-out">
             <Link
               href="/sign-in"
               className="text-slate-800 hover:text-slate-900 font-medium text-[15px] px-6 py-2 rounded-full border border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all hidden sm:block"
@@ -61,10 +61,10 @@ export default function Navbar() {
             >
               Register
             </Link>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <UserButton />
-          </SignedIn>
+          </Show>
         </div>
 
       </div>

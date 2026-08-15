@@ -13,7 +13,7 @@ import { ScrollReveal, StaggerReveal, StaggerChild } from "@/components/ui/Scrol
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import FloatingChatbot from "@/components/home/FloatingChatbot";
+
 import FloatingDemoVideo from "@/components/home/FloatingDemoVideo";
 import AgriMapVisualization from "@/components/home/AgriMapVisualization";
 
@@ -193,7 +193,7 @@ export default function HomePage() {
 
     </FullPageScroller>
       {/* Floating AI Chatbot Widget */}
-      <FloatingChatbot />
+
       {/* Floating Demo Video Widget */}
       <FloatingDemoVideo />
     </>

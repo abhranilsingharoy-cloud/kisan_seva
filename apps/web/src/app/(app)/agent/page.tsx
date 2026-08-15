@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Bot, Send, Camera, ArrowLeft, Zap, Circle, CheckCircle, XCircle, Leaf, 
-  TrendingUp, CloudSun, Brain, MessageSquare, Star, ThumbsUp, ThumbsDown, 
-  Home, Calendar, Activity, MapPin, Globe, Plus, Mic, Image as ImageIcon,
-  ChevronDown, ChevronUp
+import {
+  Bot, Send, Camera, Zap, CheckCircle, Leaf,
+  TrendingUp, CloudSun, Brain, MessageSquare, Star, ThumbsUp, ThumbsDown,
+  Home, Activity, Plus, Mic, Image as ImageIcon,
+  ChevronRight, Loader2, Globe, BarChart2, Droplets, AlertTriangle, BookOpen, PhoneCall, X
 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
-// Types
-type MessageSender = 'user' | 'agent' | 'system';
-type MessageType = 'text' | 'diagnosis' | 'price' | 'weather' | 'thinking';
+// ── Types ────────────────────────────────────────────────────────────────────
+type MessageSender = 'user' | 'agent';
+type MessageType = 'text' | 'diagnosis' | 'price' | 'weather';
 
 interface Message {
   id: string;
@@ -18,626 +20,607 @@ interface Message {
   type: MessageType;
   text: string;
   agentLabel?: string;
+  agentIcon?: React.ReactNode;
   data?: any;
 }
 
+// ── Agent definitions ─────────────────────────────────────────────────────────
 const AGENTS = [
-  { id: 'diagnosis', name: 'Diagnosis Agent', icon: <Activity size={16} />, status: 'active', color: 'var(--color-success)' },
-  { id: 'weather', name: 'Weather Agent', icon: <CloudSun size={16} />, status: 'active', color: 'var(--color-success)' },
-  { id: 'market', name: 'Market Agent', icon: <TrendingUp size={16} />, status: 'active', color: 'var(--color-success)' },
-  { id: 'soil', name: 'Soil Health Agent', icon: <Leaf size={16} />, status: 'active', color: 'var(--color-success)' },
-  { id: 'outbreak', name: 'Outbreak Monitor', icon: <Globe size={16} />, status: 'active', color: 'var(--color-success)' },
-  { id: 'kb', name: 'Knowledge Base', icon: <Brain size={16} />, status: 'active', color: 'var(--color-success)' },
-  { id: 'sms', name: 'SMS/IVR Agent', icon: <MessageSquare size={16} />, status: 'active', color: 'var(--color-success)' }
+  { id: 'diagnosis', name: 'Diagnosis Agent',     icon: <Activity size={15} />,     color: '#22c55e' },
+  { id: 'weather',   name: 'Weather Agent',        icon: <CloudSun size={15} />,     color: '#22c55e' },
+  { id: 'market',    name: 'Market Agent',          icon: <TrendingUp size={15} />,   color: '#22c55e' },
+  { id: 'soil',      name: 'Soil Health Agent',     icon: <Leaf size={15} />,         color: '#22c55e' },
+  { id: 'outbreak',  name: 'Outbreak Monitor',      icon: <AlertTriangle size={15} />,color: '#22c55e' },
+  { id: 'kb',        name: 'Knowledge Base',        icon: <BookOpen size={15} />,     color: '#22c55e' },
+  { id: 'sms',       name: 'SMS/IVR Agent',         icon: <PhoneCall size={15} />,    color: '#22c55e' },
 ];
 
-export default function AgentChatPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
-  const [selectedLang, setSelectedLang] = useState('en');
-  const [isThinking, setIsThinking] = useState(false);
-  const [activeThinkingAgents, setActiveThinkingAgents] = useState<string[]>([]);
-  const [showArchitecture, setShowArchitecture] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const QUICK_ACTIONS = [
+  { label: 'Diagnose my crop',       icon: <ImageIcon size={14}/>,    query: 'My tomato leaves have brown spots' },
+  { label: 'Check mandi prices',     icon: <BarChart2 size={14}/>,    query: 'Best price for onion near Pune' },
+  { label: 'Irrigation schedule',    icon: <Droplets size={14}/>,     query: 'How much water for wheat today?' },
+  { label: 'Soil fertilizer plan',   icon: <Leaf size={14}/>,         query: 'Fertilizer plan for nitrogen deficient soil' },
+];
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+const LANGUAGES = [
+  { label: 'EN',   code: 'en' },
+  { label: 'हिं',  code: 'hi' },
+  { label: 'বাং',  code: 'bn' },
+  { label: 'தமி', code: 'ta' },
+  { label: 'తెలు', code: 'te' },
+];
+
+const SUGGESTIONS = [
+  'My tomato leaves have brown spots 🍅',
+  'Best price for onion near Pune 📈',
+  'How much water for wheat today? 💧',
+];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+export default function AgentChatPage() {
+  const [messages, setMessages]                   = useState<Message[]>([]);
+  const [inputText, setInputText]                 = useState('');
+  const [selectedLang, setSelectedLang]           = useState('en');
+  const [isThinking, setIsThinking]               = useState(false);
+  const [activeThinkingAgents, setActiveAgents]   = useState<string[]>([]);
+  const [mobileSidebarOpen, setMobileSidebar]     = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef   = useRef<HTMLInputElement>(null);
+  const textareaRef    = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isThinking]);
 
-  // ── Real API call with Gemini fallback ──────────────────
+  // Auto-resize textarea
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+  };
+
+  // ── API Call ────────────────────────────────────────────────────────────────
   const callAgentAPI = async (query: string) => {
     try {
       const resp = await fetch('/api/v1/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query,
-          language: selectedLang,
-          user_id: 'demo-farmer-001',
-          context: {},
-        }),
-      })
-      if (!resp.ok) throw new Error(`API ${resp.status}`)
-      return await resp.json()
+        body: JSON.stringify({ query, language: selectedLang, user_id: 'demo-farmer-001', context: {} }),
+      });
+      if (!resp.ok) throw new Error(`API ${resp.status}`);
+      return await resp.json();
     } catch (err) {
-      console.error('[AgentChat] API error:', err)
-      return null
+      console.error('[AgentChat] API error:', err);
+      return null;
     }
-  }
+  };
 
+  // ── Intent Detection ────────────────────────────────────────────────────────
+  const detectIntent = (q: string) => {
+    const lower = q.toLowerCase();
+    if (/tomato|brown|spot|disease|blight|leaf|fungi|rot/.test(lower)) {
+      return {
+        routedAgents: ['Diagnosis Agent', 'Knowledge Base'],
+        type: 'diagnosis' as MessageType,
+        agentLabel: 'Diagnosis Agent',
+        agentIcon: <Activity size={13}/>,
+        data: {
+          disease: 'Early Blight (Alternaria Solani)', crop: 'Tomato', confidence: 91, severity: 'Moderate',
+          treatment: [
+            'Remove and destroy infected lower leaves immediately.',
+            'Apply Mancozeb 75 WP @ 2.5 g/litre as foliar spray.',
+            'Avoid overhead irrigation — keep foliage dry.',
+            'Follow up with Copper Oxychloride after 7 days.',
+          ],
+          organic: 'Neem oil 5 ml/litre or Bacillus subtilis spray every 7 days.',
+        },
+      };
+    }
+    if (/price|mandi|onion|bhav|market|sell|rate/.test(lower)) {
+      return {
+        routedAgents: ['Market Agent'],
+        type: 'price' as MessageType,
+        agentLabel: 'Market Agent',
+        agentIcon: <TrendingUp size={13}/>,
+        data: {
+          bestMarket: 'Azadpur Delhi', bestPrice: '₹2,340', unit: 'qtl',
+          mandis: [
+            { name: 'Azadpur Delhi', price: '₹2,340', delta: '+45', trend: 'up'   },
+            { name: 'Lasalgaon, MH', price: '₹2,100', delta: '-10', trend: 'down' },
+            { name: 'Pune APMC',     price: '₹2,250', delta: '+20', trend: 'up'   },
+          ],
+        },
+      };
+    }
+    if (/water|irrigation|wheat|paani|sinchayee|moisture/.test(lower)) {
+      return {
+        routedAgents: ['Weather Agent', 'Soil Health Agent'],
+        type: 'weather' as MessageType,
+        agentLabel: 'Weather + Soil Agent',
+        agentIcon: <CloudSun size={13}/>,
+        data: {
+          recommendation: 'Irrigate 28 mm today',
+          summary: 'Hot and dry — soil moisture at root zone is 42%. No rain forecast for 3 days.',
+          forecast: [
+            { day: 'Today', temp: '34°', icon: '☀️' },
+            { day: 'Tomorrow', temp: '36°', icon: '🌤' },
+            { day: 'Wed', temp: '33°', icon: '⛅' },
+          ],
+        },
+      };
+    }
+    return {
+      routedAgents: ['Knowledge Base', 'Master Orchestrator'],
+      type: 'text' as MessageType,
+      agentLabel: 'KisanSeva AI',
+      agentIcon: <Brain size={13}/>,
+      data: null,
+    };
+  };
+
+  // ── Handle Send ─────────────────────────────────────────────────────────────
   const handleSend = async (overrideText?: string) => {
-    const text = (overrideText ?? inputText).trim()
-    if (!text) return
+    const text = (overrideText ?? inputText).trim();
+    if (!text || isThinking) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      sender: 'user',
-      type: 'text',
-      text,
-    }
-    setMessages(prev => [...prev, userMsg])
-    setInputText('')
-    await runAgentResponse(text)
-  }
+    setMessages(prev => [...prev, { id: Date.now().toString(), sender: 'user', type: 'text', text }]);
+    setInputText('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
-  const runAgentResponse = async (query: string) => {
-    const q = query.toLowerCase()
-    setIsThinking(true)
+    const intent = detectIntent(text);
+    setActiveAgents(intent.routedAgents);
+    setIsThinking(true);
 
-    // ── Detect intent for routing animation + rich cards ──
-    let routedAgents: string[]
-    let responseType: MessageType
-    let agentLabel: string
-    let responseData: any = null
+    const apiResult = await callAgentAPI(text);
+    setIsThinking(false);
+    setActiveAgents([]);
 
-    if (q.includes('tomato') || q.includes('brown') || q.includes('spot') ||
-        q.includes('disease') || q.includes('blight') || q.includes('leaf')) {
-      routedAgents  = ['Diagnosis Agent', 'Knowledge Base']
-      responseType  = 'diagnosis'
-      agentLabel    = '🔬 Diagnosis Agent'
-      responseData  = {
-        disease: 'Early Blight (Alternaria Solani)',
-        crop: 'Tomato', confidence: 91, severity: 'Moderate',
-        treatment: [
-          'Remove and destroy infected lower leaves immediately.',
-          'Apply Mancozeb 75 WP @ 2.5 g/litre as foliar spray.',
-          'Avoid overhead irrigation — keep foliage dry.',
-          'Follow up with Copper Oxychloride after 7 days.',
-        ],
-        organic: 'Neem oil 5 ml/litre or Bacillus subtilis spray every 7 days.',
-      }
-    } else if (q.includes('price') || q.includes('mandi') || q.includes('onion') ||
-               q.includes('bhav') || q.includes('market')) {
-      routedAgents  = ['Market Agent']
-      responseType  = 'price'
-      agentLabel    = '📈 Market Agent'
-      responseData  = {
-        bestMarket: 'Azadpur Delhi', bestPrice: '₹2,340', unit: 'qtl',
-        mandis: [
-          { name: 'Azadpur Delhi',   price: '₹2,340', delta: '+45', trend: 'up'   },
-          { name: 'Lasalgaon, MH',   price: '₹2,100', delta: '-10', trend: 'down' },
-          { name: 'Pune APMC',       price: '₹2,250', delta: '+20', trend: 'up'   },
-        ],
-      }
-    } else if (q.includes('water') || q.includes('irrigation') ||
-               q.includes('wheat') || q.includes('paani') || q.includes('sinchayee')) {
-      routedAgents  = ['Weather Agent', 'Soil Health Agent']
-      responseType  = 'weather'
-      agentLabel    = '🌤 Weather + Soil Agents'
-      responseData  = {
-        recommendation: 'Irrigate 28 mm today',
-        summary: 'Hot and dry — soil moisture at root zone is 42%. No rain forecast for 3 days.',
-        forecast: [
-          { day: 'Today', temp: '34°', icon: '☀️' },
-          { day: 'Tomorrow', temp: '36°', icon: '🌤' },
-          { day: 'Wed', temp: '33°', icon: '⛅' },
-        ],
-      }
-    } else {
-      routedAgents  = ['Knowledge Base', 'Master Orchestrator']
-      responseType  = 'text'
-      agentLabel    = '🧠 KisanSeva AI'
-      responseData  = null
-    }
+    const responseText = intent.data
+      ? (apiResult?.result?.text ?? 'Analysis complete. See details below.')
+      : (apiResult?.result?.text ?? 'Based on agricultural best practices, monitor your field and maintain optimal irrigation schedules.');
 
-    setActiveThinkingAgents(routedAgents)
+    setMessages(prev => [...prev, {
+      id: (Date.now() + 1).toString(),
+      sender: 'agent',
+      type: intent.type,
+      text: responseText,
+      agentLabel: intent.agentLabel,
+      agentIcon: intent.agentIcon,
+      data: intent.data,
+    }]);
+  };
 
-    // ── Call real Gemini API ──────────────────────────────
-    const apiResult = await callAgentAPI(query)
-    setIsThinking(false)
-
-    // Use LLM text for general queries; use rich card data for known intents
-    const responseText =
-      responseData
-        ? (apiResult?.result?.text ?? 'Analysis complete. See details below.')
-        : (apiResult?.result?.text ??
-           'Based on agricultural best practices, monitor your field for early stress signs and maintain optimal irrigation schedules.')
-
-    setMessages(prev => [
-      ...prev,
-      {
-        id: (Date.now() + 1).toString(),
-        sender: 'agent',
-        type: responseType,
-        text: responseText,
-        agentLabel,
-        data: responseData,
-      },
-    ])
-  }
-
-  const handleSuggestion = (text: string) => {
-    handleSend(text)
-  }
-
-  return (
-    <div className="flex flex-1 min-h-0 w-full flex-col lg:flex-row overflow-hidden font-sans rounded-tl-xl md:rounded-none" style={{ backgroundColor: 'var(--color-parchment, #fcfaf1)', color: 'var(--color-ink, #211b15)' }}>
-      
-      {/* LEFT SIDEBAR (Desktop) */}
-      <div className="hidden lg:flex w-80 flex-col flex-shrink-0 border-r border-gray-800" style={{ backgroundColor: 'var(--color-charcoal-olive, #252a23)', color: 'var(--color-parchment, #fcfaf1)' }}>
-        <div className="p-6 border-b border-gray-700">
-          <div className="flex items-center gap-2 mb-1">
-            <Leaf className="text-green-400" size={22} />
-            <h1 className="text-xl font-bold tracking-tight">AI Advisory System</h1>
+  // ── Sidebar ──────────────────────────────────────────────────────────────────
+  const Sidebar = () => (
+    <aside className="flex flex-col w-full h-full bg-[#1a1f1e] text-white overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-5 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-7 h-7 rounded-lg bg-green-500/20 flex items-center justify-center">
+              <Leaf className="text-green-400" size={15}/>
+            </div>
+            <h1 className="text-sm font-bold tracking-tight text-white">AI Advisory System</h1>
           </div>
-          <p className="text-xs font-medium uppercase tracking-widest mt-2" style={{ color: 'var(--color-bark, #96897b)' }}>7 Specialized Agents</p>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-gray-500 pl-9">7 Specialized Agents</p>
+        </div>
+        <button onClick={() => setMobileSidebar(false)} className="lg:hidden p-1 text-gray-400 hover:text-white">
+          <X size={18}/>
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-6">
+        {/* System Status */}
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-semibold text-gray-500 mb-3">System Status</p>
+          <div className="space-y-1">
+            {AGENTS.map(agent => (
+              <div key={agent.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/5 transition-colors group cursor-default">
+                <div className="flex items-center gap-2.5 text-gray-300 group-hover:text-white transition-colors">
+                  <span className="text-gray-500 group-hover:text-green-400 transition-colors">{agent.icon}</span>
+                  <span className="text-xs font-medium">{agent.name}</span>
+                </div>
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0"/>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
-          {/* Active Agents */}
-          <div>
-            <h2 className="text-xs uppercase tracking-wider mb-4 font-semibold text-gray-400">System Status</h2>
-            <div className="space-y-3">
-              {AGENTS.map(agent => (
-                <div key={agent.id} className="flex items-center justify-between group cursor-default">
-                  <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-gray-800 text-gray-300 group-hover:bg-gray-700 transition-colors">
-                      {agent.icon}
-                    </div>
-                    <span className="text-sm font-medium text-gray-200">{agent.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: agent.color }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Quick Actions */}
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-semibold text-gray-500 mb-3">Quick Actions</p>
+          <div className="space-y-1.5">
+            {QUICK_ACTIONS.map((action, i) => (
+              <button
+                key={i}
+                onClick={() => { handleSend(action.query); setMobileSidebar(false); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-xs font-medium text-gray-400 hover:text-white hover:bg-white/8 transition-all group border border-transparent hover:border-white/10"
+              >
+                <span className="text-gray-600 group-hover:text-green-400 transition-colors">{action.icon}</span>
+                {action.label}
+                <ChevronRight size={12} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity"/>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-xs uppercase tracking-wider mb-4 font-semibold text-gray-400">Quick Actions</h2>
-            <div className="space-y-2">
-              {[
-                { label: 'Diagnose my crop', icon: <ImageIcon size={14} />, query: 'My tomato leaves have brown spots' },
-                { label: 'Check mandi prices', icon: <TrendingUp size={14} />, query: 'Best price for onion near Pune' },
-                { label: 'Get irrigation schedule', icon: <CloudSun size={14} />, query: 'How much water for wheat today?' },
-                { label: 'Soil fertilizer plan', icon: <Leaf size={14} />, query: 'Fertilizer plan for nitrogen deficient soil' }
-              ].map((action, i) => (
-                <button 
-                  key={i}
-                  onClick={() => handleSuggestion(action.query)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-left rounded-md bg-gray-800/50 hover:bg-gray-800 text-gray-300 transition-colors"
-                >
-                  {action.icon}
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Language Selector */}
-          <div>
-            <h2 className="text-xs uppercase tracking-wider mb-3 font-semibold text-gray-400">Language</h2>
-            <div className="flex gap-2 flex-wrap">
-              {[
-                { label: 'EN', code: 'en' }, 
-                { label: 'हिं', code: 'hi' }, 
-                { label: 'বাং', code: 'bn' },
-                { label: 'தமி', code: 'ta' }, 
-                { label: 'తెలు', code: 'te' }
-              ].map((lang, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setSelectedLang(lang.code)}
-                  className={`px-3 py-1 text-xs rounded-md font-medium ${selectedLang === lang.code ? 'bg-gray-700 text-white' : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'}`}
-                >
-                  {lang.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Architecture Expander */}
-          <div>
-            <button 
-              onClick={() => setShowArchitecture(!showArchitecture)}
-              className="flex items-center justify-between w-full text-xs uppercase tracking-wider font-semibold text-gray-400 hover:text-gray-300"
-            >
-              Agent Architecture
-              {showArchitecture ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-            {showArchitecture && (
-              <div className="mt-3 text-[10px] leading-tight text-gray-500 font-mono bg-gray-900 p-3 rounded-md overflow-hidden">
-                <pre>{`User Input
-   │
-▼ Router Agent
-   ├─► Diagnosis
-   ├─► Market
-   └─► Weather
-   │
-▼ Synthesis
-   │
-Final Output`}</pre>
-              </div>
-            )}
+        {/* Language */}
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-semibold text-gray-500 mb-3">Language</p>
+          <div className="flex flex-wrap gap-1.5">
+            {LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => setSelectedLang(lang.code)}
+                className={`px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-all ${
+                  selectedLang === lang.code
+                    ? 'bg-green-500 text-white shadow-lg shadow-green-900/50'
+                    : 'bg-white/8 text-gray-400 hover:text-white hover:bg-white/12 border border-white/10'
+                }`}
+              >
+                {lang.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-white/10">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0"/>
+          <span className="text-[10px] font-semibold text-green-400 uppercase tracking-widest">All Systems Online</span>
+        </div>
+      </div>
+    </aside>
+  );
+
+  // ── Main Render ──────────────────────────────────────────────────────────────
+  return (
+    <div className="flex flex-1 min-h-0 w-full overflow-hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileSidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileSidebar(false)}/>
+          <div className="relative w-72 h-full z-10">
+            <Sidebar/>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-72 flex-shrink-0">
+        <Sidebar/>
+      </div>
+
       {/* MAIN CHAT AREA */}
-      <div className="flex-1 flex flex-col relative bg-white h-full overflow-hidden">
-        
-        {/* Top Chat Bar */}
-        <header className="flex-shrink-0 h-16 border-b flex items-center justify-between px-4 lg:px-6 z-10 bg-white/80 backdrop-blur-md sticky top-0" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
+      <div className="flex-1 flex flex-col min-h-0 bg-[#f6f8f5] overflow-hidden">
+
+        {/* Top Bar */}
+        <header className="flex-shrink-0 h-14 bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm z-10">
           <div className="flex items-center gap-3">
-            <button className="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100">
-              <ArrowLeft size={20} />
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileSidebar(true)}
+              className="lg:hidden flex flex-col gap-1 p-1.5"
+            >
+              <span className="w-4 h-0.5 bg-gray-600 rounded"/>
+              <span className="w-4 h-0.5 bg-gray-600 rounded"/>
+              <span className="w-4 h-0.5 bg-gray-600 rounded"/>
             </button>
+
+            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-green-100 shrink-0">
+              <img src="/chatbot-avatar.jpg" alt="KisanSeva AI" className="w-full h-full object-cover" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}}/>
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-serif font-bold text-lg">KisanSeva AI</h1>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-50 border border-green-100">
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-success, #2d7a4f)' }}></span>
-                  <span className="text-[10px] font-medium text-green-700 uppercase tracking-wider">Online</span>
-                </div>
+                <span className="text-sm font-bold text-gray-900">KisanSeva AI</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 border border-green-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"/>
+                  <span className="text-[9px] font-bold text-green-700 uppercase tracking-wider">Online</span>
+                </span>
               </div>
-              <p className="text-xs" style={{ color: 'var(--color-bark, #96897b)' }}>Multi-Agent System · 7 Agents Active</p>
+              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Multi-Agent System · 7 Agents Active</p>
             </div>
           </div>
-          <button 
+
+          <button
             onClick={() => setMessages([])}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
-            style={{ backgroundColor: 'var(--color-bone, #efe9e0)', color: 'var(--color-saddle, #50463c)' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
           >
-            <Plus size={16} />
+            <Plus size={14}/>
             <span className="hidden sm:inline">New Chat</span>
           </button>
         </header>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-6 pt-6 pb-2 scrollbar-hide space-y-6">
-          
-          {messages.length === 0 ? (
-            /* Welcome State */
-            <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto text-center space-y-8 animate-fade-in mt-6 pb-12">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--color-bone, #efe9e0)' }}>
-                <Bot size={40} style={{ color: 'var(--color-sage, #7a9779)' }} />
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-sans font-bold tracking-tight text-gray-900">Namaste! I'm your KisanSeva AI</h2>
-                <p className="text-lg text-gray-600">Powered by 7 specialist agricultural agents working together.</p>
-              </div>
-              
-              <div className="w-full max-w-lg space-y-3 mt-8">
-                <p className="text-sm font-medium uppercase tracking-wider mb-4" style={{ color: 'var(--color-bark, #96897b)' }}>Ask me anything</p>
-                {[
-                  'My tomato leaves have brown spots 🍅',
-                  'Best price for onion near Pune 📈',
-                  'How much water for wheat today? 💧'
-                ].map((suggestion, i) => (
-                  <button 
-                    key={i}
-                    onClick={() => handleSuggestion(suggestion)}
-                    className="w-full p-4 rounded-xl text-left border shadow-sm hover:shadow-md transition-all flex items-center justify-between group bg-white"
-                    style={{ borderColor: 'var(--color-bone, #efe9e0)' }}
-                  >
-                    <span className="font-medium text-gray-800">{suggestion}</span>
-                    <Send size={16} className="text-gray-300 group-hover:text-amber-500 transition-colors" />
-                  </button>
-                ))}
-              </div>
-              
-              <div className="flex flex-col items-center gap-3 mt-8 pt-8 border-t w-full max-w-lg" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-                <p className="text-sm" style={{ color: 'var(--color-bark, #96897b)' }}>Or upload a crop photo for instant diagnosis</p>
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 px-6 py-3 rounded-full font-medium shadow-sm hover:shadow transition-shadow"
-                  style={{ backgroundColor: 'var(--color-honey-amber, #e8b672)', color: '#fff' }}
-                >
-                  <Camera size={18} />
-                  Upload Photo
-                </button>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" capture="environment" />
-              </div>
-            </div>
-          ) : (
-            /* Message List */
-            <div className="max-w-3xl mx-auto space-y-6">
-              {messages.map((msg, i) => (
-                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                  
-                  {msg.sender === 'agent' && (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-3 mt-1 shadow-sm border border-gray-100 bg-white">
-                      <Bot size={18} style={{ color: 'var(--color-sage, #7a9779)' }} />
-                    </div>
-                  )}
+        {/* Messages */}
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 py-6">
+          <div className="max-w-2xl mx-auto space-y-6">
 
-                  <div className={`max-w-[85%] lg:max-w-[75%] ${msg.sender === 'user' ? '' : 'space-y-3'}`}>
-                    
-                    {/* Agent Label */}
-                    {msg.sender === 'agent' && msg.agentLabel && (
-                      <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-sage, #7a9779)' }}>
-                        {msg.agentLabel}
+            {messages.length === 0 ? (
+              /* Welcome State */
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">
+                {/* Avatar */}
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center shadow-lg overflow-hidden">
+                    <img src="/chatbot-avatar.jpg" alt="KisanSeva" className="w-full h-full object-cover" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}}/>
+                  </div>
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"/>
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Namaste! I'm your KisanSeva AI</h2>
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto">Powered by 7 specialist agricultural agents working together for you</p>
+                </div>
+
+                {/* Suggestion Pills */}
+                <div className="w-full max-w-md space-y-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">ASK ME ANYTHING</p>
+                  {SUGGESTIONS.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSend(s)}
+                      className="w-full p-4 bg-white rounded-2xl text-left border border-gray-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all flex items-center justify-between group"
+                    >
+                      <span className="text-sm font-medium text-gray-700">{s}</span>
+                      <ChevronRight size={16} className="text-gray-300 group-hover:text-green-500 transition-colors shrink-0 ml-2"/>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Upload Photo */}
+                <div className="flex flex-col items-center gap-3 pt-4 border-t border-gray-100 w-full max-w-md">
+                  <p className="text-xs text-gray-400">Or upload a crop photo for instant diagnosis</p>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Camera size={16}/>
+                    Upload Photo
+                  </button>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" capture="environment"/>
+                </div>
+              </div>
+            ) : (
+              /* Message List */
+              <>
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    {/* Agent Avatar */}
+                    {msg.sender === 'agent' && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-green-50 border border-green-100 flex items-center justify-center shrink-0 mt-1">
+                        <img src="/chatbot-avatar.jpg" alt="AI" className="w-full h-full object-cover" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}}/>
                       </div>
                     )}
 
-                    {/* Message Bubble/Card */}
-                    <div 
-                      className={`rounded-2xl p-4 shadow-sm ${
-                        msg.sender === 'user' 
-                          ? 'rounded-tr-sm text-gray-900 font-medium' 
-                          : 'rounded-tl-sm bg-white border'
-                      }`}
-                      style={msg.sender === 'user' 
-                        ? { backgroundColor: 'var(--color-honey-amber, #e8b672)' } 
-                        : { borderColor: 'var(--color-bone, #efe9e0)' }
-                      }
-                    >
-                      {/* Text content */}
-                      {msg.text && (
-                        <p className={`whitespace-pre-wrap leading-relaxed ${msg.type !== 'text' ? 'mb-4' : ''}`}>
-                          {msg.text}
-                        </p>
+                    <div className={`max-w-[82%] space-y-2 ${msg.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
+                      {/* Agent label */}
+                      {msg.sender === 'agent' && msg.agentLabel && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-green-600 px-1">
+                          {msg.agentIcon}
+                          {msg.agentLabel}
+                        </div>
                       )}
 
-                      {/* Specialized Rich Cards */}
-                      {msg.type === 'diagnosis' && msg.data && (
-                        <div className="rounded-xl overflow-hidden border border-amber-200 bg-amber-50/50 mt-2">
-                          <div className="p-4 space-y-4">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="text-xs font-semibold uppercase text-amber-700 tracking-wider mb-1">Detected Issue</div>
-                                <h3 className="text-lg font-bold font-serif text-gray-900">{msg.data.disease}</h3>
-                                <p className="text-sm text-gray-600">Crop: {msg.data.crop}</p>
-                              </div>
-                              <div className="flex flex-col items-end">
-                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                                  {msg.data.severity} Severity
+                      {/* Bubble */}
+                      <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                        msg.sender === 'user'
+                          ? 'bg-gray-900 text-white rounded-tr-sm shadow-md'
+                          : 'bg-white border border-gray-100 text-gray-800 rounded-tl-sm shadow-sm'
+                      }`}>
+                        {msg.text && <p className="whitespace-pre-wrap">{msg.text}</p>}
+
+                        {/* ── Diagnosis Card ── */}
+                        {msg.type === 'diagnosis' && msg.data && (
+                          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 overflow-hidden">
+                            <div className="p-4 space-y-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <span className="text-[9px] font-bold uppercase tracking-widest text-amber-600">Detected Issue</span>
+                                  <h3 className="text-base font-bold text-gray-900 mt-0.5">{msg.data.disease}</h3>
+                                  <p className="text-xs text-gray-500">Crop: {msg.data.crop}</p>
+                                </div>
+                                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 shrink-0 ml-2">
+                                  {msg.data.severity}
                                 </span>
                               </div>
-                            </div>
-
-                            <div>
-                              <div className="flex justify-between text-xs mb-1">
-                                <span className="text-gray-600 font-medium">Confidence</span>
-                                <span className="text-green-700 font-bold">{msg.data.confidence}%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${msg.data.confidence}%` }}></div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2 pt-2">
-                              <h4 className="text-sm font-semibold text-gray-900">Immediate Treatment:</h4>
-                              <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 ml-1">
-                                {msg.data.treatment.map((step: string, idx: number) => (
-                                  <li key={idx} className="leading-snug">{step}</li>
-                                ))}
-                              </ol>
-                            </div>
-
-                            <div className="bg-green-50 border border-green-100 rounded-lg p-3 text-sm flex gap-2 items-start mt-3">
-                              <Leaf className="text-green-600 shrink-0 mt-0.5" size={16} />
+                              {/* Confidence bar */}
                               <div>
-                                <span className="font-semibold text-green-800 block mb-0.5">Organic Alternative</span>
-                                <span className="text-green-700">{msg.data.organic}</span>
+                                <div className="flex justify-between text-[10px] mb-1">
+                                  <span className="text-gray-500 font-medium">Confidence</span>
+                                  <span className="text-green-700 font-bold">{msg.data.confidence}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                  <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: `${msg.data.confidence}%` }}/>
+                                </div>
+                              </div>
+                              {/* Treatment */}
+                              <div>
+                                <h4 className="text-xs font-bold text-gray-800 mb-2">Immediate Treatment:</h4>
+                                <ol className="list-decimal list-inside text-xs text-gray-700 space-y-1.5 ml-1">
+                                  {msg.data.treatment.map((step: string, idx: number) => (
+                                    <li key={idx} className="leading-snug">{step}</li>
+                                  ))}
+                                </ol>
+                              </div>
+                              {/* Organic */}
+                              <div className="flex gap-2 p-3 rounded-lg bg-green-50 border border-green-100">
+                                <Leaf className="text-green-600 shrink-0 mt-0.5" size={14}/>
+                                <div>
+                                  <span className="text-xs font-bold text-green-800 block mb-0.5">Organic Alternative</span>
+                                  <span className="text-xs text-green-700">{msg.data.organic}</span>
+                                </div>
+                              </div>
+                            </div>
+                            {/* Feedback */}
+                            <div className="bg-white/80 border-t border-amber-100 px-4 py-2.5 flex items-center justify-between">
+                              <span className="text-[10px] text-gray-400 font-medium">Was this helpful?</span>
+                              <div className="flex gap-2">
+                                <button className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-50 hover:bg-green-50 hover:text-green-700 border border-gray-200 transition-colors">
+                                  <ThumbsUp size={10}/> Yes
+                                </button>
+                                <button className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-gray-50 hover:bg-red-50 hover:text-red-600 border border-gray-200 transition-colors">
+                                  <ThumbsDown size={10}/> No
+                                </button>
                               </div>
                             </div>
                           </div>
-                          
-                          <div className="bg-white border-t border-amber-200 px-4 py-3 flex items-center justify-between">
-                            <span className="text-xs font-medium text-gray-500">Was this correct?</span>
-                            <div className="flex gap-2">
-                              <button className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded bg-gray-50 hover:bg-green-50 hover:text-green-700 border border-gray-200 transition-colors">
-                                <ThumbsUp size={12} /> Yes
-                              </button>
-                              <button className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded bg-gray-50 hover:bg-red-50 hover:text-red-700 border border-gray-200 transition-colors">
-                                <ThumbsDown size={12} /> No
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                        )}
 
-                      {msg.type === 'price' && msg.data && (
-                        <div className="rounded-xl border mt-2 overflow-hidden bg-white" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-                          <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100 flex items-center justify-between">
+                        {/* ── Price Card ── */}
+                        {msg.type === 'price' && msg.data && (
+                          <div className="mt-3 rounded-xl border border-emerald-200 overflow-hidden bg-white">
+                            <div className="p-4 bg-gradient-to-r from-emerald-50 to-green-50 flex items-center justify-between border-b border-emerald-100">
+                              <div>
+                                <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-emerald-600 mb-0.5">
+                                  <Star size={10} className="fill-emerald-500 text-emerald-500"/>
+                                  Best Price Alert
+                                </div>
+                                <p className="text-sm font-bold text-gray-900">{msg.data.bestMarket}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xl font-bold text-emerald-700">{msg.data.bestPrice}</p>
+                                <p className="text-[10px] text-gray-500">per {msg.data.unit}</p>
+                              </div>
+                            </div>
                             <div>
-                              <div className="text-xs font-semibold uppercase text-emerald-700 tracking-wider flex items-center gap-1 mb-1">
-                                <Star size={12} className="fill-emerald-600 text-emerald-600" /> Best Price Alert
-                              </div>
-                              <div className="text-lg font-bold text-gray-900">{msg.data.bestMarket}</div>
+                              {msg.data.mandis.map((mandi: any, idx: number) => (
+                                <div key={idx} className={`flex items-center justify-between px-4 py-3 text-xs border-b last:border-0 border-gray-50 ${idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`}>
+                                  <span className="font-medium text-gray-700">{mandi.name}</span>
+                                  <div className="flex items-center gap-3">
+                                    <span className="font-bold text-gray-900">{mandi.price}</span>
+                                    <span className={`font-semibold ${mandi.trend === 'up' ? 'text-green-600' : 'text-red-500'}`}>
+                                      {mandi.trend === 'up' ? '▲' : '▼'} {mandi.delta}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div className="text-right">
-                              <div className="text-xl font-bold text-emerald-700">{msg.data.bestPrice}</div>
-                              <div className="text-xs text-gray-600">per {msg.data.unit}</div>
+                            <div className="p-3 flex justify-center bg-gray-50/50">
+                              <button className="text-[10px] font-semibold text-emerald-600 hover:text-emerald-800 transition-colors">
+                                Set Price Alert →
+                              </button>
                             </div>
                           </div>
-                          <div className="p-0">
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {msg.data.mandis.map((mandi: any, idx: number) => (
-                                  <tr key={idx} className={`border-b last:border-0 ${idx % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`} style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-                                    <td className="py-3 px-4 text-gray-800 font-medium">{mandi.name}</td>
-                                    <td className="py-3 px-4 text-right font-semibold text-gray-900">{mandi.price}</td>
-                                    <td className="py-3 px-4 text-right w-20">
-                                      <span className={`inline-flex items-center text-xs font-medium ${mandi.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {mandi.trend === 'up' ? '▲' : '▼'} {mandi.delta}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="p-3 bg-gray-50 flex justify-center">
-                            <button className="text-sm font-medium hover:underline" style={{ color: 'var(--color-sage, #7a9779)' }}>
-                              Set Price Alert for Onion
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                        )}
 
-                      {msg.type === 'weather' && msg.data && (
-                        <div className="rounded-xl border mt-2 overflow-hidden bg-white" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-                          <div className="p-4 pb-3">
-                            <p className="text-sm text-gray-600 mb-3">{msg.data.summary}</p>
-                            <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 text-blue-800 font-medium text-sm">
-                              <Zap size={16} className="text-blue-500" />
-                              {msg.data.recommendation}
+                        {/* ── Weather Card ── */}
+                        {msg.type === 'weather' && msg.data && (
+                          <div className="mt-3 rounded-xl border border-blue-100 overflow-hidden bg-white">
+                            <div className="p-4 border-b border-blue-50">
+                              <p className="text-xs text-gray-600 mb-3">{msg.data.summary}</p>
+                              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50 border border-blue-100">
+                                <Zap size={14} className="text-blue-500"/>
+                                <span className="text-xs font-bold text-blue-800">{msg.data.recommendation}</span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 divide-x divide-gray-100 bg-gray-50/50">
+                              {msg.data.forecast.map((f: any, idx: number) => (
+                                <div key={idx} className="py-3 flex flex-col items-center gap-1">
+                                  <span className="text-[10px] font-medium text-gray-500">{f.day}</span>
+                                  <span className="text-lg">{f.icon}</span>
+                                  <span className="text-xs font-bold text-gray-900">{f.temp}</span>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                          <div className="grid grid-cols-3 divide-x border-t bg-gray-50" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-                            {msg.data.forecast.map((f: any, idx: number) => (
-                              <div key={idx} className="p-3 flex flex-col items-center justify-center text-center">
-                                <span className="text-xs text-gray-500 font-medium mb-1">{f.day}</span>
-                                {f.icon}
-                                <span className="text-sm font-bold text-gray-900 mt-1">{f.temp}</span>
-                              </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Thinking State */}
+                {isThinking && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-green-50 border border-green-100 flex items-center justify-center shrink-0 mt-1">
+                      <Loader2 size={16} className="text-green-500 animate-spin"/>
+                    </div>
+                    <div className="max-w-[82%] space-y-2">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-1">Processing...</div>
+                      <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm space-y-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-gray-200 animate-bounce" style={{ animationDelay: '0ms' }}/>
+                          <span className="w-2 h-2 rounded-full bg-gray-200 animate-bounce" style={{ animationDelay: '150ms' }}/>
+                          <span className="w-2 h-2 rounded-full bg-gray-200 animate-bounce" style={{ animationDelay: '300ms' }}/>
+                          <span className="text-xs text-gray-400 font-medium ml-1">Routing to agents</span>
+                        </div>
+                        {activeThinkingAgents.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {activeThinkingAgents.map((agent, i) => (
+                              <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-100">
+                                <CheckCircle size={9}/> {agent}
+                              </span>
                             ))}
                           </div>
-                        </div>
-                      )}
-
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Thinking State */}
-              {isThinking && (
-                <div className="flex justify-start animate-fade-in">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-3 mt-1 shadow-sm border border-gray-100 bg-white">
-                    <Bot size={18} style={{ color: 'var(--color-sage, #7a9779)' }} />
-                  </div>
-                  <div className="max-w-[85%] lg:max-w-[75%] space-y-2">
-                    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      System Processing
-                    </div>
-                    <div className="rounded-2xl rounded-tl-sm bg-white border p-4 shadow-sm" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                        </div>
-                        <span className="text-sm font-medium text-gray-600">Routing to agents...</span>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {activeThinkingAgents.map((agent, i) => (
-                          <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-100 animate-pulse">
-                            <CheckCircle size={10} />
-                            {agent}
-                          </span>
-                        ))}
+                        )}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              
-              <div ref={messagesEndRef} className="h-4" />
-            </div>
-          )}
+                )}
+
+                <div ref={messagesEndRef}/>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Input Area (Fixed Bottom) */}
-        <div className="mt-auto bg-gradient-to-t from-white via-white to-transparent pt-4 pb-4 lg:pb-6 px-4 lg:px-6 z-20 w-full flex-shrink-0">
-          <div className="max-w-3xl mx-auto mb-16 lg:mb-0">
-            <div className="relative flex items-end shadow-lg rounded-2xl bg-white border border-gray-200 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600 transition-all">
-              
-              <button 
+        {/* Input Bar */}
+        <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-end gap-2 bg-gray-50 border border-gray-200 rounded-2xl px-3 py-2 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-100 transition-all shadow-sm">
+              <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3.5 text-gray-400 hover:text-green-600 transition-colors ml-1"
+                className="p-2 text-gray-400 hover:text-green-600 transition-colors shrink-0 mb-0.5"
                 title="Upload photo"
               >
-                <Camera size={22} />
+                <Camera size={20}/>
               </button>
-              
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" capture="environment"/>
+
               <textarea
+                ref={textareaRef}
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={handleTextareaChange}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
+                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
                 }}
-                placeholder="Ask in any language... (Type in Hindi, Tamil, Telugu too)"
-                className="flex-1 max-h-32 min-h-[52px] py-3.5 px-2 bg-transparent resize-none outline-none text-gray-800 placeholder-gray-400"
+                placeholder="Ask in any language... (Hindi, Tamil, Telugu too)"
+                className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400 leading-relaxed py-1"
                 rows={1}
+                style={{ maxHeight: '128px' }}
               />
-              
-              <div className="p-2 mr-1 flex items-center">
+
+              <div className="shrink-0 flex items-center gap-1 mb-0.5">
                 {inputText.trim() && !isThinking ? (
-                  <button 
-                    id="send-btn"
+                  <button
                     onClick={() => handleSend()}
-                    className="p-2 rounded-xl text-white shadow-md hover:shadow-lg transition-all"
-                    style={{ backgroundColor: 'var(--color-honey-amber, #e8b672)' }}
+                    className="w-9 h-9 rounded-xl bg-green-600 hover:bg-green-700 text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all"
                   >
-                    <Send size={18} className="ml-0.5" />
+                    <Send size={16} className="ml-0.5"/>
                   </button>
                 ) : isThinking ? (
-                  <button disabled className="p-2 rounded-xl text-white opacity-60 bg-gray-400 cursor-not-allowed">
-                    <Send size={18} className="ml-0.5 animate-pulse" />
+                  <button disabled className="w-9 h-9 rounded-xl bg-gray-200 text-gray-400 flex items-center justify-center cursor-not-allowed">
+                    <Loader2 size={16} className="animate-spin"/>
                   </button>
                 ) : (
-                  <button className="p-2 rounded-xl text-gray-400 hover:text-gray-600 transition-colors bg-gray-50">
-                    <Mic size={18} />
+                  <button className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors">
+                    <Mic size={16}/>
                   </button>
                 )}
               </div>
             </div>
-            <div className="text-center mt-2">
-              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--color-bark, #96897b)' }}>
-                Responses in English · हिंदी · বাংলা · தமிழ் · తెలుగు
-              </span>
-            </div>
+
+            <p className="text-center mt-2 text-[10px] font-medium text-gray-300 tracking-wide">
+              Responses in English · हिंदी · বাংলা · தமிழ் · తెలుగు
+            </p>
           </div>
         </div>
 
       </div>
-
-      {/* MOBILE BOTTOM NAV (lg:hidden) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex justify-around items-center px-2 z-50 pb-safe" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
-        {[
-          { label: 'Home', icon: <Home size={20} />, active: false },
-          { label: 'Diagnose', icon: <Activity size={20} />, active: false },
-          { label: 'Market', icon: <TrendingUp size={20} />, active: false },
-          { label: 'AI Chat', icon: <Bot size={20} />, active: true },
-          { label: 'My Plots', icon: <Calendar size={20} />, active: false },
-        ].map((item, i) => (
-          <button 
-            key={i} 
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 ${item.active ? 'text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
-          >
-            <div className={`${item.active ? 'bg-green-50 p-1.5 rounded-full' : 'p-1.5'}`}>
-              {item.icon}
-            </div>
-            <span className="text-[9px] font-semibold tracking-wide">{item.label}</span>
-          </button>
-        ))}
-      </div>
-
     </div>
   );
 }
-

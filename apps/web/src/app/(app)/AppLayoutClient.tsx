@@ -26,8 +26,18 @@ import {
   Users,
   LogOut,
   AlertTriangle,
-  Droplets
+  Droplets,
+  CheckCheck,
+  Trash2
 } from 'lucide-react';
+
+const DEFAULT_NOTIFICATIONS = [
+  { id: '1', icon: 'alert', title: 'High Disease Risk: Tomato', body: 'Apply preventive fungicide in Plot 2A before evening.', time: '2 hours ago', read: false },
+  { id: '2', icon: 'water', title: 'Irrigation Due', body: 'Plot 1C (Rice) needs 12mm of water today.', time: '5 hours ago', read: false },
+  { id: '3', icon: 'market', title: 'Mandi Price Alert', body: 'Wheat prices are up by ₹50/q in Bhopal Mandi.', time: 'Yesterday', read: false },
+];
+
+type Notif = { id: string; icon: string; title: string; body: string; time: string; read: boolean };
 import ChatWidget from '@/components/chat/ChatWidget';
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 import GlobalCalculatorWidget from '@/components/layout/GlobalCalculatorWidget';
@@ -71,6 +81,23 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifs, setNotifs] = useState<Notif[]>(DEFAULT_NOTIFICATIONS);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ks_notifications');
+    if (saved) setNotifs(JSON.parse(saved));
+  }, []);
+
+  const saveNotifs = (updated: Notif[]) => {
+    setNotifs(updated);
+    localStorage.setItem('ks_notifications', JSON.stringify(updated));
+  };
+
+  const markRead = (id: string) => saveNotifs(notifs.map(n => n.id === id ? { ...n, read: true } : n));
+  const dismiss = (id: string) => saveNotifs(notifs.filter(n => n.id !== id));
+  const markAllRead = () => saveNotifs(notifs.map(n => ({ ...n, read: true })));
+
+  const unreadCount = notifs.filter(n => !n.read).length;
   const [avatar, setAvatar] = useState<string | null>(null);
 
   useEffect(() => {
@@ -187,56 +214,87 @@ export default function AppLayoutClient({
             <GlobalCalculatorWidget />
             <div style={{ position: 'relative' }}>
               <button 
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={() => { setShowNotifications(!showNotifications); if (!showNotifications) markAllRead(); }}
                 style={{ position: 'relative', padding: '8px', background: showNotifications ? '#f1f5f9' : 'none', border: 'none', cursor: 'pointer', borderRadius: '8px', color: '#64748b', transition: 'background 0.15s' }} 
                 onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} 
                 onMouseLeave={e => { if(!showNotifications) e.currentTarget.style.background = 'none' }}>
                 <Bell size={20} />
-                <span style={{ position: 'absolute', top: '6px', right: '6px', width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid #fff' }}></span>
+                {unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', backgroundColor: '#ef4444', borderRadius: '999px', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#fff', padding: '0 3px' }}>
+                    {unreadCount}
+                  </span>
+                )}
               </button>
 
               {showNotifications && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: '-20px', width: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', zIndex: 100, overflow: 'hidden' }}>
-                  <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
-                    <span style={{ fontWeight: 700, color: '#0f172a' }}>Notifications</span>
-                    <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}><X size={16} /></button>
+                <>
+                  {/* Click outside to close */}
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 99 }} onClick={() => setShowNotifications(false)} />
+                  <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: '-20px', width: '340px', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.12)', border: '1px solid #e2e8f0', zIndex: 100, overflow: 'hidden' }}>
+                    <div style={{ padding: '14px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>Notifications</span>
+                        {notifs.length > 0 && <span style={{ fontSize: '0.7rem', background: '#e2e8f0', color: '#64748b', borderRadius: '999px', padding: '1px 7px', fontWeight: 600 }}>{notifs.length}</span>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {notifs.length > 0 && (
+                          <button onClick={markAllRead} title="Mark all as read" style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600 }}>
+                            <CheckCheck size={14} /> All read
+                          </button>
+                        )}
+                        <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px', borderRadius: '6px' }}><X size={16} /></button>
+                      </div>
+                    </div>
+                    <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                      {notifs.length === 0 && (
+                        <div style={{ padding: '40px 16px', textAlign: 'center', color: '#94a3b8' }}>
+                          <Bell size={32} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
+                          <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>All caught up!</div>
+                        </div>
+                      )}
+                      {notifs.map((n, idx) => (
+                        <div
+                          key={n.id}
+                          onClick={() => markRead(n.id)}
+                          style={{ padding: '14px 16px', borderBottom: idx < notifs.length - 1 ? '1px solid #f1f5f9' : 'none', display: 'flex', gap: '12px', alignItems: 'flex-start', backgroundColor: n.read ? '#fff' : '#f0fdf4', cursor: 'pointer', transition: 'background 0.15s', position: 'relative' }}
+                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = n.read ? '#fff' : '#f0fdf4')}
+                        >
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: n.icon === 'alert' ? '#fef2f2' : n.icon === 'water' ? '#eff6ff' : '#f0fdf4', color: n.icon === 'alert' ? '#ef4444' : n.icon === 'water' ? '#3b82f6' : '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {n.icon === 'alert' ? <AlertTriangle size={17} /> : n.icon === 'water' ? <Droplets size={17} /> : <TrendingUp size={17} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: n.read ? 500 : 700, fontSize: '0.85rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {n.title}
+                              {!n.read && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e', flexShrink: 0, display: 'inline-block' }} />}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px', lineHeight: 1.4 }}>{n.body}</div>
+                            <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px' }}>{n.time}</div>
+                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); dismiss(n.id); }}
+                            title="Dismiss"
+                            style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: '2px', borderRadius: '4px', flexShrink: 0, marginTop: '-2px' }}
+                            onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                            onMouseLeave={e => (e.currentTarget.style.color = '#cbd5e1')}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    {notifs.length > 0 && (
+                      <button
+                        onClick={() => { saveNotifs([]); }}
+                        style={{ display: 'block', width: '100%', padding: '12px', textAlign: 'center', fontSize: '0.78rem', fontWeight: 600, color: '#ef4444', background: '#fff', border: 'none', borderTop: '1px solid #e2e8f0', cursor: 'pointer' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = '#fef2f2')}
+                        onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+                      >
+                        Clear all notifications
+                      </button>
+                    )}
                   </div>
-                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    <div style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <AlertTriangle size={18} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0f172a' }}>High Disease Risk: Tomato</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>Apply preventive fungicide in Plot 2A before evening.</div>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>2 hours ago</div>
-                      </div>
-                    </div>
-                    <div style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Droplets size={18} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0f172a' }}>Irrigation Due</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>Plot 1C (Rice) needs 12mm of water today.</div>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>5 hours ago</div>
-                      </div>
-                    </div>
-                    <div style={{ padding: '16px', display: 'flex', gap: '12px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f0fdf4', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <TrendingUp size={18} />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0f172a' }}>Mandi Price Alert</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>Wheat prices are up by ₹50/q in Bhopal Mandi.</div>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Yesterday</div>
-                      </div>
-                    </div>
-                  </div>
-                  <Link href="/dashboard" onClick={() => setShowNotifications(false)} style={{ display: 'block', padding: '12px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#2563eb', textDecoration: 'none', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                    View All in Dashboard
-                  </Link>
-                </div>
+                </>
               )}
             </div>
             

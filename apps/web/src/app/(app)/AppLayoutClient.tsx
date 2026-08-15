@@ -24,7 +24,9 @@ import {
   Wallet,
   Wifi,
   Users,
-  LogOut
+  LogOut,
+  AlertTriangle,
+  Droplets
 } from 'lucide-react';
 import ChatWidget from '@/components/chat/ChatWidget';
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
@@ -73,6 +75,7 @@ export default function AppLayoutClient({
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const pageTitle = PAGE_TITLES[pathname] || 'KisanSeva';
   
@@ -175,10 +178,60 @@ export default function AppLayoutClient({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <GoogleTranslateWidget className="hidden sm:inline-block mt-1" />
             <GlobalCalculatorWidget />
-            <button style={{ position: 'relative', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', borderRadius: '8px', color: '#64748b', transition: 'background 0.15s' }} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
-              <Bell size={20} />
-              <span style={{ position: 'absolute', top: '6px', right: '6px', width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.45rem', color: '#fff', fontWeight: 700 }}>3</span>
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                style={{ position: 'relative', padding: '8px', background: showNotifications ? '#f1f5f9' : 'none', border: 'none', cursor: 'pointer', borderRadius: '8px', color: '#64748b', transition: 'background 0.15s' }} 
+                onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} 
+                onMouseLeave={e => { if(!showNotifications) e.currentTarget.style.background = 'none' }}>
+                <Bell size={20} />
+                <span style={{ position: 'absolute', top: '6px', right: '6px', width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%', border: '2px solid #fff' }}></span>
+              </button>
+
+              {showNotifications && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: '-20px', width: '320px', background: '#fff', borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', zIndex: 100, overflow: 'hidden' }}>
+                  <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+                    <span style={{ fontWeight: 700, color: '#0f172a' }}>Notifications</span>
+                    <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}><X size={16} /></button>
+                  </div>
+                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <AlertTriangle size={18} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0f172a' }}>High Disease Risk: Tomato</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>Apply preventive fungicide in Plot 2A before evening.</div>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>2 hours ago</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Droplets size={18} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0f172a' }}>Irrigation Due</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>Plot 1C (Rice) needs 12mm of water today.</div>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>5 hours ago</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '16px', display: 'flex', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f0fdf4', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <TrendingUp size={18} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#0f172a' }}>Mandi Price Alert</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>Wheat prices are up by ₹50/q in Bhopal Mandi.</div>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Yesterday</div>
+                      </div>
+                    </div>
+                  </div>
+                  <Link href="/dashboard" onClick={() => setShowNotifications(false)} style={{ display: 'block', padding: '12px', textAlign: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#2563eb', textDecoration: 'none', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                    View All in Dashboard
+                  </Link>
+                </div>
+              )}
+            </div>
             
             <Link href="/settings" style={{ textDecoration: 'none' }}>
               <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #65a30d, #4d7c0f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(101,163,13,0.35)' }}>

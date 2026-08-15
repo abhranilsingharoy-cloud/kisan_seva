@@ -156,7 +156,7 @@ export async function POST(req: Request) {
     const { action, postId, content, isQuestion } = body;
 
     if (action === 'create_post') {
-      const id = \`p\${Date.now()}\`;
+      const id = `p${Date.now()}`;
       const tags = isQuestion ? ['Question'] : ['General'];
       
       if (isVercel) {

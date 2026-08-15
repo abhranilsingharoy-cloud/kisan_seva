@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       responseContent = 'Market prices fluctuate based on arrivals. You can check the "Direct B2B Contracts" section on the Market page to secure a pre-agreed premium price for your harvest, bypassing mandi volatility altogether.';
     }
 
-    const replyId = \`r\${Date.now()}\`;
+    const replyId = `r${Date.now()}`;
     
     const isVercel = !!process.env.POSTGRES_URL;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -72,6 +72,18 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    const updateAvatar = () => {
+      if (profile?.id) {
+         setAvatar(localStorage.getItem(`ks_avatar_${profile.id}`));
+      }
+    };
+    updateAvatar();
+    window.addEventListener('avatar-updated', updateAvatar);
+    return () => window.removeEventListener('avatar-updated', updateAvatar);
+  }, [profile?.id]);
 
   const pageTitle = PAGE_TITLES[pathname] || 'KisanSeva';
   
@@ -139,8 +151,8 @@ export default function AppLayoutClient({
             Settings
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#65a30d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.875rem', flexShrink: 0 }}>
-              {initial}
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#65a30d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.875rem', flexShrink: 0, overflow: 'hidden' }}>
+              {avatar ? <img src={avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initial}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.name}</div>
@@ -230,8 +242,8 @@ export default function AppLayoutClient({
             </div>
             
             <Link href="/settings" style={{ textDecoration: 'none' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #65a30d, #4d7c0f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(101,163,13,0.35)' }}>
-                {initial}
+              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #65a30d, #4d7c0f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(101,163,13,0.35)', overflow: 'hidden' }}>
+                {avatar ? <img src={avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initial}
               </div>
             </Link>
           </div>

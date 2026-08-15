@@ -29,12 +29,16 @@ export default function SettingsProfilePage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+      
+      const savedAvatar = localStorage.getItem(`ks_avatar_${user.id}`);
+      if (savedAvatar) setAvatar(savedAvatar);
 
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       
@@ -81,6 +85,20 @@ export default function SettingsProfilePage() {
     setIsSaving(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && userId) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setAvatar(base64String);
+        localStorage.setItem(`ks_avatar_${userId}`, base64String);
+        window.dispatchEvent(new Event('avatar-updated'));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleLogout = async () => {
@@ -135,12 +153,13 @@ export default function SettingsProfilePage() {
                 {/* Avatar Section */}
                 <div className="flex items-center gap-6">
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-3xl font-bold border-4 border-white shadow-md uppercase">
-                      {profile.name ? profile.name.charAt(0) : '?'}
+                    <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-3xl font-bold border-4 border-white shadow-md uppercase overflow-hidden">
+                      {avatar ? <img src={avatar} alt="Avatar" className="w-full h-full object-cover" /> : (profile.name ? profile.name.charAt(0) : '?')}
                     </div>
-                    <button className="absolute bottom-0 right-0 p-1.5 bg-white border border-slate-200 rounded-full shadow-sm text-slate-500 hover:text-emerald-600 transition-colors">
+                    <label className="absolute bottom-0 right-0 p-1.5 bg-white border border-slate-200 rounded-full shadow-sm text-slate-500 hover:text-emerald-600 transition-colors cursor-pointer">
                       <Camera className="w-4 h-4" />
-                    </button>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                    </label>
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-900">{profile.name || 'Set your name'}</h2>

@@ -1,7 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import ChatWidget from '@/components/chat/ChatWidget'
+
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget'
 import './marketing.css'
 import { Show, UserButton } from '@clerk/nextjs'
@@ -40,9 +40,6 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         </div>
       </header>
       {children}
-      
-      {/* GLOBAL CHATBOT FOR MARKETING/HOME */}
-      <ChatWidget />
     </>
   )
 }

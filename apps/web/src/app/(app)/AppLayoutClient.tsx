@@ -38,7 +38,7 @@ const DEFAULT_NOTIFICATIONS = [
 ];
 
 type Notif = { id: string; icon: string; title: string; body: string; time: string; read: boolean };
-import ChatWidget from '@/components/chat/ChatWidget';
+
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 import GlobalCalculatorWidget from '@/components/layout/GlobalCalculatorWidget';
 import { UserButton } from '@clerk/nextjs';
@@ -395,9 +395,6 @@ export default function AppLayoutClient({
           </div>
         </div>
       )}
-      
-      {/* GLOBAL CHATBOT - Hide on agent page since it has its own chat */}
-      {pathname !== '/agent' && <ChatWidget />}
     </div>
   );
 }

@@ -82,17 +82,7 @@ export default function AgentChatPage() {
   };
 
   // ── Voice Integration (Bhashini-style) ───────────────────────────────────────
-  const startListening = async () => {
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-      }
-    } catch (err) {
-      alert("Microphone permission denied. Please allow mic access in browser settings.");
-      return;
-    }
-
+  const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech Recognition is not supported in this browser. Please use Chrome or Edge.");
@@ -125,10 +115,21 @@ export default function AgentChatPage() {
       }, 500);
     };
 
-    recognition.onerror = () => setIsListening(false);
+    recognition.onerror = (e: any) => {
+      setIsListening(false);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        alert("Microphone permission denied. Please allow mic access in your browser settings to use voice features.");
+      }
+    };
 
     recognitionRef.current = recognition;
-    recognition.start();
+    
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Speech recognition start error:", e);
+      setIsListening(false);
+    }
   };
 
   const speakResponse = (text: string, langCode: string) => {

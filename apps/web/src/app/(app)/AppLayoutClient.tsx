@@ -32,7 +32,7 @@ export default function AppLayoutClient({
 
   const pageTitle = pageTitles[pathname] || 'KisanSeva';
   
-  const initial = profile.name ? profile.name.charAt(0).toUpperCase() : '?';
+  const initial = profile?.name ? profile.name.charAt(0).toUpperCase() : '?';
 
   return (
     <div className="flex h-screen overflow-hidden text-slate-900 font-sans" style={{ backgroundColor: '#f0f4f0' }}>

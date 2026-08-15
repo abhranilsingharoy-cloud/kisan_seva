@@ -376,18 +376,18 @@ export default function SettingsProfilePage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Quick Links</h3>
             <div className="space-y-1">
-              <button className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-colors">
+              <Link href="/privacy" className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-colors">
                 <span>Privacy Policy</span>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
-              </button>
-              <button className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-colors">
+              </Link>
+              <Link href="/terms" className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-colors">
                 <span>Terms of Service</span>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
-              </button>
-              <button className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-colors">
+              </Link>
+              <Link href="/help" className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 transition-colors">
                 <span>Help & Support</span>
                 <ChevronRight className="w-4 h-4 text-slate-400" />
-              </button>
+              </Link>
             </div>
           </div>
 

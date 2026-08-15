@@ -125,7 +125,7 @@ export default function AgentChatPage() {
     recognition.onend = () => {
       setIsListening(false);
       setTimeout(() => {
-        const btn = document.getElementById('send-message-btn');
+        const btn = document.getElementById('send-message-btn') as HTMLButtonElement;
         if (btn && !btn.disabled) btn.click();
       }, 500);
     };

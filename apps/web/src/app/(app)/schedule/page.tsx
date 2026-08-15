@@ -72,13 +72,11 @@ function getCropAdvice(crop: string, dayIndex: number, areaAcres: number, rain: 
 
 export default function SchedulePage() {
   const DEFAULT_PLOTS = [
-    { id: 'plot2a', name: 'Plot 2A', crop: 'Tomato', area: '1.2 ac', city: 'Vidisha' },
-    { id: 'plot3b', name: 'Plot 3B', crop: 'Wheat', area: '0.8 ac', city: 'Bhopal' },
-    { id: 'plot1c', name: 'Plot 1C', crop: 'Rice', area: '1.5 ac', city: 'Jabalpur' },
+    { id: 'plot1', name: 'Example Plot', crop: 'Wheat', area: '1.5 ac', city: 'Bhopal' },
   ]
 
   const [plots, setPlots] = useState<any[]>(DEFAULT_PLOTS)
-  const [activePlot, setActivePlot] = useState('plot2a')
+  const [activePlot, setActivePlot] = useState('plot1')
   const [weather, setWeather] = useState<any>(null)
   const [weatherLoading, setWeatherLoading] = useState(true)
   const [weatherError, setWeatherError] = useState<string | null>(null)

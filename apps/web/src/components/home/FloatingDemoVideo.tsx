@@ -10,18 +10,19 @@ export default function FloatingDemoVideo() {
   return (
     <>
       {/* Floating Button Bottom Left */}
-      <div className="fixed bottom-6 left-6 z-[60]">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+      <div className="fixed bottom-6 left-6 z-[60] font-sans">
+        <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 bg-[#2A854B] text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl hover:bg-[#226b3c] transition-colors border border-emerald-700/50"
+          className="w-14 h-14 bg-[#166534] hover:bg-[#14532d] text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group"
         >
-          <div className="bg-white/20 p-1.5 rounded-full flex items-center justify-center">
-            <Play size={16} className="fill-current ml-0.5" />
+          <Play size={24} className="ml-1" />
+          
+          {/* Tooltip */}
+          <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white text-gray-800 text-sm font-semibold py-2 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-gray-100">
+            Watch Demo
+            <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-white rotate-45 border-l border-b border-gray-100"></div>
           </div>
-          <span className="font-semibold text-sm pr-1">Watch Demo</span>
-        </motion.button>
+        </button>
       </div>
 
       {/* Video Modal Overlay */}

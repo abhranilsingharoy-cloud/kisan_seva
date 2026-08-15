@@ -7,7 +7,12 @@ export async function createClient() {
   const { getToken } = await auth()
   
   // The token is configured in the Clerk Dashboard under JWT Templates
-  const supabaseAccessToken = await getToken({ template: 'supabase' })
+  let supabaseAccessToken = null
+  try {
+    supabaseAccessToken = await getToken({ template: 'supabase' })
+  } catch (err) {
+    console.warn('Clerk getToken failed (missing supabase template?):', err)
+  }
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

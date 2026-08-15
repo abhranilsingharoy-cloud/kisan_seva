@@ -5,6 +5,7 @@ import Link from 'next/link'
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget'
 import './marketing.css'
 import { Show, UserButton } from '@clerk/nextjs'
+import ChatWidget from '@/components/chat/ChatWidget'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -40,6 +41,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         </div>
       </header>
       {children}
+      <ChatWidget />
     </>
   )
 }

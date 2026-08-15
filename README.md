@@ -85,37 +85,93 @@ graph TD
     %% Styling
     classDef frontend fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
     classDef backend fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef python fill:#1e293b,stroke:#f59e0b,stroke-width:2px,color:#fff;
     classDef cloud fill:#020617,stroke:#8b5cf6,stroke-width:2px,color:#fff;
     classDef ai fill:#4c1d95,stroke:#c084fc,stroke-width:2px,color:#fff;
+    classDef agent fill:#0f172a,stroke:#eab308,stroke-width:1px,color:#e2e8f0;
 
-    %% Nodes
-    User([🌾 Farmer / User])
-    VercelUI[🖥️ Next.js Frontend<br/>UI & Components]:::frontend
-    VercelAPI[⚙️ Next.js API Routes<br/>Serverless Backend]:::backend
-    MLService[🐍 Python FastAPI<br/>Multi-Agent System]:::backend
-    
-    Supabase[(🗄️ Supabase<br/>PostgreSQL)]:::cloud
-    Clerk[🔐 Clerk<br/>Auth]:::cloud
-    
-    Groq[🧠 Groq API<br/>Llama 3.3]:::ai
-    Gemini[👁️ Gemini / Nvidia<br/>Vision Models]:::ai
-    Agmarknet[📊 Agmarknet API<br/>Market Prices]:::cloud
-    OpenWeather[🌤️ OpenWeather API]:::cloud
+    %% Client Layer
+    subgraph Client ["📱 Client Layer"]
+        User([🌾 Farmer / User])
+        WebUI[🖥️ Next.js Web App<br/>React, Tailwind, Zustand]:::frontend
+    end
 
-    %% Connections
-    User -- Interacts --> VercelUI
-    VercelUI -- Authenticates --> Clerk
-    VercelUI -- Fetches Data --> VercelAPI
+    %% Cloud Services Layer
+    subgraph Services ["☁️ Cloud Services & Databases"]
+        Clerk[🔐 Clerk<br/>Authentication]:::cloud
+        Supabase[(🗄️ Supabase<br/>PostgreSQL & Storage)]:::cloud
+        Firebase[🔔 Firebase<br/>Push Notifications]:::cloud
+    end
+
+    %% API Layer (Vercel)
+    subgraph Vercel ["⚡ Vercel Serverless API Layer"]
+        API_Gateway[⚙️ API Gateway / Middleware]:::backend
+        V_Auth[Auth Routes]:::backend
+        V_DB[DB Routes]:::backend
+        V_Agent[Fallback AI Route]:::backend
+    end
+
+    %% Python ML Layer
+    subgraph ML ["🧠 Python Multi-Agent Service (Local/Dedicated)"]
+        FastAPI[🚀 FastAPI / Uvicorn]:::python
+        Orchestrator{🤖 Master<br/>Orchestrator}:::python
+        
+        %% The 7 Agents
+        A1[Crop Diagnosis Agent]:::agent
+        A2[Market Price Agent]:::agent
+        A3[Weather Advisory Agent]:::agent
+        A4[Soil Health Agent]:::agent
+        A5[Outbreak Monitor Agent]:::agent
+        A6[Knowledge Base Agent]:::agent
+        A7[SMS / IVR Agent]:::agent
+        
+        RAG[(📚 Local RAG<br/>Vector Store)]:::python
+    end
+
+    %% External APIs & LLMs
+    subgraph External ["🌐 External APIs & LLMs"]
+        Groq[🧠 Groq Llama-3.3<br/>Primary Reasoning]:::ai
+        Vision[👁️ Gemini / Nvidia NIM<br/>Image Diagnostics]:::ai
+        Agmarknet[📊 Agmarknet API<br/>Live Mandi Prices]:::cloud
+        OpenWeather[🌤️ OpenWeather API]:::cloud
+        MapTiler[🗺️ MapTiler Maps]:::cloud
+    end
+
+    %% Flows
+    User -- Interacts --> WebUI
+    WebUI -- Authenticates --> Clerk
+    WebUI -- API Requests --> API_Gateway
     
-    VercelAPI -- Database Ops --> Supabase
-    VercelAPI -- Market Data --> Agmarknet
-    VercelAPI -- Weather Data --> OpenWeather
-    VercelAPI -- Fallback AI --> Groq
-    VercelAPI -- Crop Vision --> Gemini
+    API_Gateway --> V_Auth
+    API_Gateway --> V_DB
+    API_Gateway --> V_Agent
+
+    V_Auth -. Validates .-> Clerk
+    V_DB -- CRUD Ops --> Supabase
+    WebUI -- Map Tiles --> MapTiler
     
-    %% ML Service Connections
-    VercelAPI -. Local Dev Mode .-> MLService
-    MLService -- Advanced AI Orchestration --> Groq
+    %% AI Flow
+    V_Agent -. Local Dev Mode .-> FastAPI
+    V_Agent -- Fallback Mode --> Groq
+    V_Agent -- Vision Tasks --> Vision
+    
+    %% Python ML Internal Flow
+    FastAPI --> Orchestrator
+    Orchestrator --> A1
+    Orchestrator --> A2
+    Orchestrator --> A3
+    Orchestrator --> A4
+    Orchestrator --> A5
+    Orchestrator --> A6
+    Orchestrator --> A7
+    
+    A6 <--> RAG
+    
+    %% Agents to External
+    A1 -- Uses --> Vision
+    A2 -- Fetches --> Agmarknet
+    A3 -- Fetches --> OpenWeather
+    Orchestrator -- Reasons with --> Groq
 ```
 
 *Note: When hosted on Vercel, the Next.js API gracefully falls back to using the Groq API directly if the local Python ML service is offline.*

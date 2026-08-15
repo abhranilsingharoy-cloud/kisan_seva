@@ -28,24 +28,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Nav Items */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-[15px] font-medium text-slate-800">
-          <Link href="/" className="hover:text-[#1f8742] transition-colors">
-            Home
-          </Link>
-          <Link href="/diagnose" className="hover:text-[#1f8742] transition-colors">
-            Crops
-          </Link>
-          <Link href="/market" className="hover:text-[#1f8742] transition-colors">
-            Markets
-          </Link>
-          <Link href="/schedule" className="hover:text-[#1f8742] transition-colors">
-            Weather
-          </Link>
-          <Link href="/dashboard" className="hover:text-[#1f8742] transition-colors">
-            Dashboard
-          </Link>
-        </nav>
+
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">

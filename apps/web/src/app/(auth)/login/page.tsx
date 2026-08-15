@@ -1,42 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Leaf, Phone, Eye, EyeOff, ArrowRight, Loader2, ArrowLeft } from 'lucide-react'
-
-type Method = 'phone' | 'email'
-type Step = 'credentials' | 'otp'
+import { Leaf, Eye, EyeOff, ArrowRight, Loader2, ArrowLeft } from 'lucide-react'
+import { login } from '@/app/actions/auth'
 
 export default function LoginPage() {
-  const [method, setMethod] = useState<Method>('phone')
-  const [step, setStep] = useState<Step>('credentials')
   const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [otp, setOtp] = useState(['', '', '', '', '', ''])
+  const [isPending, startTransition] = useTransition()
+  const [errorMsg, setErrorMsg] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (method === 'phone' && step === 'credentials') {
-      setLoading(true)
-      setTimeout(() => { setLoading(false); setStep('otp') }, 1500)
-    } else {
-      setLoading(true)
-      setTimeout(() => { setLoading(false); window.location.href = '/dashboard' }, 1500)
-    }
-  }
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^[0-9]?$/.test(value)) return
-    const newOtp = [...otp]
-    newOtp[index] = value
-    setOtp(newOtp)
-    if (value && index < 5) {
-      const next = document.getElementById(`otp-${index + 1}`) as HTMLInputElement
-      next?.focus()
-    }
+    setErrorMsg('')
+    const formData = new FormData(e.currentTarget)
+    
+    startTransition(async () => {
+      const res = await login(formData)
+      if (res?.error) {
+        setErrorMsg(res.error)
+      }
+    })
   }
 
   return (
@@ -71,12 +55,11 @@ export default function LoginPage() {
             </span>
           </Link>
           <div className="mb-2 uppercase tracking-widest text-xs font-bold" style={{ color: '#6ee7b7' }}>
-            {step === 'otp' ? 'Secure Login' : 'Welcome back'}
+            Welcome back
           </div>
           <h1 className="font-display font-semibold" style={{ fontSize: '32px', color: '#ffffff', letterSpacing: '-0.03em' }}>
-            {step === 'otp' ? 'Verify your identity' : 'Sign in to your account'}
+            Sign in to your account
           </h1>
-          {step === 'otp' && <p className="mt-2 text-sm text-gray-300">Enter the code sent to +91 {phone}</p>}
         </div>
 
         {/* Card */}
@@ -88,149 +71,60 @@ export default function LoginPage() {
           padding: '40px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
         }}>
-          {step === 'credentials' ? (
-            <>
-              {/* Method Toggle */}
-              <div className="flex mb-8 rounded-xl overflow-hidden p-1" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                {(['phone', 'email'] as Method[]).map((m) => (
-                  <button
-                    key={m}
-                    className="flex-1 py-2.5 font-semibold capitalize transition-all rounded-lg"
-                    style={{
-                      fontSize: '0.9rem',
-                      background: method === m ? '#10b981' : 'transparent',
-                      color: method === m ? '#ffffff' : '#9ca3af',
-                      border: 'none',
-                      cursor: 'pointer',
-                      boxShadow: method === m ? '0 4px 6px -1px rgba(16, 185, 129, 0.4)' : 'none'
-                    }}
-                    onClick={() => setMethod(m)}
-                    id={`btn-method-${m}`}
-                  >
-                    {m === 'phone' ? '📱 Mobile' : '✉️ Email'}
-                  </button>
-                ))}
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {method === 'phone' ? (
-                  <div>
-                    <label htmlFor="phone-input" className="block mb-2 text-sm font-medium text-gray-300">Mobile Number</label>
-                    <div className="flex rounded-xl overflow-hidden shadow-sm" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div className="flex items-center px-4 font-medium" style={{ background: 'rgba(255,255,255,0.05)', color: '#9ca3af', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                        🇮🇳 +91
-                      </div>
-                      <input
-                        id="phone-input"
-                        type="tel"
-                        className="w-full px-4 py-3 bg-transparent text-white font-medium focus:outline-none"
-                        style={{ fontSize: '1.05rem', background: 'rgba(0,0,0,0.2)' }}
-                        placeholder="98765 43210"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        maxLength={10}
-                        required
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <label htmlFor="email-input" className="block mb-2 text-sm font-medium text-gray-300">Email Address</label>
-                      <input 
-                        id="email-input" 
-                        type="email" 
-                        className="w-full px-4 py-3 rounded-xl text-white font-medium focus:outline-none" 
-                        style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', fontSize: '1.05rem' }}
-                        placeholder="you@example.com" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                        required 
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="password-input" className="block mb-2 text-sm font-medium text-gray-300">Password</label>
-                      <div className="relative">
-                        <input
-                          id="password-input"
-                          type={showPass ? 'text' : 'password'}
-                          className="w-full px-4 py-3 rounded-xl text-white font-medium focus:outline-none"
-                          style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', fontSize: '1.05rem', paddingRight: '44px' }}
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                          onClick={() => setShowPass(!showPass)}
-                          aria-label={showPass ? 'Hide password' : 'Show password'}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                        >
-                          {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                      <div className="flex justify-end mt-2">
-                        <Link href="/forgot-password" style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 500 }}>
-                          Forgot password?
-                        </Link>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <button 
-                  type="submit" 
-                  className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 transition-all hover:opacity-90 active:scale-95 shadow-lg" 
-                  style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', fontSize: '1.05rem', cursor: 'pointer' }}
-                  disabled={loading} 
-                  id="btn-login-submit"
-                >
-                  {loading ? <><Loader2 size={18} className="animate-spin" /> Processing...</> : method === 'phone' ? <><Phone size={18} /> Send Secure OTP</> : <>Sign In <ArrowRight size={18} /></>}
-                </button>
-              </form>
-            </>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div>
-                <label className="block text-center text-sm font-medium text-gray-300 mb-6">Enter 6-Digit OTP</label>
-                <div className="flex gap-3 justify-center">
-                  {otp.map((digit, i) => (
-                    <input
-                      key={i}
-                      id={`otp-${i}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(i, e.target.value)}
-                      className="w-12 h-14 rounded-xl text-center text-xl font-bold text-white focus:outline-none transition-all focus:scale-110"
-                      style={{ background: 'rgba(0,0,0,0.3)', border: digit ? '2px solid #10b981' : '1px solid rgba(255,255,255,0.1)', boxShadow: digit ? '0 0 10px rgba(16,185,129,0.3)' : 'none' }}
-                      aria-label={`OTP digit ${i + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <button 
-                type="submit" 
-                className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg disabled:opacity-50 disabled:scale-100" 
-                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', fontSize: '1.05rem', cursor: 'pointer' }}
-                disabled={loading || otp.join('').length < 6} 
-                id="btn-verify-otp"
-              >
-                {loading ? <><Loader2 size={18} className="animate-spin" /> Verifying...</> : 'Verify & Continue'}
-              </button>
-              <button 
-                type="button" 
-                className="w-full py-2 text-gray-400 hover:text-white transition-colors font-medium text-sm" 
-                onClick={() => setStep('credentials')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                ← Use a different number
-              </button>
-            </form>
+          
+          {errorMsg && (
+            <div className="mb-6 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm font-medium text-center">
+              {errorMsg}
+            </div>
           )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-300">Email Address</label>
+              <input 
+                id="email" 
+                name="email"
+                type="email" 
+                className="w-full px-4 py-3 rounded-xl text-white font-medium focus:outline-none" 
+                style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', fontSize: '1.05rem' }}
+                placeholder="you@example.com" 
+                required 
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-300">Password</label>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPass ? 'text' : 'password'}
+                  className="w-full px-4 py-3 rounded-xl text-white font-medium focus:outline-none"
+                  style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', fontSize: '1.05rem', paddingRight: '44px' }}
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  onClick={() => setShowPass(!showPass)}
+                  aria-label={showPass ? 'Hide password' : 'Show password'}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 transition-all hover:opacity-90 active:scale-95 shadow-lg" 
+              style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white', border: 'none', fontSize: '1.05rem', cursor: 'pointer' }}
+              disabled={isPending} 
+            >
+              {isPending ? <><Loader2 size={18} className="animate-spin" /> Processing...</> : <>Sign In <ArrowRight size={18} /></>}
+            </button>
+          </form>
 
           <div className="mt-8 text-center pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <p className="text-gray-400 text-sm">
@@ -258,4 +152,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

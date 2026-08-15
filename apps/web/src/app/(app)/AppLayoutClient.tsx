@@ -310,7 +310,7 @@ export default function AppLayoutClient({
         </header>
 
         {/* PAGE CONTENT */}
-        <main className={`flex-1 flex flex-col min-h-0 overflow-y-auto relative pb-20 md:pb-0 ${pathname === '/agent' ? 'scrollbar-hide' : ''}`} style={{ backgroundColor: '#f0f4f0' }}>
+        <main className={`flex-1 flex flex-col min-h-0 overflow-y-auto relative ${pathname === '/agent' ? 'scrollbar-hide pb-0' : 'pb-20 md:pb-0'}`} style={{ backgroundColor: '#f0f4f0' }}>
           <div className="w-full flex-1 min-h-0 max-w-7xl mx-auto flex flex-col">
             {children}
           </div>
@@ -318,8 +318,9 @@ export default function AppLayoutClient({
       </div>
 
       {/* MOBILE BOTTOM NAV — only show 5 key tabs */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-40">
-        <div className="flex justify-around items-center h-16">
+      {pathname !== '/agent' && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-40">
+          <div className="flex justify-around items-center h-16">
           {APP_LINKS.slice(0, 5).map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
@@ -337,6 +338,7 @@ export default function AppLayoutClient({
           })}
         </div>
       </nav>
+      )}
 
       {/* MOBILE DRAWER OVERLAY */}
       {mobileMenuOpen && (

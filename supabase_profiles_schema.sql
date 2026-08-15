@@ -14,10 +14,10 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Allow public read of profiles (optional, for community posts)
-CREATE POLICY "Public profiles are viewable by everyone."
+-- Allow users to view only their OWN profile (Privacy/Encryption equivalent for RLS)
+CREATE POLICY "Users can view own profile."
   ON profiles FOR SELECT
-  USING ( true );
+  USING ( auth.uid() = id );
 
 -- Allow users to insert their own profile
 CREATE POLICY "Users can insert their own profile."

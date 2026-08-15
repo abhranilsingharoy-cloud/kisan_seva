@@ -16,13 +16,32 @@ KisanSeva is a comprehensive platform built to empower farmers with real-time ma
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Features in Detail
 
-- **🗣️ Multilingual Voice AI Assistant:** Talk to the KisanSeva Saathi in English, Hindi, or Bengali using natural voice commands.
-- **👁️ Crop Disease Diagnosis:** Upload a photo of a diseased crop and get an instant diagnosis and treatment plan powered by Gemini & Nvidia Vision models.
-- **📊 Live Mandi Prices (B2B):** Get real-time agricultural market prices directly from the Agmarknet database.
-- **🌤️ Localized Weather:** Real-time farming weather conditions and irrigation advisory.
-- **🤖 7-Agent Orchestration:** A Python-powered multi-agent system where specialized AI agents collaborate to give precise agricultural advice.
+### 1. 🤖 7-Agent AI Advisory System (KisanSeva Saathi)
+A highly advanced, conversational AI assistant composed of 7 specialized agents (Diagnosis, Weather, Market, Soil Health, Outbreak Monitor, Knowledge Base, and SMS/IVR). 
+- **Voice-Activated & Multilingual:** Farmers can click the microphone to speak in English, Hindi, or Bengali. The AI responds natively in their language.
+- **Context-Aware Routing:** The AI orchestrator automatically routes the farmer's question to the correct specialized agent (e.g., asking about prices routes to the Market Agent).
+
+### 2. 👁️ Crop Disease Diagnosis (Vision AI)
+Farmers can upload a photo of a diseased crop directly from their phone.
+- **Multi-Model Support:** Choose between **Google Gemini Vision** or **Nvidia NIM Vision** to instantly scan the leaf.
+- **Actionable Treatment Plans:** The AI identifies the disease, explains the cause, and provides step-by-step biological and chemical treatment recommendations.
+
+### 3. 📊 Live B2B Market Prices (Agmarknet Integration)
+A real-time marketplace dashboard designed to help farmers get the best prices for their harvest.
+- **Live Mandi Data:** Pulls real-time agricultural market prices directly from the Government of India's Agmarknet database.
+- **Price Trends & Analytics:** View historical charts and AI-generated summaries to decide when and where to sell.
+
+### 4. 🌤️ Localized Weather & Irrigation Advisory
+Integrated with the OpenWeatherMap API to provide hyper-local weather data based on the farmer's GPS location.
+- **Irrigation Scheduling:** The AI uses the temperature, humidity, and forecast to recommend exactly how much water specific crops need for the week.
+
+### 5. 🌱 Soil Health & Fertilizer Planning
+A dedicated module where farmers can input their soil type or NPK values to receive a customized fertilizer schedule, ensuring maximum yield without degrading the soil quality.
+
+### 6. 🗺️ Interactive Farm Mapping
+Features an interactive map built with Leaflet and MapTiler, allowing farmers to visualize regional data, nearby markets, and agricultural zones directly on the dashboard.
 
 ---
 

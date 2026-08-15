@@ -1,5 +1,6 @@
 import React from 'react';
-import Link from 'next/link';
+import { createClient } from '@/lib/supabase/server';
+import AppLayoutClient from './AppLayoutClient';
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

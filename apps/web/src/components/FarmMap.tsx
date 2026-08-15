@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Polygon, Rectangle, Popup, Marker, useMap, useMapEvents } from 'react-leaflet';
 // Removed local css import to avoid Turbopack image resolution bugs
 // import 'leaflet/dist/leaflet.css';
@@ -139,6 +139,13 @@ interface FarmMapProps {
 
 export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, onMapClick }: FarmMapProps) {
   const defaultCenter: [number, number] = [30.9192, 75.8570];
+  const [mapKey, setMapKey] = useState(0);
+
+  // Fix for React 18 Strict Mode & Next.js Fast Refresh (HMR)
+  // Forces React to generate a completely new DOM node for the MapContainer when remounting
+  useEffect(() => {
+    setMapKey(Math.random());
+  }, []);
 
   // Memoize the pixel grids so they only recalculate if the base zone data changes
   const heatmapData = useMemo(() => {
@@ -150,8 +157,7 @@ export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, o
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <MapContainer center={defaultCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
+      <MapContainer key={mapKey} center={defaultCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
         <MapController targetLocation={targetLocation} />
         <MapClickHandler onMapClick={onMapClick} />
 

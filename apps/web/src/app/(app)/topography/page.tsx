@@ -40,7 +40,7 @@ interface RealData {
 }
 
 // Procedural Farm Zone Generator using REAL data anchor
-function generateZonesForLocation(lat: number, lng: number, realData: RealData | null): Zone[] {
+function generateZonesForLocation(lat: number, lng: number, realData: RealData | null, isCity: boolean = false, isMountain: boolean = false): Zone[] {
   const dLat = 0.003; 
   const dLng = 0.0035; 
   const gap = 0.0005; 
@@ -63,9 +63,22 @@ function generateZonesForLocation(lat: number, lng: number, realData: RealData |
     if (realData.precip > 5) moistAlert = `REAL ALERT: Heavy rainfall detected (${realData.precip}mm). High flood risk.`;
   }
 
+  // Drastically penalize health score if the location is identified as an urban city environment
+  if (isCity) {
+    baseHealth = Math.max(10, Math.min(baseHealth, 25)); // Cap base health at 25% for cities
+    tempAlert = "Urban heat island effect detected.";
+    moistAlert = "High soil compaction and concrete density.";
+  } else if (isMountain) {
+    baseHealth = Math.max(10, Math.min(baseHealth, 35)); // Cap base health at 35% for mountains
+    tempAlert = tempAlert || "High altitude / steep gradient detected.";
+    moistAlert = moistAlert || "Rocky terrain unsuitable for traditional agriculture.";
+  }
+
   const randH = () => Math.floor(Math.random() * 15) - 7 + baseHealth; // +/- 7 variance from REAL base
   
   const genIssue = (h: number) => {
+    if (isCity) return 'Suboptimal soil conditions due to heavy urbanization and concrete structures.';
+    if (isMountain) return 'Steep topography, shallow topsoil, and rocky terrain limit agricultural viability.';
     if (tempAlert) return tempAlert;
     if (moistAlert) return moistAlert;
     if (h > 75) return 'Optimal growth parameters. Real soil moisture is ideal.';
@@ -105,7 +118,7 @@ function generateZonesForLocation(lat: number, lng: number, realData: RealData |
 
 const DEFAULT_CENTER: [number, number] = [30.9192, 75.8570];
 
-function useLiveTelemetry(targetLocation: [number, number] | null, isArable: boolean = true) {
+function useLiveTelemetry(targetLocation: [number, number] | null, isArable: boolean = true, isCity: boolean = false, isMountain: boolean = false) {
   const [zones, setZones] = useState<Zone[]>([]);
   const [lastSync, setLastSync] = useState<Date>(new Date());
   const [realWeatherData, setRealWeatherData] = useState<RealData | null>(null);
@@ -133,17 +146,17 @@ function useLiveTelemetry(targetLocation: [number, number] | null, isArable: boo
         };
         
         setRealWeatherData(realData);
-        setZones(generateZonesForLocation(center[0], center[1], realData));
+        setZones(generateZonesForLocation(center[0], center[1], realData, isCity, isMountain));
       } catch (error) {
         console.error("Open-Meteo fetch failed:", error);
-        setZones(generateZonesForLocation(center[0], center[1], null));
+        setZones(generateZonesForLocation(center[0], center[1], null, isCity, isMountain));
       } finally {
         setIsFetchingRealData(false);
       }
     };
 
     fetchRealData();
-  }, [targetLocation, isArable]);
+  }, [targetLocation, isArable, isCity, isMountain]);
 
   // 2. Continuous telemetry ping (minor sensor noise over the real data)
   useEffect(() => {
@@ -191,32 +204,94 @@ export default function TopographyPage() {
   const [locationName, setLocationName] = useState('Ludhiana District, Punjab, India');
   const [isArable, setIsArable] = useState(true);
 
+  const [isCity, setIsCity] = useState(false);
+  const [isMountain, setIsMountain] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // Connect Live Telemetry powered by REAL OPEN-METEO DATA
-  const { zones, lastSync, realWeatherData, isFetchingRealData } = useLiveTelemetry(targetLocation, isArable);
+  const { zones, lastSync, realWeatherData, isFetchingRealData } = useLiveTelemetry(targetLocation, isArable, isCity, isMountain);
   
   const averageHealth = zones.length > 0 ? (zones.reduce((acc, z) => acc + z.health, 0) / zones.length).toFixed(1) : "0.0";
 
-  const liveAlerts = zones
-    .filter(z => z.health < 60)
-    .sort((a, b) => a.health - b.health)
-    .map(z => ({
-      color: z.health < 45 ? '#ef4444' : '#eab308',
-      bg: z.health < 45 ? 'rgba(239,68,68,0.12)' : 'rgba(234,179,8,0.12)',
-      border: z.health < 45 ? 'rgba(239,68,68,0.25)' : 'rgba(234,179,8,0.25)',
-      icon: z.health < 45 ? <Droplets size={18} color="#ef4444" /> : <ThermometerSun size={18} color="#eab308" />,
-      title: `${z.name}: ${z.health < 45 ? 'Critical Stress' : 'Moderate Stress'}`,
-      desc: z.issue
-    }));
+  // Build context-aware environmental alerts based on location
+  const locationAlerts: any[] = [];
+  if (realWeatherData && isArable) {
+    const locShort = locationName.split(',')[0] || "Local Region";
     
-  if (liveAlerts.length === 0 && zones.length > 0) {
+    if (isCity) {
+      locationAlerts.push({
+        color: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)',
+        icon: <AlertTriangle size={18} color="#ef4444" />,
+        title: `Urban Environment: ${locShort}`,
+        desc: `Concrete density and soil compaction severely limits arable yield.`
+      });
+    } else if (isMountain) {
+      locationAlerts.push({
+        color: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)',
+        icon: <AlertTriangle size={18} color="#ef4444" />,
+        title: `Mountain Terrain: ${locShort}`,
+        desc: `High altitude and rocky gradients restrict agricultural capacity.`
+      });
+    }
+
+    if (realWeatherData.temp > 35) {
+      locationAlerts.push({
+        color: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)',
+        icon: <ThermometerSun size={18} color="#ef4444" />,
+        title: `${locShort} Heatwave`,
+        desc: `Extreme surface temps (${realWeatherData.temp.toFixed(1)}°C) detected across the region.`
+      });
+    } else if (realWeatherData.temp < 10) {
+      locationAlerts.push({
+        color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)',
+        icon: <ThermometerSun size={18} color="#3b82f6" />,
+        title: `${locShort} Frost Risk`,
+        desc: `Low temperatures (${realWeatherData.temp.toFixed(1)}°C) may threaten sensitive crops.`
+      });
+    }
+    
+    if (realWeatherData.moisture < 0.2 && !isCity && !isMountain) {
+      locationAlerts.push({
+        color: '#ef4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)',
+        icon: <Droplets size={18} color="#ef4444" />,
+        title: `Drought Alert: ${locShort}`,
+        desc: `Critical topsoil moisture deficit (${realWeatherData.moisture.toFixed(3)} m³/m³).`
+      });
+    }
+    
+    if (realWeatherData.precip > 2) {
+      locationAlerts.push({
+        color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.25)',
+        icon: <Droplets size={18} color="#3b82f6" />,
+        title: `Rainfall in ${locShort}`,
+        desc: `Precipitation (${realWeatherData.precip}mm) detected. Monitor waterlogging.`
+      });
+    }
+  }
+
+  const liveAlerts = [
+    ...locationAlerts,
+    ...zones
+      .filter(z => z.health < 60)
+      .sort((a, b) => a.health - b.health)
+      .map(z => ({
+        color: z.health < 45 ? '#ef4444' : '#eab308',
+        bg: z.health < 45 ? 'rgba(239,68,68,0.12)' : 'rgba(234,179,8,0.12)',
+        border: z.health < 45 ? 'rgba(239,68,68,0.25)' : 'rgba(234,179,8,0.25)',
+        icon: <Activity size={18} color={z.health < 45 ? "#ef4444" : "#eab308"} />,
+        title: `${z.name} Stress`,
+        desc: z.issue
+      }))
+  ];
+    
+  if (liveAlerts.length === 0 && zones.length > 0 && !isCity && !isMountain) {
     liveAlerts.push({
       color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)',
       icon: <CheckCircle2 size={18} color="#10b981" />,
-      title: 'All Zones Optimal', desc: 'Real-world data suggests optimal crop conditions.'
+      title: 'Optimal Conditions', desc: `${locationName.split(',')[0]} environment is ideal for crop growth.`
     });
   }
 
@@ -236,17 +311,77 @@ export default function TopographyPage() {
       if (data && data.error) {
         setLocationName("Ocean / Unmapped Territory");
         setIsArable(false);
+        setIsCity(false);
+        setIsMountain(false);
       } else {
-        setIsArable(true);
-        if (data && data.display_name) {
-          setLocationName(data.display_name.split(',').slice(0, 3).join(','));
+        // Detect if the location is a water body so we don't draw farms in rivers/oceans
+        const isWater = 
+          data.class === 'waterway' || 
+          data.type === 'water' || 
+          data.type === 'river' || 
+          data.type === 'sea' || 
+          data.type === 'ocean' ||
+          (data.address && data.address.waterway);
+
+        // Detect if it's an urban city (bad for farming)
+        const isUrban = 
+          data.type === 'city' || 
+          data.type === 'town' || 
+          data.class === 'building' || 
+          data.type === 'residential' || 
+          data.type === 'commercial' || 
+          data.type === 'industrial' ||
+          (data.address && (data.address.city || data.address.town || data.address.municipality));
+          
+        // Detect if it's a mountain or steep terrain (bad for traditional farming)
+        const isMountainous =
+          data.type === 'peak' ||
+          data.type === 'mountain' ||
+          data.type === 'mountain_pass' ||
+          data.type === 'ridge' ||
+          data.type === 'hill' ||
+          data.type === 'glacier' ||
+          data.type === 'volcano';
+
+        if (isWater) {
+          setLocationName(data.display_name ? data.display_name.split(',').slice(0, 3).join(',') : "Water Body");
+          setIsArable(false);
+          setIsCity(false);
+          setIsMountain(false);
+        } else if (isUrban && !data.display_name.toLowerCase().includes("farm")) {
+          setIsArable(true);
+          setIsCity(true);
+          setIsMountain(false);
+          if (data && data.display_name) {
+            setLocationName(data.display_name.split(',').slice(0, 3).join(','));
+          } else {
+            setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+          }
+        } else if (isMountainous) {
+          setIsArable(true);
+          setIsCity(false);
+          setIsMountain(true);
+          if (data && data.display_name) {
+            setLocationName(data.display_name.split(',').slice(0, 3).join(','));
+          } else {
+            setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+          }
         } else {
-          setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+          setIsArable(true);
+          setIsCity(false);
+          setIsMountain(false);
+          if (data && data.display_name) {
+            setLocationName(data.display_name.split(',').slice(0, 3).join(','));
+          } else {
+            setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
+          }
         }
       }
     } catch (e) {
       setLocationName(`${lat.toFixed(3)}°N, ${lng.toFixed(3)}°E`);
       setIsArable(true);
+      setIsCity(false);
+      setIsMountain(false);
     }
   };
 

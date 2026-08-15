@@ -33,7 +33,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
                 <Link href="/sign-up" className="btn btn-solid nav-cta hidden sm:flex">Register</Link>
               </SignedOut>
               <SignedIn>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
               </SignedIn>
             </div>
           </nav>

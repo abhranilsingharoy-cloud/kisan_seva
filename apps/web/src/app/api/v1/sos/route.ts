@@ -3,22 +3,26 @@ import { DatabaseSync } from 'node:sqlite';
 import { NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
+import { sql } from '@vercel/postgres';
 
-// Initialize Database
-const dbDir = path.join(process.cwd(), 'data');
-if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
-const dbPath = path.join(dbDir, 'sos_alerts.db');
+// -- LOCAL SQLITE FALLBACK SETUP --
+let localDb: DatabaseSync | null = null;
+const isVercel = !!process.env.POSTGRES_URL;
 
-const db = new DatabaseSync(dbPath);
-db.exec(`
-  CREATE TABLE IF NOT EXISTS alerts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL,
-    latitude REAL NOT NULL,
-    longitude REAL NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+if (!isVercel) {
+  const dbDir = path.join(process.cwd(), 'data');
+  if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+  localDb = new DatabaseSync(path.join(dbDir, 'sos_alerts.db'));
+  localDb.exec(`
+    CREATE TABLE IF NOT EXISTS alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+}
 
 // Haversine formula to calculate distance in KM between two coordinates
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -30,8 +34,7 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
     Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
     Math.sin(dLon / 2) * Math.sin(dLon / 2); 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-  const d = R * c; // Distance in km
-  return d;
+  return R * c; 
 }
 
 export async function GET(req: Request) {
@@ -47,11 +50,30 @@ export async function GET(req: Request) {
 
     const targetLat = parseFloat(lat);
     const targetLng = parseFloat(lng);
-    const radiusKm = radiusStr ? parseFloat(radiusStr) : 50; // Default 50km radius
+    const radiusKm = radiusStr ? parseFloat(radiusStr) : 50; 
 
-    // Get all alerts from the last 24 hours
-    const stmt = db.prepare(`SELECT * FROM alerts WHERE timestamp >= datetime('now', '-1 day') ORDER BY timestamp DESC`);
-    const allAlerts = stmt.all() as any[];
+    let allAlerts: any[] = [];
+
+    if (isVercel) {
+      // VERCEL POSTGRES PROD DB
+      // Create table if it doesn't exist just in case
+      await sql`
+        CREATE TABLE IF NOT EXISTS alerts (
+          id SERIAL PRIMARY KEY,
+          type VARCHAR(255) NOT NULL,
+          latitude DOUBLE PRECISION NOT NULL,
+          longitude DOUBLE PRECISION NOT NULL,
+          timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+      // We use interval '1 day' for postgres instead of datetime('now', '-1 day')
+      const result = await sql`SELECT * FROM alerts WHERE timestamp >= NOW() - INTERVAL '1 day' ORDER BY timestamp DESC`;
+      allAlerts = result.rows;
+    } else {
+      // LOCAL SQLITE FALLBACK
+      const stmt = localDb!.prepare(`SELECT * FROM alerts WHERE timestamp >= datetime('now', '-1 day') ORDER BY timestamp DESC`);
+      allAlerts = stmt.all() as any[];
+    }
 
     // Filter by Haversine distance
     const nearbyAlerts = allAlerts.map(alert => {
@@ -75,8 +97,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Type, latitude, and longitude are required' }, { status: 400 });
     }
 
-    const stmt = db.prepare('INSERT INTO alerts (type, latitude, longitude) VALUES (?, ?, ?)');
-    stmt.run(type, latitude, longitude);
+    if (isVercel) {
+      // Create table if not exists just in case it's the first ever query
+      await sql`
+        CREATE TABLE IF NOT EXISTS alerts (
+          id SERIAL PRIMARY KEY,
+          type VARCHAR(255) NOT NULL,
+          latitude DOUBLE PRECISION NOT NULL,
+          longitude DOUBLE PRECISION NOT NULL,
+          timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+      await sql`INSERT INTO alerts (type, latitude, longitude) VALUES (${type}, ${latitude}, ${longitude})`;
+    } else {
+      const stmt = localDb!.prepare('INSERT INTO alerts (type, latitude, longitude) VALUES (?, ?, ?)');
+      stmt.run(type, latitude, longitude);
+    }
 
     return NextResponse.json({ success: true, message: 'SOS Alert broadcasted successfully' });
   } catch (error: any) {

@@ -1,6 +1,8 @@
+// @ts-ignore
 import { DatabaseSync } from 'node:sqlite';
 import { NextResponse } from 'next/server';
 import path from 'path';
+import { sql } from '@vercel/postgres';
 
 export async function POST(req: Request) {
   try {
@@ -10,10 +12,6 @@ export async function POST(req: Request) {
     if (!postId || !question) {
       return NextResponse.json({ success: false, error: 'Missing postId or question' }, { status: 400 });
     }
-
-    // Connect to existing db
-    const dbPath = path.join(process.cwd(), 'data', 'community_posts.db');
-    const db = new DatabaseSync(dbPath);
 
     // AI Logic Simulation
     let responseContent = 'Based on agricultural best practices, this requires careful monitoring. I recommend getting a soil test to confirm nutrient levels. Additionally, keep an eye on local weather forecasts, as sudden temperature drops can cause similar symptoms.';
@@ -26,15 +24,24 @@ export async function POST(req: Request) {
       responseContent = 'Market prices fluctuate based on arrivals. You can check the "Direct B2B Contracts" section on the Market page to secure a pre-agreed premium price for your harvest, bypassing mandi volatility altogether.';
     }
 
-    const replyId = `r${Date.now()}`;
+    const replyId = \`r\${Date.now()}\`;
     
-    // Insert AI reply into database
-    const insertStmt = db.prepare(`
-      INSERT INTO replies (id, postId, authorName, authorType, content)
-      VALUES (?, ?, 'KisanSeva AI Expert', 'ai', ?)
-    `);
-    
-    insertStmt.run(replyId, postId, responseContent);
+    const isVercel = !!process.env.POSTGRES_URL;
+
+    if (isVercel) {
+      await sql`
+        INSERT INTO replies (id, postId, authorName, authorType, content)
+        VALUES (${replyId}, ${postId}, 'KisanSeva AI Expert', 'ai', ${responseContent})
+      `;
+    } else {
+      const dbPath = path.join(process.cwd(), 'data', 'community_posts.db');
+      const db = new DatabaseSync(dbPath);
+      const insertStmt = db.prepare(`
+        INSERT INTO replies (id, postId, authorName, authorType, content)
+        VALUES (?, ?, 'KisanSeva AI Expert', 'ai', ?)
+      `);
+      insertStmt.run(replyId, postId, responseContent);
+    }
 
     return NextResponse.json({ success: true, message: 'AI Reply added to database' });
   } catch (error: any) {

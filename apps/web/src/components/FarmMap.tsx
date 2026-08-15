@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Polygon, Rectangle, Popup, Marker, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Rectangle, Popup, Marker, Circle, useMap, useMapEvents } from 'react-leaflet';
 // Removed local css import to avoid Turbopack image resolution bugs
 // import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -135,16 +135,22 @@ interface FarmMapProps {
   onZoneSelect?: (zone: Zone | null) => void;
   targetLocation: [number, number] | null;
   onMapClick?: (lat: number, lng: number) => void;
+  sosAlerts?: any[];
 }
 
-export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, onMapClick }: FarmMapProps) {
+export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, onMapClick, sosAlerts = [] }: FarmMapProps) {
   const defaultCenter: [number, number] = [30.9192, 75.8570];
-  const [mapKey, setMapKey] = useState(0);
+  const mapRef = React.useRef<L.Map | null>(null);
 
-  // Fix for React 18 Strict Mode & Next.js Fast Refresh (HMR)
-  // Forces React to generate a completely new DOM node for the MapContainer when remounting
+  // Deep cleanup for React 18 Strict Mode and Next.js HMR
+  // Destroys the Leaflet instance on unmount to prevent 'Map container is already initialized' errors
   useEffect(() => {
-    setMapKey(Math.random());
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, []);
 
   // Memoize the pixel grids so they only recalculate if the base zone data changes
@@ -157,7 +163,7 @@ export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, o
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
-      <MapContainer key={mapKey} center={defaultCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
+      <MapContainer ref={mapRef} center={defaultCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
         <MapController targetLocation={targetLocation} />
         <MapClickHandler onMapClick={onMapClick} />
 
@@ -174,6 +180,24 @@ export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, o
             <Popup>Current Location</Popup>
           </Marker>
         )}
+
+        {/* Real-time SOS Hazard Zones */}
+        {sosAlerts.map(alert => (
+          <Circle 
+            key={`sos-${alert.id}`}
+            center={[alert.latitude, alert.longitude]}
+            radius={alert.type.includes('Swarm') || alert.type.includes('Flood') ? 1500 : 500}
+            pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.35, weight: 2, dashArray: '8, 8' }}
+          >
+            <Popup>
+              <div style={{ fontFamily: "'Inter', sans-serif" }}>
+                <div style={{ fontWeight: 800, color: '#ef4444', fontSize: '1rem', marginBottom: '4px' }}>🚨 {alert.type}</div>
+                <div style={{ fontSize: '0.8rem', color: '#475569' }}>Broadcasted by farmer at:</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#0f172a' }}>{new Date(alert.timestamp).toLocaleTimeString()}</div>
+              </div>
+            </Popup>
+          </Circle>
+        ))}
 
         {heatmapData.map(({ zone, pixels }) => {
           const zoneColor = getColor(zone.health, isNDVI);

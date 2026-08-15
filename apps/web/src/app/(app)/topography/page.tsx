@@ -206,10 +206,31 @@ export default function TopographyPage() {
 
   const [isCity, setIsCity] = useState(false);
   const [isMountain, setIsMountain] = useState(false);
+  
+  // Real-time SOS Database Sync
+  const [sosAlerts, setSosAlerts] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch all SOS alerts within 100km of the current map view
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    const fetchSos = async () => {
+      const center = targetLocation || DEFAULT_CENTER;
+      try {
+        const res = await fetch(`/api/v1/sos?lat=${center[0]}&lng=${center[1]}&radius=100`);
+        const data = await res.json();
+        if (data.alerts) setSosAlerts(data.alerts);
+      } catch (e) {}
+    };
+    
+    fetchSos(); // initial fetch
+    interval = setInterval(fetchSos, 15000); // Poll every 15s
+    
+    return () => clearInterval(interval);
+  }, [targetLocation]);
 
   // Connect Live Telemetry powered by REAL OPEN-METEO DATA
   const { zones, lastSync, realWeatherData, isFetchingRealData } = useLiveTelemetry(targetLocation, isArable, isCity, isMountain);
@@ -272,7 +293,16 @@ export default function TopographyPage() {
     }
   }
 
+  // Prepend real active SOS alerts
+  const sosTelemetryAlerts = sosAlerts.map(a => ({
+    color: '#ef4444', bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)',
+    icon: <Siren size={18} color="#ef4444" className="live-badge" />,
+    title: `COMMUNITY SOS: ${a.type}`,
+    desc: `Hazard reported ${a.distance.toFixed(1)} km from map center.`
+  }));
+
   const liveAlerts = [
+    ...sosTelemetryAlerts,
     ...locationAlerts,
     ...zones
       .filter(z => z.health < 60)
@@ -323,15 +353,15 @@ export default function TopographyPage() {
           data.type === 'ocean' ||
           (data.address && data.address.waterway);
 
-        // Detect if it's an urban city (bad for farming)
+        // Detect if it's an urban city (bad for farming). 
+        // We only check the specific feature type/class, NOT the address, 
+        // because rural farms often have a 'town' or 'city' in their administrative address.
         const isUrban = 
           data.type === 'city' || 
-          data.type === 'town' || 
           data.class === 'building' || 
           data.type === 'residential' || 
           data.type === 'commercial' || 
-          data.type === 'industrial' ||
-          (data.address && (data.address.city || data.address.town || data.address.municipality));
+          data.type === 'industrial';
           
         // Detect if it's a mountain or steep terrain (bad for traditional farming)
         const isMountainous =
@@ -479,7 +509,7 @@ export default function TopographyPage() {
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
 
         <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-          <FarmMap isNDVI={isNDVI} zones={zones} onZoneSelect={setSelectedZone} targetLocation={targetLocation} onMapClick={handleMapClick} />
+          <FarmMap isNDVI={isNDVI} zones={zones} onZoneSelect={setSelectedZone} targetLocation={targetLocation} onMapClick={handleMapClick} sosAlerts={sosAlerts} />
         </div>
 
         {/* Fetching Real Data Overlay */}

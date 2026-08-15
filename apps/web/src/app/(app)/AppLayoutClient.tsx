@@ -51,7 +51,6 @@ const PAGE_TITLES: Record<string, string> = {
 };
 
 const APP_LINKS = [
-  { name: 'Home', href: '/', icon: Home },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Diagnose', href: '/diagnose', icon: Search },
   { name: 'Market', href: '/market', icon: TrendingUp },

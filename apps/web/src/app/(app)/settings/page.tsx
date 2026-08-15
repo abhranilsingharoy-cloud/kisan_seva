@@ -291,21 +291,7 @@ export default function SettingsProfilePage() {
                     </select>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-xl transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                        <Moon className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-slate-900">Dark Mode</div>
-                        <div className="text-xs font-medium text-slate-500">Easier on the eyes</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" checked={settings.darkMode} onChange={e => setSettings({...settings, darkMode: e.target.checked})} />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                    </label>
-                  </div>
+
                 </div>
               </div>
 

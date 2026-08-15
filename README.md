@@ -111,30 +111,78 @@ graph TD
 
 ---
 
-## 📂 Folder Architecture
+## 📂 Detailed Folder Architecture
 
-The project is structured as a **Turborepo** monorepo containing two main applications:
+The platform uses a **Turborepo** monorepo structure to perfectly organize the Next.js frontend and the Python Machine Learning service.
 
 ```text
 kisan_seva/
-├── apps/
-│   ├── web/                     # 🌐 Next.js Frontend & API Routes
-│   │   ├── src/
-│   │   │   ├── app/             # App Router (Pages, Layouts, API Routes)
-│   │   │   ├── components/      # Reusable React UI Components
-│   │   │   ├── hooks/           # Custom Hooks (e.g., useVoiceChat)
-│   │   │   └── lib/             # Utilities (Zustand store, Supabase client)
-│   │   └── package.json         # Frontend Dependencies
-│   │
-│   └── ml-service/              # 🧠 Python ML & AI Backend
-│       ├── agents/              # 7 Specialized LangChain Agents
-│       ├── knowledge_base/      # RAG Documents & Embeddings
-│       ├── utils/               # Helper functions & data processing
-│       ├── main.py              # FastAPI entry point
-│       └── requirements.txt     # Python Dependencies
+├── turbo.json                   # Monorepo task runner configuration
+├── package.json                 # Root dependencies and workspace definitions
 │
-├── package.json                 # Root dependencies and Turborepo scripts
-└── turbo.json                   # Monorepo build configurations
+├── apps/
+│   ├── web/                     # 🌐 Next.js Frontend Application
+│   │   ├── src/
+│   │   │   ├── app/             # Next.js App Router (Pages & API)
+│   │   │   │   ├── api/v1/      # Serverless API routes (B2B, market, diagnose, weather, TTS)
+│   │   │   │   └── [locale]/    # Internationalized routing for EN, HI, BN
+│   │   │   │       ├── (app)/   # Protected dashboard routes (schedule, market, diagnose)
+│   │   │   │       └── (public)/# Public marketing pages and landing page
+│   │   │   │
+│   │   │   ├── components/      # Modular React UI Components
+│   │   │   │   ├── chat/        # Floating chatbot UI, message bubbles, language selector
+│   │   │   │   ├── features/    # Core feature UI (Mandi tables, diagnosis scanners, charts)
+│   │   │   │   ├── home/        # Landing page components (Hero, Testimonials, Map visualizations)
+│   │   │   │   ├── layout/      # Navbar, AgriFooter, offline indicators, translation widgets
+│   │   │   │   └── ui/          # Generic reusable elements (buttons, full-page scrollers)
+│   │   │   │
+│   │   │   ├── hooks/           # Custom React hooks
+│   │   │   │   └── useVoiceChat.ts # Handles microphone access, speech-to-text, and fallback logic
+│   │   │   │
+│   │   │   ├── lib/             # Core Utilities & State Management
+│   │   │   │   ├── chatStore.ts # Zustand global state manager for the AI chat history
+│   │   │   │   └── supabase/    # Supabase authentication and database clients (server/client)
+│   │   │   │
+│   │   │   ├── i18n/            # next-intl configuration and translation dictionaries
+│   │   │   ├── .env.production  # Production environment variables (auto-synced to Vercel)
+│   │   │   ├── middleware.ts    # Clerk Auth and Next-Intl routing interceptors
+│   │   │   ├── next.config.ts   # Next.js compiler settings and PWA configuration
+│   │   │   └── tailwind.config.ts # Custom Tailwind theme colors and animations
+│   │
+│   └── ml-service/              # 🧠 Python Multi-Agent & Machine Learning Backend
+│       ├── main.py              # FastAPI server entry point (routes requests to the Orchestrator)
+│       ├── requirements.txt     # Python dependencies (FastAPI, LangChain, Uvicorn, Torch)
+│       │
+│       ├── agents/              # The 7-Agent Architecture
+│       │   ├── orchestrator/    # The "Brain" that decides which agent should answer
+│       │   │   ├── master_orchestrator.py
+│       │   │   └── agent_registry.py
+│       │   ├── specialist/      # The specific "Expert" agents
+│       │   │   ├── diagnosis_agent.py      # Handles crop diseases
+│       │   │   ├── mandi_price_agent.py    # Fetches real-time Agmarknet data
+│       │   │   ├── weather_advisory_agent.py # Connects to OpenWeather
+│       │   │   ├── soil_health_agent.py    # Generates NPK fertilizer plans
+│       │   │   ├── outbreak_detection_agent.py
+│       │   │   ├── sms_ivr_agent.py        
+│       │   │   ├── knowledge_base_agent.py # RAG queries
+│       │   │   └── feedback_agent.py       # Collects user feedback
+│       │   └── base/
+│       │       └── base_agent.py # LangChain base class template for all agents
+│       │
+│       ├── knowledge_base/      # RAG (Retrieval-Augmented Generation) System
+│       │   ├── crop_disease_db.py
+│       │   └── vector_store.py  # Embeddings for agricultural documents
+│       │
+│       ├── training/            # Custom Model Training Scripts (Future-proofing)
+│       │   ├── scripts/         # Scripts for Google Colab model training and evaluation
+│       │   ├── configs/         # Model hyperparameter configs
+│       │   └── data/            # Dataset loaders for images
+│       │
+│       └── utils/               # Python Utility Functions
+│           ├── llm_client.py    # Connection to Groq Llama-3.3-70b
+│           ├── image_utils.py   # Processes images for Gemini/Nvidia NIM
+│           ├── language_utils.py # Translation layer
+│           └── sentry_init.py   # Error tracking
 ```
 
 ---

@@ -18,30 +18,41 @@ KisanSeva is a comprehensive platform built to empower farmers with real-time ma
 
 ## 🚀 Key Features in Detail
 
-### 1. 🤖 7-Agent AI Advisory System (KisanSeva Saathi)
-A highly advanced, conversational AI assistant composed of 7 specialized agents (Diagnosis, Weather, Market, Soil Health, Outbreak Monitor, Knowledge Base, and SMS/IVR). 
+### 1. 🤖 7-Agent AI Advisory System (AI Agent & Chatbot)
+A highly advanced, conversational AI assistant composed of 7 specialized agents. 
 - **Voice-Activated & Multilingual:** Farmers can click the microphone to speak in English, Hindi, or Bengali. The AI responds natively in their language.
-- **Context-Aware Routing:** The AI orchestrator automatically routes the farmer's question to the correct specialized agent (e.g., asking about prices routes to the Market Agent).
+- **Context-Aware Routing:** The AI orchestrator automatically routes the farmer's question to the correct specialized agent.
 
-### 2. 👁️ Crop Disease Diagnosis (Vision AI)
+### 2. 👁️ Crop Diagnose (Vision AI)
 Farmers can upload a photo of a diseased crop directly from their phone.
 - **Multi-Model Support:** Choose between **Google Gemini Vision** or **Nvidia NIM Vision** to instantly scan the leaf.
 - **Actionable Treatment Plans:** The AI identifies the disease, explains the cause, and provides step-by-step biological and chemical treatment recommendations.
 
-### 3. 📊 Live B2B Market Prices (Agmarknet Integration)
-A real-time marketplace dashboard designed to help farmers get the best prices for their harvest.
+### 3. 📊 Live B2B Market & Pricing (Agmarknet)
+A real-time marketplace dashboard designed to help farmers get the best prices.
 - **Live Mandi Data:** Pulls real-time agricultural market prices directly from the Government of India's Agmarknet database.
 - **Price Trends & Analytics:** View historical charts and AI-generated summaries to decide when and where to sell.
 
-### 4. 🌤️ Localized Weather & Irrigation Advisory
-Integrated with the OpenWeatherMap API to provide hyper-local weather data based on the farmer's GPS location.
-- **Irrigation Scheduling:** The AI uses the temperature, humidity, and forecast to recommend exactly how much water specific crops need for the week.
+### 4. 🗺️ Farm Map & Weather Advisory
+Features an interactive map built with Leaflet and MapTiler, allowing farmers to visualize regional data.
+- **Localized Weather:** Integrated with OpenWeatherMap API to provide hyper-local weather data.
+- **Irrigation Scheduling:** The AI uses the temperature and forecast to recommend watering schedules.
 
-### 5. 🌱 Soil Health & Fertilizer Planning
-A dedicated module where farmers can input their soil type or NPK values to receive a customized fertilizer schedule, ensuring maximum yield without degrading the soil quality.
+### 5. 🌱 Soil Health & My Plots
+- **Fertilizer Planning:** Farmers can input their soil type or NPK values to receive a customized fertilizer schedule.
+- **My Plots:** Track and manage individual farm plots, monitor crop lifecycles, and schedule harvesting tasks.
 
-### 6. 🗺️ Interactive Farm Mapping
-Features an interactive map built with Leaflet and MapTiler, allowing farmers to visualize regional data, nearby markets, and agricultural zones directly on the dashboard.
+### 6. 🤝 Community SOS & Kisan Sabha
+- **SOS Emergency Broadcast:** Instant emergency alerts (locust attacks, severe weather, sudden disease outbreaks) broadcast to nearby farmers.
+- **Kisan Sabha:** A community forum where farmers can connect, discuss local agricultural issues, and share traditional knowledge.
+
+### 7. 🚜 Agri-Credit, Schemes & Equipment
+- **Agri-Credit:** Built-in loan calculators and credit advisory to help farmers secure financial support.
+- **Government Schemes:** AI-curated list of eligible government agricultural schemes.
+- **Equipment:** A hub for managing, renting, or buying modern farming machinery.
+
+### 8. 🔗 Crop Traceability
+- **Farm-to-Fork Tracking:** A robust system to track the lifecycle of the crop, generating QR codes to prove authenticity and organic status to B2B buyers.
 
 ---
 

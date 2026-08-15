@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { User, Settings, Shield, Bell, Phone, Mail, MapPin, Briefcase, Camera, LogOut, ChevronRight, Moon, Globe, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 

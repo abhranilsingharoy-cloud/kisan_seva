@@ -110,7 +110,11 @@ class AgentRegistry:
 
         # Placeholder specialist agents
         class PlaceholderAgent(BaseAgent):
-            pass
+            @property
+            def name(self) -> str: return "PlaceholderAgent"
+            @property
+            def description(self) -> str: return "Placeholder"
+            async def process(self, input_data): return None
             
         registry.register("DiagnosisAgent", PlaceholderAgent(config.diagnosis))
         registry.register("WeatherAdvisoryAgent", PlaceholderAgent(config.weather))

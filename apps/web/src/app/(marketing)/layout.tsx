@@ -4,6 +4,7 @@ import Link from 'next/link'
 import ChatWidget from '@/components/chat/ChatWidget'
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget'
 import './marketing.css'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -27,8 +28,13 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             </ul>
             <div className="auth-buttons flex items-center gap-3">
               <GoogleTranslateWidget className="mt-1" />
-              <Link href="/login" className="btn btn-outline nav-cta hidden sm:flex">Login</Link>
-              <Link href="/register" className="btn btn-solid nav-cta hidden sm:flex">Register</Link>
+              <SignedOut>
+                <Link href="/sign-in" className="btn btn-outline nav-cta hidden sm:flex">Login</Link>
+                <Link href="/sign-up" className="btn btn-solid nav-cta hidden sm:flex">Register</Link>
+              </SignedOut>
+              <SignedIn>
+                <UserButton afterSignOutUrl="/" />
+              </SignedIn>
             </div>
           </nav>
         </div>

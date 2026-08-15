@@ -190,6 +190,14 @@ class FeedbackAgent(BaseAgent):
     """
     FeedbackAgent manages the model improvement loop and drift detection.
     """
+    @property
+    def name(self) -> str:
+        return "FeedbackAgent"
+
+    @property
+    def description(self) -> str:
+        return "Manages the model improvement loop and drift detection."
+
     def __init__(self, config: Optional[dict] = None):
         super().__init__(config)
         db_path = self.config.get('db_path', 'feedback.db')

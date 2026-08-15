@@ -56,6 +56,14 @@ class MasterOrchestratorAgent(BaseAgent):
     """
     MasterOrchestratorAgent routes queries and aggregates sub-agent results.
     """
+    @property
+    def name(self) -> str:
+        return "MasterOrchestratorAgent"
+
+    @property
+    def description(self) -> str:
+        return "Routes queries and aggregates sub-agent results."
+
     def __init__(self, config: Optional[dict] = None):
         super().__init__(config)
         self.config = config or {}

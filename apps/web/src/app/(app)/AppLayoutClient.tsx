@@ -41,7 +41,7 @@ type Notif = { id: string; icon: string; title: string; body: string; time: stri
 import ChatWidget from '@/components/chat/ChatWidget';
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 import GlobalCalculatorWidget from '@/components/layout/GlobalCalculatorWidget';
-import { signout } from '@/app/actions/auth';
+import { UserButton } from '@clerk/nextjs';
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Home',
@@ -177,8 +177,8 @@ export default function AppLayoutClient({
             Settings
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#65a30d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.875rem', flexShrink: 0, overflow: 'hidden' }}>
-              {avatar ? <img src={avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initial}
+            <div style={{ flexShrink: 0 }}>
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8" } }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.name}</div>
@@ -298,11 +298,9 @@ export default function AppLayoutClient({
               )}
             </div>
             
-            <Link href="/settings" style={{ textDecoration: 'none' }}>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #65a30d, #4d7c0f)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(101,163,13,0.35)', overflow: 'hidden' }}>
-                {avatar ? <img src={avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initial}
-              </div>
-            </Link>
+            <div className="flex items-center justify-center pt-1">
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "w-[34px] h-[34px]" } }} />
+            </div>
           </div>
         </header>
 
@@ -387,15 +385,6 @@ export default function AppLayoutClient({
                   <Settings size={22} className="text-slate-400" />
                   <span className="text-base">Settings</span>
                 </Link>
-                <form action={signout}>
-                    <button 
-                      type="submit"
-                      className="w-full mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-700 font-medium transition-all"
-                    >
-                      <LogOut size={22} className="text-red-400" />
-                      <span className="text-base">Logout</span>
-                    </button>
-                </form>
               </div>
             </nav>
           </div>

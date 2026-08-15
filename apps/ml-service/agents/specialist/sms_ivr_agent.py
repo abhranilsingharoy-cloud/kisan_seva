@@ -71,6 +71,14 @@ class SMSIVRAgent(BaseAgent):
     """
     SMSIVRAgent handles multi-turn feature-phone conversations for SMS and IVR.
     """
+    @property
+    def name(self) -> str:
+        return "SMSIVRAgent"
+
+    @property
+    def description(self) -> str:
+        return "Handles multi-turn feature-phone conversations for SMS and IVR."
+
     def __init__(self, config: Optional[dict] = None):
         super().__init__(config)
         self.session_store = SessionStore()

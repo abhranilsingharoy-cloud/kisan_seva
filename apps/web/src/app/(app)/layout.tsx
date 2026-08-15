@@ -1,11 +1,13 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
 import AppLayoutClient from './AppLayoutClient';
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+import { currentUser } from '@clerk/nextjs/server';
 
-  let profile: any = { id: user?.id || '', name: 'Kisan', email: '' };
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const user = await currentUser();
+  const supabase = await createClient();
+
+  let profile: any = { id: user?.id || '', name: user?.firstName || 'Kisan', email: user?.primaryEmailAddress?.emailAddress || '' };
 
   if (user) {
     const { data: profileData } = await supabase
@@ -16,8 +18,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
     if (profileData) {
       profile = profileData;
-    } else {
-      profile.email = user.email || '';
     }
   }
 

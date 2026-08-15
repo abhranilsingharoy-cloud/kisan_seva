@@ -305,20 +305,26 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     // Explicitly request microphone permission first to force the browser prompt.
     // Some browsers fail to show the prompt when only SpeechRecognition is called.
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Stop the tracks immediately since we only needed the permission prompt to trigger
-      stream.getTracks().forEach(track => track.stop());
-    } catch (err) {
-      console.warn("Microphone access denied via getUserMedia:", err);
-      addMessage({
-        role: "model",
-        text: language === "hi"
-          ? "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग में माइक की अनुमति दें।"
-          : language === "bn"
-          ? "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজার সেটিংসে মাইক অনুমতি দিন।"
-          : "Microphone permission denied. Please allow mic access in browser settings.",
-      });
-      return;
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop the tracks immediately since we only needed the permission prompt to trigger
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (err: any) {
+      console.warn("Microphone access check failed:", err);
+      // Only abort if it's explicitly a permission denial.
+      // If it's a TypeError (e.g. insecure context), we'll let SpeechRecognition try its best.
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        addMessage({
+          role: "model",
+          text: language === "hi"
+            ? "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग में माइक की अनुमति दें।"
+            : language === "bn"
+            ? "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজার সেটিংসে মাইক অনুমতি দিন।"
+            : "Microphone permission denied. Please allow mic access in browser settings.",
+        });
+        return;
+      }
     }
 
     const SpeechRecognition =

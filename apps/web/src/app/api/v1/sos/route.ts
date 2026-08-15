@@ -1,27 +1,5 @@
 import { NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
-import { sql } from '@vercel/postgres';
-
-// -- LOCAL SQLITE FALLBACK SETUP --
-let localDb: any = null;
-const isVercel = !!process.env.VERCEL || !!process.env.POSTGRES_URL;
-
-if (!isVercel) {
-  const { DatabaseSync } = require('node:sqlite');
-  const dbDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
-  localDb = new DatabaseSync(path.join(dbDir, 'sos_alerts.db'));
-  localDb.exec(`
-    CREATE TABLE IF NOT EXISTS alerts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL,
-      latitude REAL NOT NULL,
-      longitude REAL NOT NULL,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-}
+import { supabase } from '@/lib/supabase';
 
 // Haversine formula to calculate distance in KM between two coordinates
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -51,31 +29,19 @@ export async function GET(req: Request) {
     const targetLng = parseFloat(lng);
     const radiusKm = radiusStr ? parseFloat(radiusStr) : 50; 
 
-    let allAlerts: any[] = [];
+    // Fetch alerts from the last 24 hours
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const { data: allAlerts, error } = await supabase
+      .from('alerts')
+      .select('*')
+      .gte('timestamp', yesterday)
+      .order('timestamp', { ascending: false });
 
-    if (isVercel) {
-      // VERCEL POSTGRES PROD DB
-      // Create table if it doesn't exist just in case
-      await sql`
-        CREATE TABLE IF NOT EXISTS alerts (
-          id SERIAL PRIMARY KEY,
-          type VARCHAR(255) NOT NULL,
-          latitude DOUBLE PRECISION NOT NULL,
-          longitude DOUBLE PRECISION NOT NULL,
-          timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `;
-      // We use interval '1 day' for postgres instead of datetime('now', '-1 day')
-      const result = await sql`SELECT * FROM alerts WHERE timestamp >= NOW() - INTERVAL '1 day' ORDER BY timestamp DESC`;
-      allAlerts = result.rows;
-    } else {
-      // LOCAL SQLITE FALLBACK
-      const stmt = localDb!.prepare(`SELECT * FROM alerts WHERE timestamp >= datetime('now', '-1 day') ORDER BY timestamp DESC`);
-      allAlerts = stmt.all() as any[];
-    }
+    if (error) throw error;
 
     // Filter by Haversine distance
-    const nearbyAlerts = allAlerts.map(alert => {
+    const nearbyAlerts = (allAlerts || []).map(alert => {
       const distance = getDistanceFromLatLonInKm(targetLat, targetLng, alert.latitude, alert.longitude);
       return { ...alert, distance };
     }).filter(alert => alert.distance <= radiusKm);
@@ -96,22 +62,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Type, latitude, and longitude are required' }, { status: 400 });
     }
 
-    if (isVercel) {
-      // Create table if not exists just in case it's the first ever query
-      await sql`
-        CREATE TABLE IF NOT EXISTS alerts (
-          id SERIAL PRIMARY KEY,
-          type VARCHAR(255) NOT NULL,
-          latitude DOUBLE PRECISION NOT NULL,
-          longitude DOUBLE PRECISION NOT NULL,
-          timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `;
-      await sql`INSERT INTO alerts (type, latitude, longitude) VALUES (${type}, ${latitude}, ${longitude})`;
-    } else {
-      const stmt = localDb!.prepare('INSERT INTO alerts (type, latitude, longitude) VALUES (?, ?, ?)');
-      stmt.run(type, latitude, longitude);
-    }
+    const { error } = await supabase
+      .from('alerts')
+      .insert([{ type, latitude, longitude }]);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'SOS Alert broadcasted successfully' });
   } catch (error: any) {
@@ -119,4 +74,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to broadcast alert' }, { status: 500 });
   }
 }
-

@@ -1,7 +1,5 @@
-// Removed static sqlite import
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { sql } from '@vercel/postgres';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
   try {
@@ -25,23 +23,17 @@ export async function POST(req: Request) {
 
     const replyId = `r${Date.now()}`;
     
-    const isVercel = !!process.env.VERCEL || !!process.env.POSTGRES_URL;
+    const { error } = await supabase
+      .from('replies')
+      .insert([{
+        id: replyId,
+        postid: postId,
+        authorname: 'KisanSeva AI Expert',
+        authortype: 'ai',
+        content: responseContent
+      }]);
 
-    if (isVercel) {
-      await sql`
-        INSERT INTO replies (id, postId, authorName, authorType, content)
-        VALUES (${replyId}, ${postId}, 'KisanSeva AI Expert', 'ai', ${responseContent})
-      `;
-    } else {
-      const { DatabaseSync } = require('node:sqlite');
-      const dbPath = path.join(process.cwd(), 'data', 'community_posts.db');
-      const db = new DatabaseSync(dbPath);
-      const insertStmt = db.prepare(`
-        INSERT INTO replies (id, postId, authorName, authorType, content)
-        VALUES (?, ?, 'KisanSeva AI Expert', 'ai', ?)
-      `);
-      insertStmt.run(replyId, postId, responseContent);
-    }
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'AI Reply added to database' });
   } catch (error: any) {

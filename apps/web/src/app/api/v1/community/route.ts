@@ -1,143 +1,50 @@
 import { NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
-import { sql } from '@vercel/postgres';
-
-const isVercel = !!process.env.VERCEL || !!process.env.POSTGRES_URL;
-let localDb: any = null;
-
-if (!isVercel) {
-  const { DatabaseSync } = require('node:sqlite');
-  const dbDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
-  localDb = new DatabaseSync(path.join(dbDir, 'community_posts.db'));
-
-  localDb.exec(`
-    CREATE TABLE IF NOT EXISTS posts (
-      id TEXT PRIMARY KEY,
-      authorName TEXT NOT NULL,
-      authorLocation TEXT NOT NULL,
-      avatarColor TEXT NOT NULL,
-      content TEXT NOT NULL,
-      likes INTEGER DEFAULT 0,
-      tags TEXT NOT NULL,
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS replies (
-      id TEXT PRIMARY KEY,
-      postId TEXT NOT NULL,
-      authorName TEXT NOT NULL,
-      authorType TEXT NOT NULL,
-      content TEXT NOT NULL,
-      likes INTEGER DEFAULT 0,
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(postId) REFERENCES posts(id)
-    );
-  `);
-
-  const checkEmpty = localDb.prepare('SELECT COUNT(*) as count FROM posts').get() as { count: number };
-  if (checkEmpty.count === 0) {
-    const insertPost = localDb.prepare(`
-      INSERT INTO posts (id, authorName, authorLocation, avatarColor, content, likes, tags, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', '-2 hours'))
-    `);
-    const insertReply = localDb.prepare(`
-      INSERT INTO replies (id, postId, authorName, authorType, content, likes, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, datetime('now', '-1 hours'))
-    `);
-
-    insertPost.run('p1', 'Ramesh Patel', 'Nashik, Maharashtra', 'bg-orange-500', 'Just harvested my first batch of organic tomatoes using the new drip irrigation system! Yield is up by 20% compared to last season. Happy to share tips with anyone looking to transition.', 45, JSON.stringify(['Organic', 'Harvest', 'Success Story']));
-    insertReply.run('r1', 'p1', 'Suresh Kumar', 'farmer', 'Bhai, which brand of drip pipes did you use? Did you get any government subsidy?', 5);
-
-    insertPost.run('p2', 'Vikram Singh', 'Ludhiana, Punjab', 'bg-emerald-500', 'My wheat crop is showing yellowing on the lower leaves. The soil moisture is optimal. Could this be a Nitrogen deficiency or something else?', 12, JSON.stringify(['Crop Health', 'Wheat', 'Help Required']));
-    insertReply.run('r2', 'p2', 'KisanSeva AI Expert', 'ai', 'Yellowing of lower/older leaves in wheat is a classic symptom of **Nitrogen (N) deficiency**, as the plant moves mobile nutrients to new growth. \n\n**Action Plan:**\n1. Apply a top dressing of Urea (around 20-25 kg/acre) before your next irrigation.\n2. Alternatively, spray a 2% Urea solution directly on the leaves for faster absorption.\n3. Verify soil pH; if too high/low, Nitrogen uptake may be locked out.', 38);
-  }
-}
-
-async function seedVercelDbIfNeeded() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS posts (
-      id VARCHAR(255) PRIMARY KEY,
-      authorName VARCHAR(255) NOT NULL,
-      authorLocation VARCHAR(255) NOT NULL,
-      avatarColor VARCHAR(255) NOT NULL,
-      content TEXT NOT NULL,
-      likes INTEGER DEFAULT 0,
-      tags TEXT NOT NULL,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
-  await sql`
-    CREATE TABLE IF NOT EXISTS replies (
-      id VARCHAR(255) PRIMARY KEY,
-      postId VARCHAR(255) NOT NULL,
-      authorName VARCHAR(255) NOT NULL,
-      authorType VARCHAR(255) NOT NULL,
-      content TEXT NOT NULL,
-      likes INTEGER DEFAULT 0,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
-
-  const countRes = await sql`SELECT COUNT(*) as count FROM posts`;
-  const count = parseInt(countRes.rows[0].count, 10);
-  
-  if (count === 0) {
-    await sql`
-      INSERT INTO posts (id, authorName, authorLocation, avatarColor, content, likes, tags, createdAt)
-      VALUES 
-      ('p1', 'Ramesh Patel', 'Nashik, Maharashtra', 'bg-orange-500', 'Just harvested my first batch of organic tomatoes using the new drip irrigation system! Yield is up by 20% compared to last season. Happy to share tips with anyone looking to transition.', 45, ${JSON.stringify(['Organic', 'Harvest', 'Success Story'])}, NOW() - INTERVAL '2 hours'),
-      ('p2', 'Vikram Singh', 'Ludhiana, Punjab', 'bg-emerald-500', 'My wheat crop is showing yellowing on the lower leaves. The soil moisture is optimal. Could this be a Nitrogen deficiency or something else?', 12, ${JSON.stringify(['Crop Health', 'Wheat', 'Help Required'])}, NOW() - INTERVAL '2 hours')
-    `;
-    await sql`
-      INSERT INTO replies (id, postId, authorName, authorType, content, likes, createdAt)
-      VALUES 
-      ('r1', 'p1', 'Suresh Kumar', 'farmer', 'Bhai, which brand of drip pipes did you use? Did you get any government subsidy?', 5, NOW() - INTERVAL '1 hours'),
-      ('r2', 'p2', 'KisanSeva AI Expert', 'ai', 'Yellowing of lower/older leaves in wheat is a classic symptom of **Nitrogen (N) deficiency**, as the plant moves mobile nutrients to new growth. \n\n**Action Plan:**\n1. Apply a top dressing of Urea (around 20-25 kg/acre) before your next irrigation.\n2. Alternatively, spray a 2% Urea solution directly on the leaves for faster absorption.\n3. Verify soil pH; if too high/low, Nitrogen uptake may be locked out.', 38, NOW() - INTERVAL '1 hours')
-    `;
-  }
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
   try {
-    let allPosts: any[] = [];
-    let allReplies: any[] = [];
+    const { data: allPosts, error: pError } = await supabase
+      .from('posts')
+      .select('*')
+      .order('createdat', { ascending: false });
 
-    if (isVercel) {
-      await seedVercelDbIfNeeded();
-      const pRes = await sql`SELECT * FROM posts ORDER BY createdAt DESC`;
-      const rRes = await sql`SELECT * FROM replies ORDER BY createdAt ASC`;
-      allPosts = pRes.rows.map(r => ({...r, authorName: r.authorname, authorLocation: r.authorlocation, avatarColor: r.avatarcolor, createdAt: r.createdat }));
-      allReplies = rRes.rows.map(r => ({...r, postId: r.postid, authorName: r.authorname, authorType: r.authortype, createdAt: r.createdat}));
-    } else {
-      const postsStmt = localDb!.prepare(`SELECT * FROM posts ORDER BY createdAt DESC`);
-      const repliesStmt = localDb!.prepare(`SELECT * FROM replies ORDER BY createdAt ASC`);
-      allPosts = postsStmt.all() as any[];
-      allReplies = repliesStmt.all() as any[];
-    }
+    if (pError) throw pError;
 
-    const structuredPosts = allPosts.map(post => {
-      const postReplies = allReplies
-        .filter(r => r.postId === post.id)
+    const { data: allReplies, error: rError } = await supabase
+      .from('replies')
+      .select('*')
+      .order('createdat', { ascending: true });
+
+    if (rError) throw rError;
+
+    const structuredPosts = (allPosts || []).map(post => {
+      const postReplies = (allReplies || [])
+        .filter(r => r.postid === post.id)
         .map(r => ({
           id: r.id,
-          authorName: r.authorName,
-          authorType: r.authorType,
+          authorName: r.authorname,
+          authorType: r.authortype,
           content: r.content,
           likes: r.likes,
-          timestamp: new Date((isVercel ? r.createdAt : r.createdAt + 'Z')).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute:'2-digit', month: 'short', day: 'numeric' })
+          timestamp: new Date(r.createdat).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute:'2-digit', month: 'short', day: 'numeric' })
         }));
+
+      let parsedTags = [];
+      try {
+        parsedTags = typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags;
+      } catch (e) {
+        parsedTags = [post.tags];
+      }
 
       return {
         id: post.id,
-        authorName: post.authorName,
-        authorLocation: post.authorLocation,
-        avatarColor: post.avatarColor,
+        authorName: post.authorname,
+        authorLocation: post.authorlocation,
+        avatarColor: post.avatarcolor,
         content: post.content,
         likes: post.likes,
-        tags: typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags,
-        timestamp: new Date((isVercel ? post.createdAt : post.createdAt + 'Z')).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute:'2-digit', month: 'short', day: 'numeric' }),
+        tags: parsedTags,
+        timestamp: new Date(post.createdat).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute:'2-digit', month: 'short', day: 'numeric' }),
         replies: postReplies
       };
     });
@@ -158,39 +65,42 @@ export async function POST(req: Request) {
       const id = `p${Date.now()}`;
       const tags = isQuestion ? ['Question'] : ['General'];
       
-      if (isVercel) {
-        await seedVercelDbIfNeeded();
-        await sql`
-          INSERT INTO posts (id, authorName, authorLocation, avatarColor, content, tags)
-          VALUES (${id}, 'You (Farmer)', 'Your Farm', 'bg-indigo-600', ${content}, ${JSON.stringify(tags)})
-        `;
-      } else {
-        const insertStmt = localDb!.prepare(`
-          INSERT INTO posts (id, authorName, authorLocation, avatarColor, content, tags)
-          VALUES (?, 'You (Farmer)', 'Your Farm', 'bg-indigo-600', ?, ?)
-        `);
-        insertStmt.run(id, content, JSON.stringify(tags));
-      }
+      const { error } = await supabase
+        .from('posts')
+        .insert([{
+          id,
+          authorname: 'You (Farmer)',
+          authorlocation: 'Your Farm',
+          avatarcolor: 'bg-indigo-600',
+          content,
+          tags: JSON.stringify(tags)
+        }]);
       
+      if (error) throw error;
       return NextResponse.json({ success: true, postId: id, message: 'Post created' });
     }
 
     if (action === 'like') {
        const type = body.type; 
        const targetId = body.targetId;
+       const table = type === 'post' ? 'posts' : 'replies';
        
-       if (isVercel) {
-         await seedVercelDbIfNeeded();
-         if (type === 'post') {
-            await sql`UPDATE posts SET likes = likes + 1 WHERE id = ${targetId}`;
-         } else {
-            await sql`UPDATE replies SET likes = likes + 1 WHERE id = ${targetId}`;
-         }
-       } else {
-         const table = type === 'post' ? 'posts' : 'replies';
-         const updateStmt = localDb!.prepare(`UPDATE ${table} SET likes = likes + 1 WHERE id = ?`);
-         updateStmt.run(targetId);
-       }
+       // Supabase doesn't have an atomic increment via RPC out of the box unless we define one.
+       // We'll fetch the current likes and update. (For production, an RPC function `increment_likes` is better).
+       const { data: currentData, error: fetchErr } = await supabase
+         .from(table)
+         .select('likes')
+         .eq('id', targetId)
+         .single();
+         
+       if (fetchErr) throw fetchErr;
+       
+       const { error: updateErr } = await supabase
+         .from(table)
+         .update({ likes: (currentData?.likes || 0) + 1 })
+         .eq('id', targetId);
+
+       if (updateErr) throw updateErr;
        
        return NextResponse.json({ success: true, message: 'Liked' });
     }

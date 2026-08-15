@@ -17,7 +17,8 @@ import {
   Search,
   Loader2,
   LocateFixed,
-  Radio
+  Radio,
+  Siren
 } from 'lucide-react';
 import CommunitySOS from '@/components/CommunitySOS';
 

@@ -282,7 +282,7 @@ export default function KisanSabha() {
                               <span className={`font-bold text-sm ${reply.authorType === 'ai' ? 'text-indigo-900' : 'text-slate-900'}`}>
                                 {reply.authorName}
                               </span>
-                              {reply.authorType === 'ai' && <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" title="Verified AI Expert" />}
+                              {reply.authorType === 'ai' && <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />}
                             </div>
                             <div className="flex items-center gap-3">
                               <span className="text-xs text-slate-400 font-medium">{reply.timestamp}</span>

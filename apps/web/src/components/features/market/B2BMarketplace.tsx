@@ -202,7 +202,7 @@ export default function B2BMarketplace() {
                       <div>
                         <div className="flex items-center gap-1.5">
                           <h3 className="font-bold text-lg text-slate-900">{bid.buyerName}</h3>
-                          {bid.verified && <ShieldCheck className="w-4 h-4 text-emerald-500" title="Verified Corporate Buyer" />}
+                          {bid.verified && <ShieldCheck className="w-4 h-4 text-emerald-500" />}
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-500 font-medium mt-0.5">
                           <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> {bid.rating}</span>

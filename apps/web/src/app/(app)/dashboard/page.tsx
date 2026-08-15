@@ -11,8 +11,6 @@ const PAGE_BG = {
 
 const DEFAULT_PLOTS = [
   { id: 'plot2a', name: 'Plot 2A', crop: 'Tomato', area: '1.2 ac', city: 'Vidisha' },
-  { id: 'plot3b', name: 'Plot 3B', crop: 'Wheat', area: '0.8 ac', city: 'Bhopal' },
-  { id: 'plot1c', name: 'Plot 1C', crop: 'Rice', area: '1.5 ac', city: 'Jabalpur' },
 ]
 
 const CROP_STAGES: Record<string, string[]> = {

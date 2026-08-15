@@ -135,7 +135,7 @@ export default function BlockchainPage() {
                   Your crop data has been cryptographically secured to the ledger. Print this QR code and attach it to your shipment.
                 </p>
                 <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                  <QRCode value={generatedBatchId} size={200} />
+                  <QRCode value={`${typeof window !== 'undefined' ? window.location.origin : ''}/trace/${generatedBatchId}`} size={200} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#d1fae5', padding: '12px 24px', borderRadius: '8px', border: '1px solid #10b981' }}>
                   <Hash size={20} color="#065f46" />

@@ -9,6 +9,7 @@ import TopGainersLosers from '@/components/features/market/TopGainersLosers';
 import MarketNews from '@/components/features/market/MarketNews';
 import PriceAlertManager from '@/components/features/market/PriceAlertManager';
 import MarketCalculator from '@/components/features/market/MarketCalculator';
+import B2BMarketplace from '@/components/features/market/B2BMarketplace';
 
 const ALL_COMMODITIES = [
   'Amaranthus', 'Amla(Nelli Kai)', 'Apple', 'Arhar (Tur/Red Gram)', 'Ashgourd', 'Bajra(Pearl Millet)', 'Banana', 'Barley (Jau)',
@@ -34,6 +35,7 @@ const STATES = [
 ];
 
 export default function MarketPricePage() {
+  const [activeTab, setActiveTab] = useState<'mandi' | 'b2b'>('mandi');
   const [selectedCrop, setSelectedCrop] = useState('Tomato');
   const [selectedState, setSelectedState] = useState('');
 
@@ -228,73 +230,95 @@ export default function MarketPricePage() {
   return (
     <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100%', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
       <main style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {/* Filter Bar */}
-        <div className="card" style={{ padding: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', borderBottom: '1px solid var(--color-bone)' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', flex: 1 }}>
-            <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: '300px' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-saddle)' }} />
-              <input 
-                type="text" 
-                list="crop-list"
-                className="input" 
-                placeholder="Search any crop (e.g. Wheat)..." 
-                style={{ width: '100%', paddingLeft: '36px' }}
-                value={selectedCrop}
-                onChange={(e) => setSelectedCrop(e.target.value)}
+        
+        {/* Dual View Toggle */}
+        <div className="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200 self-start">
+          <button 
+            onClick={() => setActiveTab('mandi')}
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors ${activeTab === 'mandi' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            Mandi Analytics
+          </button>
+          <button 
+            onClick={() => setActiveTab('b2b')}
+            className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-colors ${activeTab === 'b2b' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            Direct B2B Contracts
+          </button>
+        </div>
+
+        {activeTab === 'mandi' ? (
+          <>
+            {/* Filter Bar */}
+            <div className="card" style={{ padding: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', borderBottom: '1px solid var(--color-bone)' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', flex: 1 }}>
+                <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: '300px' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-saddle)' }} />
+                  <input 
+                    type="text" 
+                    list="crop-list"
+                    className="input" 
+                    placeholder="Search any crop (e.g. Wheat)..." 
+                    style={{ width: '100%', paddingLeft: '36px' }}
+                    value={selectedCrop}
+                    onChange={(e) => setSelectedCrop(e.target.value)}
+                  />
+                  <datalist id="crop-list">
+                    {ALL_COMMODITIES.map(c => <option key={c} value={c} />)}
+                  </datalist>
+                </div>
+                
+                <select className="input" value={selectedState} onChange={(e) => setSelectedState(e.target.value)} style={{ flex: '1 1 150px', maxWidth: '200px' }}>
+                  {STATES.map(s => <option key={s} value={s}>{s || 'All States'}</option>)}
+                </select>
+                
+                <select className="input" style={{ flex: '1 1 150px', maxWidth: '200px' }}>
+                  <option value="">All Mandis</option>
+                </select>
+
+                <input type="text" className="input" readOnly value={today} style={{ width: '120px', color: 'var(--color-saddle)', backgroundColor: 'var(--color-bone)' }} />
+              </div>
+
+              <PriceAlertManager 
+                selectedCrop={selectedCrop} 
+                selectedState={selectedState} 
+                currentPrice={avgPrice} 
               />
-              <datalist id="crop-list">
-                {ALL_COMMODITIES.map(c => <option key={c} value={c} />)}
-              </datalist>
             </div>
-            
-            <select className="input" value={selectedState} onChange={(e) => setSelectedState(e.target.value)} style={{ flex: '1 1 150px', maxWidth: '200px' }}>
-              {STATES.map(s => <option key={s} value={s}>{s || 'All States'}</option>)}
-            </select>
-            
-            <select className="input" style={{ flex: '1 1 150px', maxWidth: '200px' }}>
-              <option value="">All Mandis</option>
-            </select>
 
-            <input type="text" className="input" readOnly value={today} style={{ width: '120px', color: 'var(--color-saddle)', backgroundColor: 'var(--color-bone)' }} />
-          </div>
+            {/* Main Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+              
+              {/* LEFT COLUMN */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '2 1 65%' }}>
+                <PriceChartCard 
+                  selectedCrop={selectedCrop} 
+                  selectedState={selectedState} 
+                  chartData={chartData} 
+                  forecastData={forecastData}
+                  aiRecommendation={aiRecommendation}
+                />
+                <PinnedCommodities selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
+                <LiveMandiTable loading={loading} error={error} mandis={mandis} avgPrice={avgPrice} />
+              </div>
 
-          <PriceAlertManager 
-            selectedCrop={selectedCrop} 
-            selectedState={selectedState} 
-            currentPrice={avgPrice} 
-          />
-        </div>
+              {/* RIGHT COLUMN */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '1 1 35%' }}>
+                <TopGainersLosers marketData={marketData} />
 
-        {/* Main Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-          
-          {/* LEFT COLUMN */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '2 1 65%' }}>
-            <PriceChartCard 
-              selectedCrop={selectedCrop} 
-              selectedState={selectedState} 
-              chartData={chartData} 
-              forecastData={forecastData}
-              aiRecommendation={aiRecommendation}
-            />
-            <PinnedCommodities selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
-            <LiveMandiTable loading={loading} error={error} mandis={mandis} avgPrice={avgPrice} />
-          </div>
+                {/* Profit Calculator */}
+                <MarketCalculator currentPrice={avgPrice} cropName={selectedCrop} />
 
-          {/* RIGHT COLUMN */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', flex: '1 1 35%' }}>
-            <TopGainersLosers marketData={marketData} />
+                {/* Market News Component */}
+                <MarketNews />
 
-            {/* Profit Calculator */}
-            <MarketCalculator currentPrice={avgPrice} cropName={selectedCrop} />
-
-            {/* Market News Component */}
-            <MarketNews />
-
-          </div>
-        </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <B2BMarketplace />
+        )}
       </main>
     </div>
   );
 }
-

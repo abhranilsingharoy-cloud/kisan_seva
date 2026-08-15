@@ -21,7 +21,9 @@ import {
   FlaskConical,
   ChevronRight,
   Map,
-  Wallet
+  Wallet,
+  Wifi,
+  Users
 } from 'lucide-react';
 import ChatWidget from '@/components/chat/ChatWidget';
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
@@ -37,6 +39,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/schemes': 'Govt. Schemes',
   '/rentals': 'Equipment',
   '/blockchain': 'Traceability',
+  '/iot': 'IoT Sensors',
   '/agent': 'AI Agent',
   '/topography': 'Farm Topography',
   '/finance': 'Agri-Credit & Lending',
@@ -55,6 +58,7 @@ const APP_LINKS = [
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'Equipment', href: '/rentals', icon: Tractor },
   { name: 'Traceability', href: '/blockchain', icon: QrCode },
+  { name: 'Kisan Sabha', href: '/community', icon: Users },
   { name: 'AI Agent', href: '/agent', icon: Bot },
 ];
 

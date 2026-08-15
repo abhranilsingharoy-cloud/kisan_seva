@@ -8,6 +8,9 @@ import {
   Wifi, WifiOff, Bluetooth, Radio, Cpu, Wind, Thermometer,
   Gauge, Signal, Battery, PlugZap, CircleDot, Play, Pause
 } from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type Stage = 'upload' | 'scanning' | 'results' | 'error';
@@ -167,6 +170,20 @@ const ProtocolBadge = ({ protocol }: { protocol: string }) => {
   );
 };
 
+/* ─── Initial Chart Data ─── */
+const generateInitialData = () => {
+  const data = [];
+  const now = new Date();
+  for (let i = 20; i >= 0; i--) {
+    data.push({
+      time: new Date(now.getTime() - i * 2000).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' }),
+      moisture: +(42 + Math.random() * 5 - 2.5).toFixed(1),
+      temperature: +(24 + Math.random() * 2 - 1).toFixed(1),
+    });
+  }
+  return data;
+};
+
 /* ─── Main Page ─────────────────────────────────────────────── */
 export default function SoilHealthPage() {
   const [mainTab, setMainTab] = useState<MainTab>('ocr');
@@ -192,6 +209,7 @@ export default function SoilHealthPage() {
   const [sensors, setSensors] = useState<SensorDevice[]>(INITIAL_SENSORS);
   const [liveValues, setLiveValues] = useState<Record<string, number[]>>({});
   const [isStreaming, setIsStreaming] = useState(false);
+  const [chartData, setChartData] = useState<any[]>(generateInitialData());
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* ─── OCR handlers ─── */
@@ -368,14 +386,33 @@ export default function SoilHealthPage() {
       intervalRef.current = setInterval(() => {
         setLiveValues(prev => {
           const next = { ...prev };
+          let s1Moisture = 0;
+          let s1Temp = 0;
+          
           sensors.forEach(s => {
             if (s.status === 'live' && prev[s.id]) {
               next[s.id] = s.readings.map((r, i) => {
                 const jitter = (Math.random() - 0.5) * (r.max - r.min) * 0.02;
                 return Math.max(r.min, Math.min(r.max, +(prev[s.id][i] + jitter).toFixed(2)));
               });
+              
+              if (s.id === 's1') {
+                s1Moisture = next[s.id][0];
+                s1Temp = next[s.id][1];
+              }
             }
           });
+          
+          if (s1Moisture > 0) {
+            setChartData(currentData => {
+              return [...currentData.slice(1), {
+                time: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' }),
+                moisture: s1Moisture,
+                temperature: s1Temp,
+              }];
+            });
+          }
+          
           return next;
         });
       }, 1500);
@@ -607,6 +644,42 @@ export default function SoilHealthPage() {
                 )}
               </div>
             </div>
+            
+            {/* Live Chart (Only shows if SoilSense Pro s1 is connected) */}
+            {sensors.find(s => s.id === 's1')?.status === 'live' && (
+              <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#1e293b' }}>Live Telemetry: Zone A</h2>
+                  <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', fontWeight: 600 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#3b82f6' }} /> Soil Moisture</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f43f5e' }} /> Temperature</div>
+                  </div>
+                </div>
+                <div style={{ height: '300px', width: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorMoisture" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} dy={10} />
+                      <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} domain={['dataMin - 5', 'dataMax + 5']} />
+                      <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} domain={['dataMin - 2', 'dataMax + 2']} />
+                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }} />
+                      <Area yAxisId="left" type="monotone" dataKey="moisture" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorMoisture)" isAnimationActive={false} />
+                      <Area yAxisId="right" type="monotone" dataKey="temperature" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorTemp)" isAnimationActive={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
 
             {/* Sensor cards grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>

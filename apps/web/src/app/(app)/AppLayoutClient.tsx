@@ -396,8 +396,8 @@ export default function AppLayoutClient({
         </div>
       )}
       
-      {/* GLOBAL CHATBOT */}
-      <ChatWidget />
+      {/* GLOBAL CHATBOT - Hide on agent page since it has its own chat */}
+      {pathname !== '/agent' && <ChatWidget />}
     </div>
   );
 }

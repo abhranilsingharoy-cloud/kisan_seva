@@ -176,16 +176,16 @@ export default function AgentChatPage() {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col lg:flex-row overflow-hidden font-sans" style={{ backgroundColor: 'var(--color-parchment, #fcfaf1)', color: 'var(--color-ink, #211b15)' }}>
+    <div className="flex h-full w-full flex-col lg:flex-row overflow-hidden font-sans rounded-tl-xl md:rounded-none" style={{ backgroundColor: 'var(--color-parchment, #fcfaf1)', color: 'var(--color-ink, #211b15)' }}>
       
       {/* LEFT SIDEBAR (Desktop) */}
       <div className="hidden lg:flex w-80 flex-col flex-shrink-0 border-r border-gray-800" style={{ backgroundColor: 'var(--color-charcoal-olive, #252a23)', color: 'var(--color-parchment, #fcfaf1)' }}>
         <div className="p-6 border-b border-gray-700">
-          <div className="flex items-center gap-2 mb-2">
-            <Leaf className="text-green-400" size={24} />
-            <h1 className="text-2xl font-bold font-serif tracking-tight">KisanSeva</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <Leaf className="text-green-400" size={22} />
+            <h1 className="text-xl font-bold tracking-tight">AI Advisory System</h1>
           </div>
-          <p className="text-sm" style={{ color: 'var(--color-bark, #96897b)' }}>AI Advisory System</p>
+          <p className="text-xs font-medium uppercase tracking-widest mt-2" style={{ color: 'var(--color-bark, #96897b)' }}>7 Specialized Agents</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -281,10 +281,10 @@ Final Output`}</pre>
       </div>
 
       {/* MAIN CHAT AREA */}
-      <div className="flex-1 flex flex-col relative h-full">
+      <div className="flex-1 flex flex-col relative bg-white h-full overflow-hidden">
         
         {/* Top Chat Bar */}
-        <header className="flex-shrink-0 h-16 border-b flex items-center justify-between px-4 lg:px-6 z-10 bg-white/80 backdrop-blur-md" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
+        <header className="flex-shrink-0 h-16 border-b flex items-center justify-between px-4 lg:px-6 z-10 bg-white/80 backdrop-blur-md sticky top-0" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
           <div className="flex items-center gap-3">
             <button className="lg:hidden p-2 -ml-2 rounded-full hover:bg-gray-100">
               <ArrowLeft size={20} />
@@ -311,17 +311,17 @@ Final Output`}</pre>
         </header>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-24 lg:pb-32 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 lg:px-6 pt-6 pb-2 scrollbar-hide space-y-6">
           
           {messages.length === 0 ? (
             /* Welcome State */
-            <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto text-center space-y-8 animate-fade-in mt-10">
+            <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto text-center space-y-8 animate-fade-in mt-6 pb-12">
               <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--color-bone, #efe9e0)' }}>
                 <Bot size={40} style={{ color: 'var(--color-sage, #7a9779)' }} />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl lg:text-3xl font-serif font-bold">Namaste! I'm your KisanSeva AI</h2>
-                <p className="text-lg" style={{ color: 'var(--color-saddle, #50463c)' }}>Powered by 7 specialist agricultural agents working together.</p>
+              <div className="space-y-4">
+                <h2 className="text-3xl lg:text-4xl font-sans font-bold tracking-tight text-gray-900">Namaste! I'm your KisanSeva AI</h2>
+                <p className="text-lg text-gray-600">Powered by 7 specialist agricultural agents working together.</p>
               </div>
               
               <div className="w-full max-w-lg space-y-3 mt-8">
@@ -559,13 +559,13 @@ Final Output`}</pre>
         </div>
 
         {/* Input Area (Fixed Bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 lg:bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-6 pb-4 lg:pb-6 px-4 lg:px-6 z-20">
+        <div className="mt-auto bg-gradient-to-t from-white via-white to-transparent pt-4 pb-4 lg:pb-6 px-4 lg:px-6 z-20 w-full flex-shrink-0">
           <div className="max-w-3xl mx-auto mb-16 lg:mb-0">
-            <div className="relative flex items-end shadow-lg rounded-2xl bg-white border" style={{ borderColor: 'var(--color-bone, #efe9e0)' }}>
+            <div className="relative flex items-end shadow-lg rounded-2xl bg-white border border-gray-200 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600 transition-all">
               
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3 text-gray-400 hover:text-gray-600 transition-colors ml-1"
+                className="p-3.5 text-gray-400 hover:text-green-600 transition-colors ml-1"
                 title="Upload photo"
               >
                 <Camera size={22} />

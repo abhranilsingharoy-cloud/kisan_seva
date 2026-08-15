@@ -1,73 +1,119 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText } from "lucide-react";
+import { FileText, ArrowLeft, CheckCircle2, AlertTriangle, Gavel, Handshake, Ban, Phone } from "lucide-react";
 
-export const metadata = {
-  title: "Terms of Service | KisanSeva",
-  description: "Terms and conditions for using the KisanSeva platform.",
-};
-
-export default function TermsPage() {
+export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-slate-50 py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-200 p-8 sm:p-12">
-        <Link 
-          href="/" 
-          className="inline-flex items-center text-sm font-medium text-[#2A854B] hover:text-[#1e6136] transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+    <div className="max-w-3xl mx-auto p-4 md:p-8 pb-24">
+      <div className="mb-6">
+        <Link href="/settings" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 font-medium transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Settings
         </Link>
-        
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-[#e7f4ec] text-[#2A854B] rounded-2xl">
-            <FileText className="w-8 h-8" />
+      </div>
+
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+          <FileText className="w-6 h-6" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Terms of Service</h1>
+          <p className="text-sm text-slate-500">Last updated: August 2026</p>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+
+        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5">
+          <div className="flex gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <p className="text-sm text-amber-800 font-medium">
+              By using KisanSeva, you agree to these terms. Please read them carefully before using the platform.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Terms of Service</h1>
         </div>
 
-        <div className="prose prose-slate prose-a:text-[#2A854B] max-w-none text-slate-600 leading-relaxed">
-          <p><strong>Last Updated:</strong> August 2026</p>
-          
-          <p>
-            Please read these Terms of Service ("Terms") carefully before using the KisanSeva website and mobile application (the "Service") operated by KisanSeva Solutions.
-          </p>
-
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">1. Acceptance of Terms</h2>
-          <p>
-            By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service.
-          </p>
-
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">2. Use of Service</h2>
-          <p>
-            The Service is intended to provide agricultural advisory, market prices, and AI-powered disease detection. You agree to use the Service only for lawful purposes and in accordance with these Terms.
-          </p>
-          
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">3. Accuracy of Information</h2>
-          <p>
-            While we strive for accuracy, the agricultural advice and disease detections provided by our AI models are for informational purposes only. We do not guarantee 100% accuracy. Farmers should verify critical decisions with local agricultural experts or Krishi Vigyan Kendras (KVKs).
-          </p>
-          <p>
-            Market prices are sourced from AGMARKNET. We are not responsible for discrepancies between the displayed prices and the actual prices at physical mandis.
-          </p>
-
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">4. User Accounts</h2>
-          <p>
-            When you create an account with us, you must provide accurate, complete, and current information. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.
-          </p>
-
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">5. Intellectual Property</h2>
-          <p>
-            The Service and its original content, features, and functionality are and will remain the exclusive property of KisanSeva Solutions and its licensors. The Service is protected by copyright, trademark, and other laws of India.
-          </p>
-
-          <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">6. Changes to Terms</h2>
-          <p>
-            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. What constitutes a material change will be determined at our sole discretion.
-          </p>
-        </div>
+        {[
+          {
+            icon: Handshake,
+            color: "blue",
+            title: "Acceptance of Terms",
+            content: [
+              "By registering or using KisanSeva, you agree to be bound by these Terms of Service.",
+              "If you do not agree, please do not use the platform.",
+              "We reserve the right to update these terms at any time with prior notice.",
+            ]
+          },
+          {
+            icon: CheckCircle2,
+            color: "emerald",
+            title: "Permitted Use",
+            content: [
+              "KisanSeva is designed for individual farmers and agricultural workers.",
+              "You may use the platform to access crop advisories, mandi prices, weather data, and farm management tools.",
+              "You are responsible for keeping your account credentials secure.",
+              "One account per user — do not share your login with others.",
+            ]
+          },
+          {
+            icon: AlertTriangle,
+            color: "amber",
+            title: "Advisory Disclaimer",
+            content: [
+              "Crop disease diagnoses and advisories are AI-generated suggestions — not certified agronomic advice.",
+              "Always consult a licensed agronomist before making significant decisions based on app recommendations.",
+              "Weather forecasts are sourced from third parties; KisanSeva is not liable for forecast inaccuracies.",
+              "Market prices are indicative and may differ from actual mandi rates at the time of sale.",
+            ]
+          },
+          {
+            icon: Ban,
+            color: "red",
+            title: "Prohibited Activities",
+            content: [
+              "Do not attempt to reverse-engineer, scrape, or misuse any part of the platform.",
+              "Do not upload harmful, misleading, or illegal content.",
+              "Do not impersonate other users or government entities.",
+              "Misuse may result in immediate account termination.",
+            ]
+          },
+          {
+            icon: Gavel,
+            color: "slate",
+            title: "Limitation of Liability",
+            content: [
+              "KisanSeva is provided 'as is' without warranty of any kind.",
+              "We are not responsible for crop losses resulting from following app recommendations.",
+              "Our liability is limited to the amount paid for any premium services (if applicable).",
+              "These terms are governed by Indian law and disputes fall under the jurisdiction of Indian courts.",
+            ]
+          },
+          {
+            icon: Phone,
+            color: "emerald",
+            title: "Contact",
+            content: [
+              "For questions about these terms, contact us at: legal@kisanseva.app",
+            ]
+          },
+        ].map(({ icon: Icon, color, title, content }) => (
+          <div key={title} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-9 h-9 rounded-xl bg-${color}-50 flex items-center justify-center text-${color}-600`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <h2 className="text-base font-bold text-slate-900">{title}</h2>
+            </div>
+            <ul className="space-y-2">
+              {content.map((item, i) => (
+                <li key={i} className="flex gap-2 text-sm text-slate-600">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
-

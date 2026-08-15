@@ -28,7 +28,8 @@ import {
   AlertTriangle,
   Droplets,
   CheckCheck,
-  Trash2
+  Trash2,
+  CloudOff
 } from 'lucide-react';
 
 const DEFAULT_NOTIFICATIONS = [
@@ -41,6 +42,7 @@ type Notif = { id: string; icon: string; title: string; body: string; time: stri
 
 import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 import GlobalCalculatorWidget from '@/components/layout/GlobalCalculatorWidget';
+import BackgroundSyncManager from '@/components/layout/BackgroundSyncManager';
 import { UserButton } from '@clerk/nextjs';
 
 const PAGE_TITLES: Record<string, string> = {
@@ -58,11 +60,13 @@ const PAGE_TITLES: Record<string, string> = {
   '/topography': 'Farm Topography',
   '/finance': 'Agri-Credit & Lending',
   '/settings': 'Settings',
+  '/offline': 'Offline Hub',
 };
 
 const APP_LINKS = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Offline Hub', href: '/offline', icon: CloudOff },
   { name: 'Crop Diagnose', href: '/diagnose', icon: Search },
   { name: 'Soil Health', href: '/soil-health', icon: FlaskConical },
   { name: 'Market', href: '/market', icon: TrendingUp },
@@ -122,6 +126,7 @@ export default function AppLayoutClient({
 
   return (
     <div className="flex h-screen overflow-hidden text-slate-900 font-sans" style={{ backgroundColor: '#f0f4f0' }}>
+      <BackgroundSyncManager />
       
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 shrink-0" style={{ background: 'linear-gradient(180deg, #1a2e1a 0%, #1e3a1e 60%, #162816 100%)', boxShadow: '4px 0 24px rgba(0,0,0,0.18)' }}>

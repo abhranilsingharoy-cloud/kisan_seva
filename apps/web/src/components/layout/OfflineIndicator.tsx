@@ -46,7 +46,7 @@ export default function OfflineIndicator() {
       borderRadius: '30px',
       display: 'flex',
       alignItems: 'center',
-      gap: '8px',
+      gap: '12px',
       boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
       zIndex: 9999,
       fontWeight: 600,
@@ -54,7 +54,21 @@ export default function OfflineIndicator() {
       animation: 'slideDown 0.3s ease-out'
     }}>
       <WifiOff size={18} />
-      <span>You are offline. Running on Cache.</span>
+      <span>You are offline.</span>
+      <a 
+        href="/offline" 
+        style={{
+          background: 'rgba(255,255,255,0.2)',
+          padding: '4px 12px',
+          borderRadius: '16px',
+          fontSize: '0.8rem',
+          textDecoration: 'none',
+          color: 'white',
+          whiteSpace: 'nowrap'
+        }}
+      >
+        View Offline Hub
+      </a>
       <style>{`
         @keyframes slideDown {
           from { top: -50px; opacity: 0; }

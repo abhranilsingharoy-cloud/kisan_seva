@@ -188,7 +188,7 @@ export default function AgentChatPage() {
           <p className="text-xs font-medium uppercase tracking-widest mt-2" style={{ color: 'var(--color-bark, #96897b)' }}>7 Specialized Agents</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
           {/* Active Agents */}
           <div>
             <h2 className="text-xs uppercase tracking-wider mb-4 font-semibold text-gray-400">System Status</h2>

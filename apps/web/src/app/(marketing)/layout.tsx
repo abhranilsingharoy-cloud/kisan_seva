@@ -18,7 +18,6 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               <span>KisanSeva</span>
             </Link>
             <ul className="nav-links">
-              <li><Link href="/">Home</Link></li>
               <li><Link href="/diagnose">Crops</Link></li>
               <li><Link href="/market">Markets</Link></li>
               <li><Link href="/schedule">Weather</Link></li>

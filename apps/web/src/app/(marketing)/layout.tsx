@@ -19,8 +19,10 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
             </Link>
             <ul className="nav-links">
               <li><Link href="/diagnose">Crops</Link></li>
+              <li><Link href="/soil-health">Soil Test</Link></li>
+              <li><Link href="/schedule">My Plots</Link></li>
               <li><Link href="/market">Markets</Link></li>
-              <li><Link href="/schedule">Weather</Link></li>
+              <li><Link href="/community">Community</Link></li>
               <li><Link href="/dashboard">Dashboard</Link></li>
             </ul>
             <div className="auth-buttons flex items-center gap-3">

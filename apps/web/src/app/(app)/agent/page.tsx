@@ -82,7 +82,22 @@ export default function AgentChatPage() {
   };
 
   // ── Voice Integration (Bhashini-style) ───────────────────────────────────────
-  const startListening = () => {
+  const startListening = async () => {
+    // 1. Force the browser to show the microphone permission prompt natively
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop the tracks immediately, we just needed to trigger the permission prompt
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (err: any) {
+      console.warn("Microphone permission check failed:", err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        alert("Microphone is BLOCKED. Please click the Lock icon 🔒 in your browser's URL bar, go to Permissions, and Allow the Microphone.");
+        return;
+      }
+    }
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech Recognition is not supported in this browser. Please use Chrome or Edge.");

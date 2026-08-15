@@ -64,9 +64,11 @@ export default function AgentChatPage() {
   const [isThinking, setIsThinking]               = useState(false);
   const [activeThinkingAgents, setActiveAgents]   = useState<string[]>([]);
   const [mobileSidebarOpen, setMobileSidebar]     = useState(false);
+  const [isListening, setIsListening]             = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef   = useRef<HTMLInputElement>(null);
   const textareaRef    = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,6 +79,72 @@ export default function AgentChatPage() {
     setInputText(e.target.value);
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+  };
+
+  // ── Voice Integration (Bhashini-style) ───────────────────────────────────────
+  const startListening = async () => {
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (err) {
+      alert("Microphone permission denied. Please allow mic access in browser settings.");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech Recognition is not supported in this browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    const langMap: Record<string, string> = { en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN' };
+    recognition.lang = langMap[selectedLang] || 'en-IN';
+
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = (event: any) => {
+      let finalTrans = "";
+      let interim = "";
+      for (let i = 0; i < event.results.length; i++) {
+        if (event.results[i].isFinal) finalTrans += event.results[i][0].transcript;
+        else interim += event.results[i][0].transcript;
+      }
+      setInputText(finalTrans || interim);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setTimeout(() => {
+        const btn = document.getElementById('send-message-btn');
+        if (btn && !btn.disabled) btn.click();
+      }, 500);
+    };
+
+    recognition.onerror = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const speakResponse = (text: string, langCode: string) => {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    
+    // Clean text for TTS
+    const cleanText = text.replace(/[#*`_~]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/[\u{1F000}-\u{1FFFF}]/gu, '').trim();
+    if (!cleanText) return;
+
+    // Use Google Translate TTS proxy for Indian languages if native voices suck, but native Web Speech is easier for demo
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const langMap: Record<string, string> = { en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN' };
+    utterance.lang = langMap[langCode] || 'en-IN';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
   };
 
   // ── API Call ────────────────────────────────────────────────────────────────
@@ -188,6 +256,9 @@ export default function AgentChatPage() {
       agentIcon: intent.agentIcon,
       data: intent.data,
     }]);
+
+    // Read the response out loud in vernacular language
+    speakResponse(responseText, selectedLang);
   };
 
   // ── Sidebar ──────────────────────────────────────────────────────────────────
@@ -597,6 +668,7 @@ export default function AgentChatPage() {
               <div className="shrink-0 flex items-center gap-1 mb-0.5">
                 {inputText.trim() && !isThinking ? (
                   <button
+                    id="send-message-btn"
                     onClick={() => handleSend()}
                     className="w-9 h-9 rounded-xl bg-green-600 hover:bg-green-700 text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all"
                   >
@@ -607,7 +679,15 @@ export default function AgentChatPage() {
                     <Loader2 size={16} className="animate-spin"/>
                   </button>
                 ) : (
-                  <button className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition-colors">
+                  <button 
+                    onClick={startListening}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                      isListening 
+                        ? 'bg-red-100 text-red-600 animate-pulse ring-2 ring-red-500' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600'
+                    }`}
+                    title="Tap to speak"
+                  >
                     <Mic size={16}/>
                   </button>
                 )}

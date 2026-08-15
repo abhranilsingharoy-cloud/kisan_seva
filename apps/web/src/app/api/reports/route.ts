@@ -7,7 +7,7 @@ export async function GET() {
       throw new Error("GROQ_API_KEY is not configured in .env.local");
     }
 
-    const prompt = `Generate a JSON array of exactly 35 realistic, current agricultural reports for different states in India. 
+    const prompt = `Generate a JSON array of exactly 12 realistic, current agricultural reports for different states in India. 
 Do not include any text other than the raw JSON array.
 Each report object must match this schema:
 {

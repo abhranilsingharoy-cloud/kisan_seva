@@ -1,14 +1,13 @@
-// @ts-ignore
-import { DatabaseSync } from 'node:sqlite';
 import { NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
 import { sql } from '@vercel/postgres';
 
-const isVercel = !!process.env.POSTGRES_URL;
-let localDb: DatabaseSync | null = null;
+const isVercel = !!process.env.VERCEL || !!process.env.POSTGRES_URL;
+let localDb: any = null;
 
 if (!isVercel) {
+  const { DatabaseSync } = require('node:sqlite');
   const dbDir = path.join(process.cwd(), 'data');
   if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
   localDb = new DatabaseSync(path.join(dbDir, 'community_posts.db'));

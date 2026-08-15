@@ -1,5 +1,4 @@
-// @ts-ignore
-import { DatabaseSync } from 'node:sqlite';
+// Removed static sqlite import
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { sql } from '@vercel/postgres';
@@ -26,7 +25,7 @@ export async function POST(req: Request) {
 
     const replyId = `r${Date.now()}`;
     
-    const isVercel = !!process.env.POSTGRES_URL;
+    const isVercel = !!process.env.VERCEL || !!process.env.POSTGRES_URL;
 
     if (isVercel) {
       await sql`
@@ -34,6 +33,7 @@ export async function POST(req: Request) {
         VALUES (${replyId}, ${postId}, 'KisanSeva AI Expert', 'ai', ${responseContent})
       `;
     } else {
+      const { DatabaseSync } = require('node:sqlite');
       const dbPath = path.join(process.cwd(), 'data', 'community_posts.db');
       const db = new DatabaseSync(dbPath);
       const insertStmt = db.prepare(`

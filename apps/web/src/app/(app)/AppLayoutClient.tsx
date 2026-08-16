@@ -224,7 +224,7 @@ export default function AppLayoutClient({
             <GlobalCalculatorWidget />
             <div style={{ position: 'relative' }}>
               <button 
-                onClick={() => { setShowNotifications(!showNotifications); if (!showNotifications) markAllRead(); }}
+                onClick={() => setShowNotifications(!showNotifications)}
                 style={{ position: 'relative', padding: '8px', background: showNotifications ? '#f1f5f9' : 'none', border: 'none', cursor: 'pointer', borderRadius: '8px', color: '#64748b', transition: 'background 0.15s' }} 
                 onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} 
                 onMouseLeave={e => { if(!showNotifications) e.currentTarget.style.background = 'none' }}>
@@ -248,9 +248,14 @@ export default function AppLayoutClient({
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         {notifs.length > 0 && (
-                          <button onClick={markAllRead} title="Mark all as read" style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600 }}>
-                            <CheckCheck size={14} /> All read
-                          </button>
+                          <>
+                            <button onClick={markAllRead} title="Mark all as read" style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600 }}>
+                              <CheckCheck size={14} /> All read
+                            </button>
+                            <button onClick={() => saveNotifs([])} title="Clear all" style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600 }}>
+                              <Trash2 size={14} /> Clear
+                            </button>
+                          </>
                         )}
                         <button onClick={() => setShowNotifications(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px', borderRadius: '6px' }}><X size={16} /></button>
                       </div>

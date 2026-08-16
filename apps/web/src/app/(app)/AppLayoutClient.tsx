@@ -44,6 +44,7 @@ import GoogleTranslateWidget from '@/components/layout/GoogleTranslateWidget';
 import GlobalCalculatorWidget from '@/components/layout/GlobalCalculatorWidget';
 import BackgroundSyncManager from '@/components/layout/BackgroundSyncManager';
 import { UserButton } from '@clerk/nextjs';
+import ChatWidget from '@/components/chat/ChatWidget';
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Home',
@@ -402,6 +403,9 @@ export default function AppLayoutClient({
           </div>
         </div>
       )}
+
+      {/* FLOATING CHATBOT (Hide on full-screen agent page) */}
+      {pathname !== '/agent' && <ChatWidget />}
     </div>
   );
 }

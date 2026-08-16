@@ -5,7 +5,7 @@ import withPWAInit from 'next-pwa';
 
 const withPWA = withPWAInit({
   dest: 'public',
-  disable: false, // Force PWA in dev so user can see it
+  disable: true, // Temporarily disabled to nuke stuck service worker caches
   register: true,
   skipWaiting: true,
   runtimeCaching: [

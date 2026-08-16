@@ -67,7 +67,6 @@ const PAGE_TITLES: Record<string, string> = {
 const APP_LINKS = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Offline Hub', href: '/offline', icon: CloudOff },
   { name: 'Crop Diagnose', href: '/diagnose', icon: Search },
   { name: 'Soil Health', href: '/soil-health', icon: FlaskConical },
   { name: 'Market', href: '/market', icon: TrendingUp },

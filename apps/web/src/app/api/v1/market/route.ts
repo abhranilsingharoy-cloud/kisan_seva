@@ -60,7 +60,43 @@ export async function GET(req: NextRequest) {
   const limit       = Math.min(parseInt(searchParams.get('limit') || '30'), 100)
 
   if (!AGMARKNET_KEY) {
-    return NextResponse.json({ error: 'Agmarknet API key not configured' }, { status: 500 })
+    // FALLBACK: If no API key is provided, return realistic mock data for the demo
+    const basePrice = commodity.toLowerCase() === 'tomato' ? 2400 : 
+                      commodity.toLowerCase() === 'wheat' ? 2200 : 
+                      commodity.toLowerCase() === 'rice' ? 3100 : 1800;
+                      
+    const mockMandis = [
+      {
+        mandiName: `${state || 'Local'} Main Market`, district: 'Central', state: state || 'Unknown', commodity, variety: 'Local',
+        minPrice: basePrice - 200, maxPrice: basePrice + 300, modalPrice: basePrice + 100, unit: 'Quintal',
+        vsAverage: 100, vsAveragePct: 4, distanceKm: 12, transportCost: 10, netValue: basePrice + 90,
+        arrivalDate: new Date().toISOString().split('T')[0], isBestPrice: true
+      },
+      {
+        mandiName: 'Nearby APMC', district: 'North', state: state || 'Unknown', commodity, variety: 'Hybrid',
+        minPrice: basePrice - 300, maxPrice: basePrice + 100, modalPrice: basePrice - 100, unit: 'Quintal',
+        vsAverage: -100, vsAveragePct: -4, distanceKm: 45, transportCost: 36, netValue: basePrice - 136,
+        arrivalDate: new Date().toISOString().split('T')[0], isBestPrice: false
+      }
+    ];
+
+    return NextResponse.json({
+      success: true,
+      commodity,
+      state: state || 'All States',
+      totalMandis: 2,
+      stateAvgPrice: basePrice,
+      highestPrice: basePrice + 300,
+      lowestPrice: basePrice - 300,
+      priceRange: 600,
+      spreadPct: Math.round((600 / basePrice) * 100),
+      sellSignal: 'Prices stable across mandis — sell at nearest convenient mandi',
+      bestMandi: mockMandis[0],
+      mandis: mockMandis,
+      unit: 'INR/Quintal',
+      fetchedAt: new Date().toISOString(),
+      source: 'Mock Data (API Key Missing)',
+    })
   }
 
   try {

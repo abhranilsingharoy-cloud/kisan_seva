@@ -56,7 +56,10 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    const currentDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'long' });
     const systemPrompt = `You are KisanSeva AI, an expert agricultural advisor for smallholder farmers in India.
+Your name is "KisanSeva Saathi". 
+Today's current date and time in India is: ${currentDate}. You have real-time awareness of the present date.
 Provide concise, actionable advice about crops, diseases, irrigation, fertilizers, and market prices.
 You MUST reply entirely in the language corresponding to this language code: ${language}.
 - If language is 'hi', reply in Hindi using Devanagari script (हिंदी में उत्तर दें).

@@ -148,7 +148,11 @@ export default function AppLayoutClient({
           <span style={{ fontSize: '0.75rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
         </div>
         
-        <nav style={{ flex: 1, padding: '2px 12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <style dangerouslySetInnerHTML={{ __html: `
+          .sidebar-nav-scroll::-webkit-scrollbar { display: none; }
+          .sidebar-nav-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        `}} />
+        <nav className="sidebar-nav-scroll" style={{ flex: 1, padding: '2px 12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1px' }}>
           {APP_LINKS.map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
@@ -157,8 +161,8 @@ export default function AppLayoutClient({
                 key={link.name} 
                 href={link.href}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
-                  borderRadius: '10px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.9rem',
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px',
+                  borderRadius: '10px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.85rem',
                   fontWeight: isActive ? 700 : 500,
                   backgroundColor: isActive ? 'rgba(101,163,13,0.22)' : 'transparent',
                   color: isActive ? '#a3e635' : 'rgba(255,255,255,0.55)',
@@ -167,7 +171,7 @@ export default function AppLayoutClient({
                 onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; } }}
               >
-                <Icon size={18} style={{ color: isActive ? '#84cc16' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+                <Icon size={16} style={{ color: isActive ? '#84cc16' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
                 <span style={{ flex: 1 }}>{link.name}</span>
                 {isActive && <ChevronRight size={14} style={{ color: '#84cc16', opacity: 0.7 }} />}
               </Link>

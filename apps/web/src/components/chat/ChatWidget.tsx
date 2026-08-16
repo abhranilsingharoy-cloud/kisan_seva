@@ -74,7 +74,7 @@ export default function ChatWidget() {
   return (
     <>
       {/* Floating trigger button */}
-      <div className={`fixed bottom-20 lg:bottom-6 right-6 z-[100] transition-all duration-500 w-14 h-14 flex items-center justify-center`}>
+      <div className={`fixed bottom-28 lg:bottom-12 right-6 z-[99999] transition-all duration-500 w-16 h-16 flex items-center justify-center`}>
         {/* Pulse ring when listening */}
         {isListening && (
           <span className="absolute inset-0 rounded-full bg-red-400 animate-ping opacity-60" />

@@ -56,6 +56,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  let reloaded = false;
+                  for(let registration of registrations) {
+                    registration.unregister();
+                    reloaded = true;
+                  }
+                  if(reloaded) {
+                    window.location.reload(true);
+                  }
+                });
+              }
+            `
+          }} />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link

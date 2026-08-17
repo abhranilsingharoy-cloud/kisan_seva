@@ -29,7 +29,9 @@ import {
   Droplets,
   CheckCheck,
   Trash2,
-  CloudOff
+  CloudOff,
+  Warehouse,
+  Radio
 } from 'lucide-react';
 
 const DEFAULT_NOTIFICATIONS = [
@@ -62,6 +64,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/finance': 'Agri-Credit & Lending',
   '/settings': 'Settings',
   '/offline': 'Offline Hub',
+  '/storage': 'Cold Storage',
+  '/radio': 'Krishi Radio',
 };
 
 const APP_LINKS = [
@@ -75,8 +79,10 @@ const APP_LINKS = [
   { name: 'Agri-Credit', href: '/finance', icon: Wallet },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'Equipment', href: '/rentals', icon: Tractor },
+  { name: 'Cold Storage', href: '/storage', icon: Warehouse },
   { name: 'Traceability', href: '/blockchain', icon: QrCode },
   { name: 'Kisan Sabha', href: '/community', icon: Users },
+  { name: 'Krishi Radio', href: '/radio', icon: Radio },
   { name: 'AI Agent', href: '/agent', icon: Bot },
 ];
 

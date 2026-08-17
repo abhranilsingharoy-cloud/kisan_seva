@@ -644,8 +644,9 @@ export default function SchedulePage() {
               <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
                 <button type="button" onClick={() => { setShowAddModal(false); setEditingPlotId(null); }} style={{ flex: 1, padding: '10px', background: '#f3f4f6', color: '#374151', fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }}>Cancel</button>
                 <button type="submit" style={{ width: '100%', padding: '12px', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
-                Save Plot
-              </button>
+                  Save Plot
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -19,6 +19,15 @@ interface Loan {
   timestamp: string;
 }
 
+interface Transaction {
+  id: string;
+  type: 'income' | 'expense';
+  category: string;
+  amount: number;
+  date: string;
+  note: string;
+}
+
 export default function FinancePage() {
   const [mounted, setMounted] = useState(false);
   const [isCalculating, setIsCalculating] = useState(true);
@@ -36,9 +45,50 @@ export default function FinancePage() {
   const [customPurpose, setCustomPurpose] = useState<string>('Farm Operations & Equipment');
   const [isApplying, setIsApplying] = useState<boolean>(false);
 
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'credit' | 'ledger'>('credit');
+
+  // Farm Ledger State
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [txForm, setTxForm] = useState({ type: 'expense' as 'income'|'expense', category: 'Seeds', amount: '', date: new Date().toISOString().split('T')[0], note: '' });
+
+
   useEffect(() => {
     setMounted(true);
+    const savedLedger = localStorage.getItem('kisanseva_ledger');
+    if (savedLedger) {
+      setTransactions(JSON.parse(savedLedger));
+    }
   }, []);
+
+  const saveTransactions = (updated: Transaction[]) => {
+    setTransactions(updated);
+    localStorage.setItem('kisanseva_ledger', JSON.stringify(updated));
+  };
+
+  const handleAddTransaction = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!txForm.amount || isNaN(Number(txForm.amount))) return;
+    
+    const newTx: Transaction = {
+      id: `tx_${Date.now()}`,
+      type: txForm.type,
+      category: txForm.category,
+      amount: Number(txForm.amount),
+      date: txForm.date,
+      note: txForm.note
+    };
+    saveTransactions([newTx, ...transactions]);
+    setTxForm({ ...txForm, amount: '', note: '' });
+  };
+
+  const handleDeleteTx = (id: string) => {
+    saveTransactions(transactions.filter(t => t.id !== id));
+  };
+
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const netProfit = totalIncome - totalExpense;
 
   const fetchMyLoans = async () => {
     try {
@@ -175,15 +225,32 @@ export default function FinancePage() {
   return (
     <div style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
-      {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* HEADER WITH TABS */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid #e2e8f0', paddingBottom: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Wallet size={28} color="#3b82f6" /> Agri-Credit Eligibility
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Wallet size={28} color="#3b82f6" /> Financial Services
           </h1>
-          <p style={{ color: '#64748b', margin: 0 }}>Generate a verified Pre-Approval Certificate to take to your local bank branch.</p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={() => setActiveTab('credit')}
+              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'credit' ? '#3b82f6' : 'transparent', color: activeTab === 'credit' ? '#fff' : '#64748b' }}
+            >
+              Agri-Credit Eligibility
+            </button>
+            <button 
+              onClick={() => setActiveTab('ledger')}
+              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'ledger' ? '#3b82f6' : 'transparent', color: activeTab === 'ledger' ? '#fff' : '#64748b' }}
+            >
+              Farm Ledger (Offline)
+            </button>
+          </div>
         </div>
       </div>
+
+      {activeTab === 'credit' ? (
+        <>
+
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
         
@@ -398,6 +465,125 @@ export default function FinancePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      </>
+      ) : (
+        /* FARM LEDGER VIEW */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {/* Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Total Income</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#10b981', display: 'flex', alignItems: 'center' }}>
+                <IndianRupee size={24} strokeWidth={3} /> {totalIncome.toLocaleString('en-IN')}
+              </div>
+            </div>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Total Expenses</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ef4444', display: 'flex', alignItems: 'center' }}>
+                <IndianRupee size={24} strokeWidth={3} /> {totalExpense.toLocaleString('en-IN')}
+              </div>
+            </div>
+            <div style={{ backgroundColor: netProfit >= 0 ? '#f0fdf4' : '#fef2f2', padding: '20px', borderRadius: '16px', border: netProfit >= 0 ? '1px solid #bbf7d0' : '1px solid #fecaca', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: netProfit >= 0 ? '#16a34a' : '#dc2626', textTransform: 'uppercase', marginBottom: '8px' }}>Net Profit / Loss</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, color: netProfit >= 0 ? '#15803d' : '#b91c1c', display: 'flex', alignItems: 'center' }}>
+                <IndianRupee size={24} strokeWidth={3} /> {Math.abs(netProfit).toLocaleString('en-IN')}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', alignItems: 'start' }}>
+            
+            {/* Add Transaction Form */}
+            <form onSubmit={handleAddTransaction} style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', margin: '0 0 20px 0' }}>New Record</h2>
+              
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <button type="button" onClick={() => setTxForm({...txForm, type: 'income', category: 'Crop Sale'})} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: txForm.type === 'income' ? '2px solid #10b981' : '1px solid #e2e8f0', backgroundColor: txForm.type === 'income' ? '#ecfdf5' : '#fff', color: txForm.type === 'income' ? '#059669' : '#64748b', fontWeight: 700, cursor: 'pointer' }}>Income</button>
+                <button type="button" onClick={() => setTxForm({...txForm, type: 'expense', category: 'Seeds'})} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: txForm.type === 'expense' ? '2px solid #ef4444' : '1px solid #e2e8f0', backgroundColor: txForm.type === 'expense' ? '#fef2f2' : '#fff', color: txForm.type === 'expense' ? '#dc2626' : '#64748b', fontWeight: 700, cursor: 'pointer' }}>Expense</button>
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Category</label>
+                <select value={txForm.category} onChange={e => setTxForm({...txForm, category: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', outline: 'none' }}>
+                  {txForm.type === 'income' ? (
+                    <>
+                      <option>Crop Sale</option>
+                      <option>Govt Subsidy</option>
+                      <option>Equipment Rental</option>
+                      <option>Other Income</option>
+                    </>
+                  ) : (
+                    <>
+                      <option>Seeds</option>
+                      <option>Fertilizers / Pesticides</option>
+                      <option>Labor Wages</option>
+                      <option>Fuel / Electricity</option>
+                      <option>Machinery / Repairs</option>
+                      <option>Other Expense</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Amount (₹)</label>
+                <input required type="number" min="1" value={txForm.amount} onChange={e => setTxForm({...txForm, amount: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', outline: 'none' }} placeholder="e.g. 5000" />
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Date</label>
+                <input required type="date" value={txForm.date} onChange={e => setTxForm({...txForm, date: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', outline: 'none' }} />
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#64748b', marginBottom: '6px' }}>Note (Optional)</label>
+                <input type="text" value={txForm.note} onChange={e => setTxForm({...txForm, note: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', outline: 'none' }} placeholder="Brief detail..." />
+              </div>
+
+              <button type="submit" style={{ width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: '#3b82f6', color: '#fff', fontWeight: 800, border: 'none', cursor: 'pointer' }}>
+                Save Record
+              </button>
+            </form>
+
+            {/* Transaction History */}
+            <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
+              <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
+                <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>Recent Transactions</h2>
+              </div>
+              <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                {transactions.length === 0 ? (
+                  <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: 600 }}>No transactions yet. Start adding records to build your offline ledger.</div>
+                ) : (
+                  transactions.map(tx => (
+                    <div key={tx.id} style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: tx.type === 'income' ? '#ecfdf5' : '#fef2f2', color: tx.type === 'income' ? '#10b981' : '#ef4444' }}>
+                          <IndianRupee size={18} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#1e293b' }}>{tx.category}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{new Date(tx.date).toLocaleDateString()} {tx.note && `• ${tx.note}`}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ fontWeight: 800, color: tx.type === 'income' ? '#10b981' : '#ef4444', fontSize: '1.1rem' }}>
+                          {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
+                        </div>
+                        <button onClick={() => handleDeleteTx(tx.id)} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }} title="Delete">
+                          {/* We omit Lucide Trash2 import if missing, but we can just use an HTML entity or standard button text */}
+                          ❌
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       )}

@@ -77,6 +77,10 @@ export default function SchedulePage() {
 
   const [plots, setPlots] = useState<any[]>(DEFAULT_PLOTS)
   const [activePlot, setActivePlot] = useState('plot1')
+  
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'advisory' | 'calendar'>('advisory')
+
   const [weather, setWeather] = useState<any>(null)
   const [weatherLoading, setWeatherLoading] = useState(true)
   const [weatherError, setWeatherError] = useState<string | null>(null)
@@ -267,9 +271,35 @@ export default function SchedulePage() {
 
   return (
     <div style={PAGE_BG}>
+      
+      {/* HEADER WITH TABS */}
+      <div style={{ padding: '32px 28px 0', maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid rgba(0,0,0,0.06)', paddingBottom: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#111827', margin: '0 0 12px 0', letterSpacing: '-0.03em' }}>
+              Farm Schedule & Calendar
+            </h1>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                onClick={() => setActiveTab('advisory')}
+                style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'advisory' ? '#2d6a27' : 'transparent', color: activeTab === 'advisory' ? '#fff' : '#6b7280' }}
+              >
+                7-Day Advisory
+              </button>
+              <button 
+                onClick={() => setActiveTab('calendar')}
+                style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'calendar' ? '#2d6a27' : 'transparent', color: activeTab === 'calendar' ? '#fff' : '#6b7280' }}
+              >
+                Crop Calendar (कृषि पंचांग)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-
-      {/* Plot selector tabs */}
+      {activeTab === 'advisory' ? (
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          {/* Plot selector tabs */}
       <div style={{ display: 'flex', gap: 4, padding: '24px 28px 0', borderBottom: '1px solid rgba(0,0,0,0.06)', background: 'rgba(255,255,255,0.5)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {plots.map(plot => (
           <button key={plot.id} onClick={() => setActivePlot(plot.id)} style={{
@@ -613,9 +643,111 @@ export default function SchedulePage() {
               
               <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
                 <button type="button" onClick={() => { setShowAddModal(false); setEditingPlotId(null); }} style={{ flex: 1, padding: '10px', background: '#f3f4f6', color: '#374151', fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" style={{ flex: 1, padding: '10px', background: '#2d6a27', color: '#fff', fontWeight: 600, border: 'none', borderRadius: 8, cursor: 'pointer' }}>Save Plot</button>
-              </div>
+                <button type="submit" style={{ width: '100%', padding: '12px', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
+                Save Plot
+              </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      </div>
+      ) : (
+        /* CROP CALENDAR VIEW */
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', margin: '0 0 8px' }}>कृषि पंचांग (Crop Calendar)</h2>
+            <p style={{ color: '#4b5563' }}>Standard seasonal cycles and major sowing milestones for India.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            
+            {/* Kharif */}
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e8ede7', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
+              <div style={{ background: '#ecfdf5', padding: '20px', borderBottom: '2px solid #a7f3d0' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#065f46', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  🌦️ Kharif Season
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#047857', margin: 0, fontWeight: 600 }}>Monsoon (June - October)</p>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🍚 Rice (Paddy)</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Jun-Jul | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Sep-Oct</div>
+                  </li>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🌽 Maize</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Jun-Jul | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Sep-Oct</div>
+                  </li>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🧶 Cotton</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> May-Jun | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Oct-Nov</div>
+                  </li>
+                  <li style={{ padding: '12px 0' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🌱 Soybean</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Jun-Jul | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Sep-Oct</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Rabi */}
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e8ede7', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
+              <div style={{ background: '#eff6ff', padding: '20px', borderBottom: '2px solid #bfdbfe' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e40af', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  ❄️ Rabi Season
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#1d4ed8', margin: 0, fontWeight: 600 }}>Winter (October - March)</p>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🌾 Wheat</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Oct-Nov | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Mar-Apr</div>
+                  </li>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🌼 Mustard</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Oct-Nov | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Feb-Mar</div>
+                  </li>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🥔 Potato</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Oct-Nov | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Feb-Mar</div>
+                  </li>
+                  <li style={{ padding: '12px 0' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🫘 Gram (Chana)</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Oct-Nov | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> Mar-Apr</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Zaid */}
+            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e8ede7', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
+              <div style={{ background: '#fffbeb', padding: '20px', borderBottom: '2px solid #fde68a' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#b45309', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  ☀️ Zaid Season
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: '#d97706', margin: 0, fontWeight: 600 }}>Summer (March - June)</p>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🍉 Watermelon / Melons</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Feb-Mar | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> May-Jun</div>
+                  </li>
+                  <li style={{ padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🥒 Cucumber / Gourds</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Feb-Mar | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> May-Jun</div>
+                  </li>
+                  <li style={{ padding: '12px 0' }}>
+                    <div style={{ fontWeight: 700, color: '#111827', marginBottom: 4 }}>🌿 Fodder Crops</div>
+                    <div style={{ fontSize: '0.85rem', color: '#4b5563' }}><span style={{ color: '#059669', fontWeight: 600 }}>Sow:</span> Mar-Apr | <span style={{ color: '#d97706', fontWeight: 600 }}>Harvest:</span> May-Jun</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
@@ -624,4 +756,3 @@ export default function SchedulePage() {
     </div>
   )
 }
-

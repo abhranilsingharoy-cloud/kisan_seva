@@ -58,18 +58,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <head>
           <script dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  let reloaded = false;
-                  for(let registration of registrations) {
-                    registration.unregister();
-                    reloaded = true;
+              (function() {
+                // Listen for the SW_KILLED message and force a hard reload
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.addEventListener('message', function(event) {
+                    if (event.data && event.data.type === 'SW_KILLED') {
+                      window.location.reload(true);
+                    }
+                  });
+
+                  // Also proactively unregister any existing SWs from the page side
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    registrations.forEach(function(reg) { reg.unregister(); });
+                  });
+
+                  // And nuke all caches from the page side too
+                  if ('caches' in window) {
+                    caches.keys().then(function(keys) {
+                      keys.forEach(function(key) { caches.delete(key); });
+                    });
                   }
-                  if(reloaded) {
-                    window.location.reload(true);
-                  }
-                });
-              }
+                }
+              })();
             `
           }} />
           <link rel="preconnect" href="https://fonts.googleapis.com" />

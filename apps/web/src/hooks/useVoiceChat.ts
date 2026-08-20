@@ -302,26 +302,7 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setSpeaking(false);
 
-    // Explicitly request microphone permission first to force the browser prompt.
-    // Some browsers fail to show the prompt when only SpeechRecognition is called.
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Stop the tracks immediately since we only needed the permission prompt to trigger
-        stream.getTracks().forEach(track => track.stop());
-      }
-    } catch (err: any) {
-      console.warn("Microphone access check failed:", err);
-      // Only abort if it's explicitly a permission denial.
-      // If it's a TypeError (e.g. insecure context), we'll let SpeechRecognition try its best.
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        addMessage({
-          role: "model",
-          text: `Microphone access blocked by browser or OS (${err.name}). If you allowed it in the browser, please check Windows Settings -> Privacy -> Microphone and allow Desktop Apps to access the microphone.`,
-        });
-        return;
-      }
-    }
+    // Removed getUserMedia hack as it may conflict with SpeechRecognition grabbing the mic
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;

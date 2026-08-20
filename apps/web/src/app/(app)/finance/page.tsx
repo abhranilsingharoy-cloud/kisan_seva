@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Wallet, IndianRupee, Activity, Droplets, ShieldCheck, FileText, CheckCircle2, Clock, CalendarDays, Percent, ShieldAlert } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Wallet, IndianRupee, Activity, Droplets, ShieldCheck, FileText, CheckCircle2, Clock, CalendarDays, Percent, ShieldAlert, BarChart2, TrendingUp } from 'lucide-react';
 
 interface RealData {
   temp: number;
@@ -28,6 +28,78 @@ interface Transaction {
   note: string;
 }
 
+// ─── Analytics helpers ────────────────────────────────────────────────────────
+
+const EXPENSE_CATEGORIES = ['Seeds', 'Fertilizers / Pesticides', 'Fuel / Electricity', 'Labor Wages', 'Machinery / Repairs'];
+
+/** Returns the last 6 calendar-month labels + income/expense totals from transactions */
+function buildMonthlyData(transactions: Transaction[]) {
+  const now = new Date();
+  const months: { label: string; income: number; expense: number }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const label = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const income = transactions
+      .filter(t => { const td = new Date(t.date); return t.type === 'income' && td.getFullYear() === y && td.getMonth() === m; })
+      .reduce((s, t) => s + t.amount, 0);
+    const expense = transactions
+      .filter(t => { const td = new Date(t.date); return t.type === 'expense' && td.getFullYear() === y && td.getMonth() === m; })
+      .reduce((s, t) => s + t.amount, 0);
+    months.push({ label, income, expense });
+  }
+  return months;
+}
+
+const MOCK_MONTHLY = [
+  { label: "Feb'25", income: 42000, expense: 18000 },
+  { label: "Mar'25", income: 55000, expense: 23000 },
+  { label: "Apr'25", income: 38000, expense: 29000 },
+  { label: "May'25", income: 61000, expense: 31000 },
+  { label: "Jun'25", income: 47000, expense: 25000 },
+  { label: "Jul'25", income: 52000, expense: 22000 },
+];
+
+const MOCK_CATEGORIES = [
+  { label: 'Seeds', pct: 28 },
+  { label: 'Fertilizers / Pesticides', pct: 35 },
+  { label: 'Fuel / Electricity', pct: 12 },
+  { label: 'Labor Wages', pct: 18 },
+  { label: 'Machinery / Repairs', pct: 7 },
+];
+
+/** Returns profit/loss per week for the last 7 weeks */
+function buildWeeklyTrend(transactions: Transaction[]) {
+  const now = new Date();
+  const weeks: { label: string; profit: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const weekEnd = new Date(now);
+    weekEnd.setDate(now.getDate() - i * 7);
+    const weekStart = new Date(weekEnd);
+    weekStart.setDate(weekEnd.getDate() - 6);
+    const label = `W${7 - i}`;
+    const income = transactions
+      .filter(t => { const d = new Date(t.date); return t.type === 'income' && d >= weekStart && d <= weekEnd; })
+      .reduce((s, t) => s + t.amount, 0);
+    const expense = transactions
+      .filter(t => { const d = new Date(t.date); return t.type === 'expense' && d >= weekStart && d <= weekEnd; })
+      .reduce((s, t) => s + t.amount, 0);
+    weeks.push({ label, profit: income - expense });
+  }
+  return weeks;
+}
+
+const MOCK_WEEKLY = [
+  { label: 'W1', profit: 3200 },
+  { label: 'W2', profit: -800 },
+  { label: 'W3', profit: 5100 },
+  { label: 'W4', profit: -1200 },
+  { label: 'W5', profit: 4700 },
+  { label: 'W6', profit: 2900 },
+  { label: 'W7', profit: 6100 },
+];
+
 export default function FinancePage() {
   const [mounted, setMounted] = useState(false);
   const [isCalculating, setIsCalculating] = useState(true);
@@ -46,7 +118,7 @@ export default function FinancePage() {
   const [isApplying, setIsApplying] = useState<boolean>(false);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<'credit' | 'ledger'>('credit');
+  const [activeTab, setActiveTab] = useState<'credit' | 'ledger' | 'analytics'>('credit');
 
   // Farm Ledger State
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -89,6 +161,51 @@ export default function FinancePage() {
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
   const netProfit = totalIncome - totalExpense;
+
+  // ── Analytics derived data ──────────────────────────────────────────────────
+  const _now = new Date();
+
+  const thisMonthIncome = useMemo(() =>
+    transactions.filter(t => {
+      const d = new Date(t.date);
+      return t.type === 'income' && d.getFullYear() === _now.getFullYear() && d.getMonth() === _now.getMonth();
+    }).reduce((s, t) => s + t.amount, 0)
+  , [transactions]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const thisMonthExpense = useMemo(() =>
+    transactions.filter(t => {
+      const d = new Date(t.date);
+      return t.type === 'expense' && d.getFullYear() === _now.getFullYear() && d.getMonth() === _now.getMonth();
+    }).reduce((s, t) => s + t.amount, 0)
+  , [transactions]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const thisMonthProfit = thisMonthIncome - thisMonthExpense;
+  const hasRealData = transactions.length > 0;
+
+  const monthlyData = useMemo(() =>
+    hasRealData ? buildMonthlyData(transactions) : MOCK_MONTHLY
+  , [transactions, hasRealData]);
+
+  const weeklyTrend = useMemo(() =>
+    hasRealData ? buildWeeklyTrend(transactions) : MOCK_WEEKLY
+  , [transactions, hasRealData]);
+
+  const categoryBreakdown = useMemo(() => {
+    if (!hasRealData) return MOCK_CATEGORIES;
+    const expenses = transactions.filter(t => t.type === 'expense');
+    const total = expenses.reduce((s, t) => s + t.amount, 0);
+    if (total === 0) return MOCK_CATEGORIES;
+    return EXPENSE_CATEGORIES.map(cat => {
+      const catTotal = expenses
+        .filter(t => t.category.toLowerCase().startsWith(cat.split(' ')[0].toLowerCase()))
+        .reduce((s, t) => s + t.amount, 0);
+      return { label: cat, pct: Math.round((catTotal / total) * 100) };
+    });
+  }, [transactions, hasRealData]);
+
+  const maxMonthlyValue = useMemo(() =>
+    Math.max(...monthlyData.flatMap(m => [m.income, m.expense]), 1)
+  , [monthlyData]);
 
   const fetchMyLoans = async () => {
     try {
@@ -234,21 +351,31 @@ export default function FinancePage() {
           <div style={{ display: 'flex', gap: '8px' }}>
             <button 
               onClick={() => setActiveTab('credit')}
-              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'credit' ? '#3b82f6' : 'transparent', color: activeTab === 'credit' ? '#fff' : '#64748b' }}
+              style={{ padding: '12px 24px', borderRadius: '12px', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'credit' ? '#1e293b' : '#f1f5f9', color: activeTab === 'credit' ? '#fff' : '#64748b' }}
             >
               Agri-Credit Eligibility
             </button>
             <button 
+              id="tab-ledger"
               onClick={() => setActiveTab('ledger')}
-              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'ledger' ? '#3b82f6' : 'transparent', color: activeTab === 'ledger' ? '#fff' : '#64748b' }}
+              style={{ padding: '12px 24px', borderRadius: '12px', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'ledger' ? '#1e293b' : '#f1f5f9', color: activeTab === 'ledger' ? '#fff' : '#64748b' }}
+              aria-label="Farm Ledger tab"
             >
               Farm Ledger (Offline)
+            </button>
+            <button
+              id="tab-analytics"
+              onClick={() => setActiveTab('analytics')}
+              style={{ padding: '8px 16px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s', border: 'none', backgroundColor: activeTab === 'analytics' ? '#3b82f6' : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#64748b' }}
+              aria-label="Analytics tab"
+            >
+              Analytics
             </button>
           </div>
         </div>
       </div>
 
-      {activeTab === 'credit' ? (
+      {activeTab === 'credit' && (
         <>
 
 
@@ -469,7 +596,9 @@ export default function FinancePage() {
         </div>
       )}
       </>
-      ) : (
+      )}
+
+      {activeTab === 'ledger' && (
         /* FARM LEDGER VIEW */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
@@ -584,6 +713,91 @@ export default function FinancePage() {
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'analytics' && (
+        /* FARM ANALYTICS VIEW */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* 3 Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#ecfdf5', color: '#10b981' }}><TrendingUp size={24} /></div>
+              <div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Income (This Month)</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>₹{thisMonthIncome.toLocaleString('en-IN')}</div>
+              </div>
+            </div>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: '#fef2f2', color: '#ef4444' }}><Activity size={24} /></div>
+              <div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Expenses (This Month)</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>₹{thisMonthExpense.toLocaleString('en-IN')}</div>
+              </div>
+            </div>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ padding: '12px', borderRadius: '12px', backgroundColor: thisMonthProfit >= 0 ? '#ecfdf5' : '#fef2f2', color: thisMonthProfit >= 0 ? '#10b981' : '#ef4444' }}><Wallet size={24} /></div>
+              <div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Net Profit (This Month)</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: thisMonthProfit >= 0 ? '#10b981' : '#ef4444' }}>{thisMonthProfit >= 0 ? '+' : '-'}₹{Math.abs(thisMonthProfit).toLocaleString('en-IN')}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'start' }}>
+            {/* Bar Chart */}
+            <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ margin: '0 0 24px', fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}><BarChart2 size={18} color="#64748b"/> 6-Month Cash Flow</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '200px', paddingBottom: '30px', borderBottom: '1px solid #e2e8f0', position: 'relative' }}>
+                {monthlyData.map((m, i) => {
+                  const incPct = Math.max((m.income / maxMonthlyValue) * 100, 2);
+                  const expPct = Math.max((m.expense / maxMonthlyValue) * 100, 2);
+                  return (
+                    <div key={i} style={{ display: 'flex', gap: '4px', height: '100%', alignItems: 'flex-end', position: 'relative', width: '12%' }}>
+                      <div style={{ width: '100%', height: `${incPct}%`, backgroundColor: '#10b981', borderRadius: '4px 4px 0 0', opacity: 0.9 }}></div>
+                      <div style={{ width: '100%', height: `${expPct}%`, backgroundColor: '#ef4444', borderRadius: '4px 4px 0 0', opacity: 0.9 }}></div>
+                      <div style={{ position: 'absolute', bottom: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', whiteSpace: 'nowrap' }}>{m.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}><div style={{ width: 12, height: 12, borderRadius: 3, background: '#10b981' }}/> Income</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 600, color: '#64748b' }}><div style={{ width: 12, height: 12, borderRadius: 3, background: '#ef4444' }}/> Expense</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Expense Breakdown */}
+              <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>Expense Breakdown</h3>
+                {categoryBreakdown.map((cat, i) => (
+                  <div key={i} style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }}>
+                      <span style={{ color: '#475569' }}>{cat.label}</span>
+                      <span style={{ color: '#1e293b' }}>{cat.pct}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: '6px', backgroundColor: '#f1f5f9', borderRadius: '3px' }}>
+                      <div style={{ width: `${cat.pct}%`, height: '100%', backgroundColor: '#3b82f6', borderRadius: '3px' }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 7-Week Profit Trend */}
+              <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>7-Week Profit Trend</h3>
+                <div style={{ display: 'flex', gap: '4px', justifyContent: 'space-between' }}>
+                  {weeklyTrend.map((w, i) => (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: w.profit > 0 ? '#10b981' : w.profit < 0 ? '#ef4444' : '#e2e8f0', opacity: w.profit === 0 ? 0.5 : Math.min(1, 0.4 + Math.abs(w.profit)/10000) }}></div>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8' }}>{w.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

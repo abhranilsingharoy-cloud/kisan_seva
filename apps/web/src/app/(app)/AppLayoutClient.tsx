@@ -31,7 +31,12 @@ import {
   Trash2,
   CloudOff,
   Warehouse,
-  Radio
+  Radio,
+  Sprout,
+  BookOpen,
+  PawPrint,
+  FolderLock,
+  Calculator
 } from 'lucide-react';
 
 const DEFAULT_NOTIFICATIONS = [
@@ -66,23 +71,33 @@ const PAGE_TITLES: Record<string, string> = {
   '/offline': 'Offline Hub',
   '/storage': 'Cold Storage',
   '/radio': 'Krishi Radio',
+  '/livestock': 'Livestock',
+  '/documents': 'Document Locker',
+  '/fertilizer': 'Fertilizer Calculator',
+  '/seeds': 'Seed Recommender',
+  '/disease-library': 'Disease Library',
 };
 
 const APP_LINKS = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Crop Diagnose', href: '/diagnose', icon: Search },
+  { name: 'Disease Library', href: '/disease-library', icon: BookOpen },
   { name: 'Soil Health', href: '/soil-health', icon: FlaskConical },
   { name: 'Market', href: '/market', icon: TrendingUp },
   { name: 'My Plots', href: '/schedule', icon: Calendar },
   { name: 'Farm Map', href: '/topography', icon: Map },
   { name: 'Agri-Credit', href: '/finance', icon: Wallet },
+  { name: 'Fertilizer Calc', href: '/fertilizer', icon: Calculator },
+  { name: 'Seed Matcher', href: '/seeds', icon: Sprout },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'Equipment', href: '/rentals', icon: Tractor },
+  { name: 'Livestock', href: '/livestock', icon: PawPrint },
   { name: 'Cold Storage', href: '/storage', icon: Warehouse },
+  { name: 'Docs Locker', href: '/documents', icon: FolderLock },
   { name: 'Traceability', href: '/blockchain', icon: QrCode },
-  { name: 'Kisan Sabha', href: '/community', icon: Users },
   { name: 'Krishi Radio', href: '/radio', icon: Radio },
+  { name: 'Kisan Sabha', href: '/community', icon: Users },
   { name: 'AI Agent', href: '/agent', icon: Bot },
 ];
 

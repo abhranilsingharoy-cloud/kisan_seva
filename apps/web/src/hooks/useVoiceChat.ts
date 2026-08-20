@@ -317,11 +317,7 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         addMessage({
           role: "model",
-          text: language === "hi"
-            ? "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग में माइक की अनुमति दें।"
-            : language === "bn"
-            ? "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজার সেটিংসে মাইক অনুমতি দিন।"
-            : "Microphone permission denied. Please allow mic access in browser settings.",
+          text: `Microphone access blocked by browser or OS (${err.name}). If you allowed it in the browser, please check Windows Settings -> Privacy -> Microphone and allow Desktop Apps to access the microphone.`,
         });
         return;
       }
@@ -344,14 +340,15 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
       console.warn("[SpeechRecognition] Error:", event.error);
       setListening(false);
       // Show helpful message for mic permission denial
-      if (event.error === "not-allowed") {
+      if (event.error === "not-allowed" || event.error === "network") {
         addMessage({
           role: "model",
-          text: language === "hi"
-            ? "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया ब्राउज़र सेटिंग में माइक की अनुमति दें।"
-            : language === "bn"
-            ? "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজার সেটিংসে মাইক অনুমতি দিন।"
-            : "Microphone permission denied. Please allow mic access in browser settings.",
+          text: `Voice recognition failed (${event.error}). Please ensure microphone access is allowed in your browser AND your Windows OS Privacy Settings, and check your internet connection.`
+        });
+      } else {
+         addMessage({
+          role: "model",
+          text: `Voice recognition error: ${event.error}. Please try typing your message instead.`
         });
       }
     };

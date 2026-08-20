@@ -302,7 +302,16 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setSpeaking(false);
 
-    // Removed getUserMedia hack as it may conflict with SpeechRecognition grabbing the mic
+    // Explicitly request microphone permission first to force the browser prompt.
+    // Some browsers fail to show the prompt when only SpeechRecognition is called.
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (err: any) {
+      console.warn("getUserMedia failed, falling back to SpeechRecognition natively:", err);
+    }
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;

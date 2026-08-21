@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, AlertTriangle, Bug, Leaf, X, ChevronRight, Droplets, ThermometerSun, Check, Globe, Shield, SearchCode, Beaker, FileSpreadsheet } from 'lucide-react';
+import { Search, AlertTriangle, Bug, Leaf, X, ChevronRight, Droplets, ThermometerSun, Check, Globe, Shield, SearchCode, Beaker, FileSpreadsheet, Filter, MapPin, ShieldAlert, Thermometer, ArrowRight, Share2, FlaskConical, Stethoscope } from 'lucide-react';
+import massiveDiseases from './massive_diseases.json';
 
 const PAGE_BG = { background: '#f9fafb', minHeight: '100vh', paddingBottom: 100 };
 
 // Injected from Executive Research Summary
 const DISEASES = [
+  ...massiveDiseases,
   // WHEAT
   {
     id: 'd1',
@@ -348,12 +350,44 @@ export default function DiseaseLibraryPage() {
   const [search, setSearch] = useState('');
   const [filterCrop, setFilterCrop] = useState('All');
   const [selected, setSelected] = useState<typeof DISEASES[0] | null>(null);
+  const [aiDiseases, setAiDiseases] = useState<typeof DISEASES>([]);
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [aiError, setAiError] = useState('');
 
-  const filtered = DISEASES.filter(d => {
+  const combinedDiseases = [...DISEASES, ...aiDiseases];
+
+  const filtered = combinedDiseases.filter(d => {
     if (filterCrop !== 'All' && !d.crop.includes(filterCrop)) return false;
     if (search && !d.name.toLowerCase().includes(search.toLowerCase()) && !d.symptoms.some(s => s.toLowerCase().includes(search.toLowerCase()))) return false;
     return true;
   });
+
+  const handleAiSearch = async () => {
+    if (!search) return;
+    setIsAiSearching(true);
+    setAiError('');
+    
+    try {
+      const res = await fetch('/api/v1/disease-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: search })
+      });
+      const data = await res.json();
+      
+      if (data.success && data.data) {
+        setAiDiseases([data.data, ...aiDiseases]);
+        setSearch(''); // Clear search so they can see it added to the top
+        setSelected(data.data); // Open it immediately
+      } else {
+        setAiError(data.error || 'Failed to synthesize profile.');
+      }
+    } catch (err) {
+      setAiError('Failed to connect to the database.');
+    } finally {
+      setIsAiSearching(false);
+    }
+  };
 
   const categories = ['All', 'Wheat', 'Maize', 'Rice', 'Tomato', 'Potato', 'Cotton', 'Sugarcane', 'Banana', 'Citrus'];
 
@@ -396,6 +430,26 @@ export default function DiseaseLibraryPage() {
       </div>
 
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px' }}>
+        {filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: '#fff', borderRadius: 16, border: '1px dashed #d1d5db' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 24, background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <SearchCode size={24} color="#6b7280" />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827', margin: '0 0 8px' }}>No local profiles found</h3>
+            <p style={{ color: '#4b5563', margin: '0 0 24px', fontSize: '0.95rem' }}>We don't have a pre-indexed profile for "{search}". However, you can synthesize one from the global AI database.</p>
+            
+            <button 
+              onClick={handleAiSearch} 
+              disabled={isAiSearching}
+              style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 30, fontSize: '1rem', fontWeight: 700, cursor: isAiSearching ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, opacity: isAiSearching ? 0.7 : 1, transition: '0.2s' }}
+            >
+              {isAiSearching ? 'Synthesizing Pathogen Data...' : 'Synthesize AI Profile'} 
+              {isAiSearching ? <span style={{ width: 18, height: 18, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} /> : <Globe size={18} />}
+            </button>
+            {aiError && <div style={{ color: '#dc2626', fontSize: '0.875rem', marginTop: 12, fontWeight: 600 }}>{aiError}</div>}
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
           {filtered.map(d => (
             <div key={d.id} onClick={() => setSelected(d)} style={{ background: '#fff', borderRadius: 16, border: '1px solid #e8ede7', padding: 20, cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}>

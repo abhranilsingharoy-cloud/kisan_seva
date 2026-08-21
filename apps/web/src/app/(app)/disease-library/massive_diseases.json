@@ -1,0 +1,242 @@
+[
+{
+  "id": "disease_01",
+  "name": "Wheat Stem Rust",
+  "scientific": "Puccinia graminis f. sp. tritici",
+  "crop": "Wheat",
+  "severity": "Critical",
+  "cause": "Fungal",
+  "affected_hosts": "Primarily affects wheat, but also infects barley and some wild grasses.",
+  "symptoms": [
+    "Brick-red pustules on stems and leaf sheaths",
+    "Pustules rupture the epidermis, releasing powdery spores",
+    "Severe infection leads to shriveled grains and lodging"
+  ],
+  "conditions": "Warm, humid conditions with extended dew periods favor disease development and spore dissemination.",
+  "cycle": "The fungus overwinters as teliospores, which germinate in spring to produce basidiospores that infect alternate hosts (barberry), then aeciospores infect wheat, completing the cycle with urediniospores spreading rapidly.",
+  "diagnosis": "Visual inspection for characteristic brick-red pustules and microscopic examination of spores confirm the presence of the pathogen.",
+  "impact": "Can cause devastating yield losses, historically leading to famines if susceptible varieties are widely planted.",
+  "prevention": "Planting resistant varieties is the most effective and economical prevention strategy.",
+  "organic": [
+    "Use of resistant varieties",
+    "Removal of alternate host plants (barberry)"
+  ],
+  "chemical": [
+    "Fungicides containing triazoles or strobilurins",
+    "Application based on disease forecasting models"
+  ],
+  "ipm": "Integrates resistant varieties, timely fungicide applications, and monitoring of disease spread to minimize economic impact.",
+  "geography": "Globally distributed, particularly problematic in major wheat-growing regions of Africa, Asia, and North America.",
+  "differential": "Distinguished from leaf rust by its larger, elongated pustules primarily on stems and leaf sheaths, as opposed to smaller, rounder pustules on leaves."
+},
+{
+  "id": "disease_02",
+  "name": "Rice Blast",
+  "scientific": "Magnaporthe oryzae",
+  "crop": "Rice",
+  "severity": "High",
+  "cause": "Fungal",
+  "affected_hosts": "Affects rice (Oryza sativa) and various wild grasses.",
+  "symptoms": [
+    "Diamond-shaped lesions on leaves with gray centers and reddish-brown margins",
+    "Necrosis of nodes and neck leading to panicle breakage",
+    "Reduced grain filling and yield"
+  ],
+  "conditions": "High humidity, prolonged leaf wetness, and cool temperatures are ideal for disease development.",
+  "cycle": "The fungus overwinters in infected plant debris or seeds, producing conidia that are dispersed by wind and rain, leading to new infections.",
+  "diagnosis": "Identification of characteristic lesions and isolation of the pathogen from infected tissues confirms the disease.",
+  "impact": "Considered one of the most destructive diseases of rice worldwide, capable of causing significant yield losses.",
+  "prevention": "Utilizing resistant cultivars and proper nutrient management are key preventive measures.",
+  "organic": [
+    "Resistant rice varieties",
+    "Balanced fertilization to avoid excessive nitrogen"
+  ],
+  "chemical": [
+    "Fungicides like tricyclazole or azoxystrobin",
+    "Seed treatment with appropriate fungicides"
+  ],
+  "ipm": "Combines resistant varieties, cultural practices, and judicious fungicide application to manage disease outbreaks effectively.",
+  "geography": "Present in all rice-growing regions globally, especially prevalent in Asia, Africa, and the Americas.",
+  "differential": "Distinguished from other leaf spots by its characteristic diamond shape and the presence of a gray center with a dark border."
+},
+{
+  "id": "disease_03",
+  "name": "Maize Lethal Necrosis Disease (MLND)",
+  "scientific": "Maize chlorotic mottle virus (MCMV) + a potyvirus (e.g., SCMV)",
+  "crop": "Maize",
+  "severity": "Critical",
+  "cause": "Viral",
+  "affected_hosts": "Primarily affects maize, but other cereals can be susceptible.",
+  "symptoms": [
+    "Severe stunting and chlorosis (yellowing) of leaves",
+    "Necrotic streaking on leaves and stem",
+    "Premature plant death and failure to produce cobs"
+  ],
+  "conditions": "High populations of insect vectors (thrips and aphids) and susceptible maize varieties favor rapid spread.",
+  "cycle": "MCMV is primarily transmitted by thrips, while the potyvirus is transmitted by aphids; co-infection leads to the lethal necrosis syndrome.",
+  "diagnosis": "Molecular tests (e.g., PCR, ELISA) are required to confirm the presence of both MCMV and the potyvirus.",
+  "impact": "Causes severe yield losses, often 100% in affected fields, threatening food security in affected regions.",
+  "prevention": "Using certified disease-free seeds and managing insect vectors are critical for prevention.",
+  "organic": [
+    "Use of resistant varieties",
+    "Crop rotation and removal of alternative hosts"
+  ],
+  "chemical": [
+    "Insecticides for vector control (thrips, aphids)",
+    "Seed treatments to protect seedlings"
+  ],
+  "ipm": "Focuses on resistant varieties, vector management, and strict phytosanitary measures to prevent disease introduction and spread.",
+  "geography": "Predominantly found in East Africa, with potential for global spread to other maize-growing areas.",
+  "differential": "Distinguished from single virus infections by the severe, synergistic symptoms including complete plant necrosis and premature death."
+},
+{
+  "id": "disease_04",
+  "name": "Tomato Late Blight",
+  "scientific": "Phytophthora infestans",
+  "crop": "Tomato",
+  "severity": "Critical",
+  "cause": "Oomycete",
+  "affected_hosts": "Primarily affects tomato and potato plants, but can also infect other solanaceous crops.",
+  "symptoms": [
+    "Water-soaked lesions on leaves and stems that rapidly turn brown/black",
+    "White, fuzzy fungal growth on the underside of leaves during humid conditions",
+    "Firm, dark brown lesions on fruits that become leathery"
+  ],
+  "conditions": "Cool, wet weather with high humidity and prolonged leaf wetness is highly conducive to rapid disease development.",
+  "cycle": "The pathogen overwinters in infected tubers or plant debris, producing sporangia that are dispersed by wind and rain, leading to secondary infections.",
+  "diagnosis": "Visual identification of characteristic lesions and white sporulation, confirmed by microscopic examination of sporangia.",
+  "impact": "Can cause complete crop destruction within days under favorable conditions, leading to severe economic losses.",
+  "prevention": "Planting resistant varieties, practicing good sanitation, and applying fungicides preventatively are essential.",
+  "organic": [
+    "Resistant varieties",
+    "Proper plant spacing for air circulation"
+  ],
+  "chemical": [
+    "Fungicides containing chlorothalonil, mancozeb, or copper",
+    "Systemic fungicides for curative and protective action"
+  ],
+  "ipm": "Combines resistant cultivars, cultural practices, weather-based forecasting, and timely fungicide applications.",
+  "geography": "Worldwide distribution, especially problematic in temperate and humid tropical regions.",
+  "differential": "Distinguished from early blight by its rapid spread, larger water-soaked lesions, and white sporulation on leaf undersides."
+},
+{
+  "id": "disease_05",
+  "name": "Potato Common Scab",
+  "scientific": "Streptomyces scabies",
+  "crop": "Potato",
+  "severity": "Moderate",
+  "cause": "Bacterial",
+  "affected_hosts": "Affects potatoes, radishes, carrots, and other root vegetables.",
+  "symptoms": [
+    "Rough, corky lesions on the tuber surface, ranging from superficial to deep pitted",
+    "Raised or sunken brown spots on the skin",
+    "Reduced marketability due to cosmetic damage"
+  ],
+  "conditions": "Dry soil conditions during tuber initiation and high soil pH (above 5.2) favor disease development.",
+  "cycle": "The bacteria survive in the soil and on infected plant debris, infecting young tubers through lenticels or wounds.",
+  "diagnosis": "Visual inspection of characteristic scab lesions on tubers is usually sufficient for diagnosis.",
+  "impact": "Primarily affects tuber quality and marketability, leading to significant economic losses for growers.",
+  "prevention": "Using resistant varieties, maintaining acidic soil pH, and adequate soil moisture during tuberization are key.",
+  "organic": [
+    "Resistant potato varieties",
+    "Green manure crops to lower soil pH"
+  ],
+  "chemical": [
+    "Fungicides containing fluazinam (for suppression)",
+    "Soil fumigation in severe cases (limited use)"
+  ],
+  "ipm": "Involves choosing resistant varieties, crop rotation, soil pH management, and maintaining consistent soil moisture.",
+  "geography": "Found in all potato-growing regions globally.",
+  "differential": "Distinguished from powdery scab by the corky, rough texture of the lesions, lacking the powdery spore masses characteristic of powdery scab."
+},
+{
+  "id": "disease_06",
+  "name": "Citrus Greening (Huanglongbing - HLB)",
+  "scientific": "Candidatus Liberibacter asiaticus (CLas)",
+  "crop": "Citrus",
+  "severity": "Critical",
+  "cause": "Bacterial",
+  "affected_hosts": "All citrus species and relatives, including orange, grapefruit, lemon, and tangerine.",
+  "symptoms": [
+    "Asymmetrical yellowing of leaves (blotchy mottle) on one side of the midrib",
+    "Small, lopsided, bitter, and green-tipped fruits",
+    "Twig dieback and overall decline of tree vigor"
+  ],
+  "conditions": "Presence of the Asian citrus psyllid (Diaphorina citri) vector and infected trees are necessary for spread.",
+  "cycle": "The bacteria are transmitted by the psyllid during feeding, colonizing the phloem of the tree and causing systemic decline.",
+  "diagnosis": "Molecular tests (PCR) of leaf and stem tissue are required to confirm the presence of the bacterial pathogen.",
+  "impact": "Considered the most destructive citrus disease worldwide, leading to tree decline, unmarketable fruit, and eventual death.",
+  "prevention": "Strict psyllid control, removal of infected trees, and planting certified disease-free nursery stock are crucial.",
+  "organic": [
+    "Biological control of citrus psyllids",
+    "Removal of infected trees"
+  ],
+  "chemical": [
+    "Systemic insecticides for psyllid control",
+    "Foliar insecticide sprays targeting psyllids"
+  ],
+  "ipm": "Combines vector management, removal of infected trees, use of disease-free plant material, and quarantine measures.",
+  "geography": "Widespread in Asia, Africa, North and South America, particularly devastating in Florida and Brazil.",
+  "differential": "Distinguished from nutrient deficiencies by the asymmetrical, blotchy yellowing on leaves, which does not follow a symmetrical pattern."
+},
+{
+  "id": "disease_07",
+  "name": "Banana Fusarium Wilt (Panama Disease) TR4",
+  "scientific": "Fusarium oxysporum f. sp. cubense Tropical Race 4",
+  "crop": "Banana",
+  "severity": "Critical",
+  "cause": "Soilborne Fungal",
+  "affected_hosts": "Highly virulent on Cavendish banana cultivars, but can affect other banana and plantain varieties.",
+  "symptoms": [
+    "Yellowing and wilting of older leaves from the margins, progressing to younger leaves",
+    "Splitting of pseudostems and eventual collapse of the plant",
+    "Reddish-brown discoloration in the vascular tissue of the rhizome"
+  ],
+  "conditions": "Warm soil temperatures and contaminated soil are highly conducive to disease development and spread.",
+  "cycle": "The fungus survives in soil for decades, infecting plants through roots and colonizing the vascular system, leading to wilting.",
+  "diagnosis": "Visual symptoms, confirmed by characteristic vascular discoloration in the pseudostem and rhizome, and laboratory isolation of the fungus.",
+  "impact": "Lethal to susceptible banana varieties, with no effective chemical control, threatening global banana production.",
+  "prevention": "Strict quarantine, use of disease-free planting material, and resistant varieties are the only effective measures.",
+  "organic": [
+    "Strict biosecurity protocols",
+    "Use of resistant or tolerant varieties"
+  ],
+  "chemical": [
+    "No effective chemical control available",
+    "Soil fumigation is not practical or effective for large areas"
+  ],
+  "ipm": "Relies heavily on exclusion, sanitation, resistant varieties, and containment strategies to prevent spread.",
+  "geography": "Originated in Southeast Asia, now spread to Africa, the Middle East, and parts of Latin America.",
+  "differential": "Distinguished from bacterial wilt by the absence of bacterial ooze and the specific reddish-brown vascular discoloration."
+},
+{
+  "id": "disease_08",
+  "name": "Coffee Leaf Rust",
+  "scientific": "Hemileia vastatrix",
+  "crop": "Coffee",
+  "severity": "High",
+  "cause": "Fungal",
+  "affected_hosts": "Primarily affects coffee species, especially Arabica coffee (Coffea arabica).",
+  "symptoms": [
+    "Small, yellow-orange powdery spots on the underside of leaves",
+    "Spots enlarge and turn bright orange, eventually becoming necrotic",
+    "Premature leaf drop, defoliation, and reduced berry production"
+  ],
+  "conditions": "Warm temperatures, high humidity, and prolonged leaf wetness promote spore germination and infection.",
+  "cycle": "Spores are dispersed by wind and rain from infected leaves, germinating and penetrating the leaf through stomata.",
+  "diagnosis": "Visual identification of characteristic yellow-orange powdery pustules on the underside of leaves.",
+  "impact": "Can cause severe defoliation, leading to reduced yields and tree debilitation, resulting in significant economic losses.",
+  "prevention": "Planting resistant varieties and timely application of fungicides are crucial for management.",
+  "organic": [
+    "Use of resistant coffee varieties",
+    "Proper shade management to reduce leaf wetness"
+  ],
+  "chemical": [
+    "Copper-based fungicides (Bordeaux mixture)",
+    "Systemic fungicides (triazoles) for protection and eradication"
+  ],
+  "ipm": "Integrates resistant varieties, cultural practices (shade, nutrition), and strategic fungicide applications based on monitoring.",
+  "geography": "Present in nearly all coffee-growing regions worldwide, especially problematic in Central and South America.",
+  "differential": "Distinguished from other leaf spots by the characteristic powdery, orange pustules on the underside of leaves."
+}
+]

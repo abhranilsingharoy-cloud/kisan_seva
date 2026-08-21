@@ -34,7 +34,6 @@ import {
   Radio,
   Sprout,
   BookOpen,
-  PawPrint,
   FolderLock,
   Calculator
 } from 'lucide-react';
@@ -71,7 +70,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/offline': 'Offline Hub',
   '/storage': 'Cold Storage',
   '/radio': 'Krishi Radio',
-  '/livestock': 'Livestock',
   '/documents': 'Document Locker',
   '/fertilizer': 'Fertilizer Calculator',
   '/seeds': 'Seed Recommender',
@@ -92,7 +90,6 @@ const APP_LINKS = [
   { name: 'Seed Matcher', href: '/seeds', icon: Sprout },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'Equipment', href: '/rentals', icon: Tractor },
-  { name: 'Livestock', href: '/livestock', icon: PawPrint },
   { name: 'Cold Storage', href: '/storage', icon: Warehouse },
   { name: 'Docs Locker', href: '/documents', icon: FolderLock },
   { name: 'Traceability', href: '/blockchain', icon: QrCode },

@@ -20,7 +20,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       if (profileData) {
         profile = profileData;
       } else if (error) {
-        console.error('Supabase profile fetch error:', JSON.stringify(error, null, 2));
+        if (error.code !== '22P02') {
+          console.error('Supabase profile fetch error:', JSON.stringify(error, null, 2));
+        }
       }
     } catch (err) {
       console.error('Failed to fetch profile from Supabase:', err);

@@ -35,7 +35,8 @@ import {
   Sprout,
   BookOpen,
   FolderLock,
-  Calculator
+  Calculator,
+  FileText
 } from 'lucide-react';
 
 const DEFAULT_NOTIFICATIONS = [

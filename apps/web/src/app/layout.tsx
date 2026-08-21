@@ -70,6 +70,8 @@ const SW_KILL_SCRIPT = `
   }
 `;
 
+import Script from 'next/script'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
@@ -81,9 +83,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
             rel="stylesheet"
           />
-          <script dangerouslySetInnerHTML={{ __html: SW_KILL_SCRIPT }} />
         </head>
         <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-white text-slate-900">
+          <Script id="sw-kill" strategy="beforeInteractive">
+            {SW_KILL_SCRIPT}
+          </Script>
           <OfflineIndicator />
           {children}
         </body>

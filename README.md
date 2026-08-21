@@ -294,52 +294,108 @@ All items have **real unique photos**, **hourly rates**, **owner contact**, and 
 
 ## 🏗️ System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        📱 CLIENT LAYER                              │
-│   Farmer's Browser  →  Next.js 16 App (React 19 + Tailwind v4)     │
-└────────────────────────────┬────────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                  ⚡ VERCEL SERVERLESS FUNCTIONS                      │
-│                                                                     │
-│  /api/agent        → Groq Llama-3.3-70B (AI chat)                 │
-│  /api/transcribe   → Groq Whisper (voice → text)                   │
-│  /api/overpass     → OSM Proxy with 3-mirror fallback              │
-│  /api/v1/tts       → Google Translate TTS proxy                    │
-│  /api/v1/market    → Live Agmarknet mandi prices                   │
-│  /api/v1/diagnose  → Crop disease diagnosis                        │
-│  /api/v1/weather   → OpenWeatherMap forecast                       │
-└───────┬───────────────┬──────────────────────┬──────────────────────┘
-        │               │                      │
-        ▼               ▼                      ▼
-┌─────────────┐ ┌───────────────┐   ┌────────────────────────────────┐
-│  🔐 Clerk   │ │  🗄️ Supabase  │   │    🧠 PYTHON ML SERVICE         │
-│    Auth     │ │  PostgreSQL   │   │                                │
-└─────────────┘ └───────────────┘   │  FastAPI → Master Orchestrator │
-                                    │  ├── Diagnosis Agent           │
-                                    │  ├── Market Price Agent        │
-                                    │  ├── Weather Advisory Agent    │
-                                    │  ├── Soil Health Agent         │
-                                    │  ├── Outbreak Monitor Agent    │
-                                    │  ├── Knowledge Base Agent      │
-                                    │  └── SMS/IVR Agent             │
-                                    │        ↕                       │
-                                    │  📚 RAG Vector Store           │
-                                    └─────────┬──────────────────────┘
-                                              │
-                                              ▼
-                              ┌───────────────────────────────┐
-                              │    🌐 EXTERNAL APIs & LLMs    │
-                              │                               │
-                              │  🧠 Groq Llama-3.3-70B        │
-                              │  🎤 Groq Whisper STT          │
-                              │  👁️ Gemini / Nvidia NIM       │
-                              │  📊 Agmarknet (Govt. API)     │
-                              │  🌤️ OpenWeatherMap            │
-                              │  🗺️ OpenStreetMap Overpass    │
-                              └───────────────────────────────┘
+```mermaid
+flowchart TB
+    %% Styling Definitions
+    classDef frontend fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef api fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef python fill:#3f2c00,stroke:#f59e0b,stroke-width:2px,color:#fff;
+    classDef agent fill:#1e293b,stroke:#eab308,stroke-width:1px,color:#fde047;
+    classDef external fill:#2d0a15,stroke:#ef4444,stroke-width:2px,color:#fff;
+    classDef db fill:#062817,stroke:#3ecf8e,stroke-width:2px,color:#fff;
+    classDef user fill:#000000,stroke:#ffffff,stroke-width:2px,color:#fff,rx:20px,ry:20px;
+
+    %% Client Layer
+    User([🌾 Farmer / User]):::user
+    
+    subgraph ClientLayer ["📱 Client Layer (Next.js 16)"]
+        UI[React UI Components & Zustand State]:::frontend
+        Voice[MediaRecorder Audio Capture]:::frontend
+        Maps[Leaflet Farm Maps]:::frontend
+    end
+
+    %% Vercel API Layer
+    subgraph VercelAPI ["⚡ Vercel Serverless Functions"]
+        RouteAgent[/api/agent<br/>(AI Chat Router)]:::api
+        RouteTranscribe[/api/transcribe<br/>(Voice to Text)]:::api
+        RouteOverpass[/api/overpass<br/>(3-Mirror Proxy)]:::api
+        RouteTTS[/api/v1/tts<br/>(Google TTS Proxy)]:::api
+        RouteData[/api/v1/*<br/>(Market, Weather, Diagnose)]:::api
+    end
+
+    %% Database & Auth
+    subgraph CoreServices ["🗄️ Core Services"]
+        Clerk[🔐 Clerk Authentication]:::db
+        Supabase[(🐘 Supabase PostgreSQL<br/>& Document Storage)]:::db
+    end
+
+    %% Python ML Backend
+    subgraph MLBackend ["🧠 Python ML Service (FastAPI)"]
+        Orchestrator{🤖 Master Orchestrator}:::python
+        
+        subgraph Agents ["7-Agent System"]
+            A1[🌿 Diagnosis Agent]:::agent
+            A2[📊 Market Price Agent]:::agent
+            A3[🌤️ Weather Agent]:::agent
+            A4[🌱 Soil Health Agent]:::agent
+            A5[🚨 Outbreak Agent]:::agent
+            A6[📚 Knowledge Agent]:::agent
+            A7[📱 SMS/IVR Agent]:::agent
+        end
+        
+        RAG[(📑 RAG Vector Store)]:::python
+    end
+
+    %% External APIs
+    subgraph ExternalServices ["🌐 External APIs & AI Models"]
+        GroqLLM[🧠 Groq Llama-3.3-70B]:::external
+        GroqWhisper[🎤 Groq Whisper]:::external
+        Vision[👁️ Gemini / Nvidia NIM]:::external
+        GovtAPI[📈 Agmarknet API]:::external
+        WeatherAPI[🌩️ OpenWeatherMap]:::external
+        MapAPI[🗺️ OSM Overpass / MapTiler]:::external
+    end
+
+    %% Connections - User & Frontend
+    User -->|Interacts| UI
+    User -->|Speaks| Voice
+    UI --> Maps
+
+    %% Connections - Frontend to API
+    UI -->|Auth| Clerk
+    UI -->|CRUD| Supabase
+    UI -->|Text Chat| RouteAgent
+    Voice -->|Audio Blob| RouteTranscribe
+    Maps -->|Storage Search| RouteOverpass
+    UI -->|Fetch Data| RouteData
+    UI -->|Play Audio| RouteTTS
+
+    %% Connections - API to ML & External
+    RouteTranscribe -->|Transcribe| GroqWhisper
+    RouteOverpass -->|Proxied Query| MapAPI
+    RouteAgent -.->|Primary Mode| Orchestrator
+    RouteAgent -->|Fallback Mode| GroqLLM
+    RouteData -.->|Dedicated ML| FastAPI[FastAPI App]:::python
+    FastAPI --> Orchestrator
+
+    %% Connections - ML to Agents
+    Orchestrator <-->|Coordinates| A1
+    Orchestrator <-->|Coordinates| A2
+    Orchestrator <-->|Coordinates| A3
+    Orchestrator <-->|Coordinates| A4
+    Orchestrator <-->|Coordinates| A5
+    Orchestrator <-->|Coordinates| A6
+    Orchestrator <-->|Coordinates| A7
+
+    %% Connections - Agents to External
+    A1 -->|Image Analysis| Vision
+    A2 -->|Live Prices| GovtAPI
+    A3 -->|Forecasts| WeatherAPI
+    A6 <-->|Semantic Search| RAG
+    A4 -->|Queries| RAG
+    
+    %% Master reasoning
+    Orchestrator -->|Reasoning & Gen| GroqLLM
 ```
 
 > When hosted on Vercel, Next.js API gracefully falls back to Groq cloud if the local Python ML service is offline.

@@ -354,15 +354,20 @@ export default function TopographyPage() {
           data.type === 'ocean' ||
           (data.address && data.address.waterway);
 
-        // Detect if it's an urban city (bad for farming). 
-        // We only check the specific feature type/class, NOT the address, 
-        // because rural farms often have a 'town' or 'city' in their administrative address.
+        // Only flag as urban if it's clearly a building, commercial, or industrial zone.
+        // DO NOT flag 'residential' or 'city' alone — Nominatim returns these for many rural
+        // Indian villages and farmlands, causing valid farms to show wrong "Urban Environment" error.
+        const nameStr = (data.display_name || '').toLowerCase();
+        const agriKeywords = ['farm', 'khet', 'krishi', 'agriculture', 'field', 'paddy', 'gaon', 'gram', 'village', 'rural', 'mouza'];
+        const hasAgriKeyword = agriKeywords.some(kw => nameStr.includes(kw));
+
         const isUrban = 
-          data.type === 'city' || 
-          data.class === 'building' || 
-          data.type === 'residential' || 
-          data.type === 'commercial' || 
-          data.type === 'industrial';
+          !hasAgriKeyword && (
+            data.class === 'building' || 
+            data.type === 'commercial' || 
+            data.type === 'industrial' ||
+            data.type === 'retail'
+          );
           
         // Detect if it's a mountain or steep terrain (bad for traditional farming)
         const isMountainous =

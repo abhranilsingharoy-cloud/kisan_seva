@@ -75,7 +75,7 @@ const MOCK_EQUIPMENT = [
     rating: 4.5,
     reviews: 12,
     pricePerHour: 400,
-    imageUrl: '/equipment/tractor_blue.jpg',
+    imageUrl: '/images/rentals/swaraj_tractor.jpg',
     description: 'Reliable 48 HP tractor. Bare equipment rental (no driver).'
   },
   {
@@ -99,7 +99,7 @@ const MOCK_EQUIPMENT = [
     rating: 4.3,
     reviews: 15,
     pricePerHour: 380,
-    imageUrl: '/equipment/tractor_blue.jpg',
+    imageUrl: '/images/rentals/mahindra_tractor.jpg',
     description: 'Solid 45 HP workhorse for general farm duties.'
   },
   {
@@ -111,7 +111,7 @@ const MOCK_EQUIPMENT = [
     rating: 4.4,
     reviews: 9,
     pricePerHour: 120,
-    imageUrl: '/equipment/rotavator.jpg',
+    imageUrl: '/images/rentals/seed_drill.jpg',
     description: 'Automatic seed drill implement. Perfect for precise sowing.'
   },
   {
@@ -123,7 +123,7 @@ const MOCK_EQUIPMENT = [
     rating: 4.6,
     reviews: 22,
     pricePerHour: 350,
-    imageUrl: '/equipment/tractor_blue.jpg',
+    imageUrl: '/images/rentals/eicher_tractor.jpg',
     description: 'Compact 40 HP tractor, highly fuel efficient.'
   },
   {
@@ -135,7 +135,7 @@ const MOCK_EQUIPMENT = [
     rating: 4.8,
     reviews: 6,
     pricePerHour: 200,
-    imageUrl: '/equipment/rotavator.jpg',
+    imageUrl: '/images/rentals/potato_planter.jpg',
     description: 'Two-row automatic potato planter implement.'
   }
 ];

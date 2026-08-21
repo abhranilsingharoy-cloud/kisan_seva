@@ -1,11 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, MessageSquare, Heart, Share2, Image as ImageIcon, 
-  Send, Sparkles, ShieldCheck
+  Send, Sparkles, ShieldCheck,
+  Play, Pause, Volume2, VolumeX, Radio, Wifi, WifiOff, ExternalLink, RefreshCw, Signal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// ==========================================
+// RADIO DATA & LOGIC
+// ==========================================
+
+const STATIONS = [
+  { id: 'air-fm-gold', name: 'AIR FM Gold', tagline: 'All India Radio – News & Agriculture', frequency: '100.1 FM', language: 'Hindi / English', streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio001/chunklist.m3u8', fallbackUrl: 'https://airfmgold.liveindianradio.com/;', imageUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=600&auto=format&fit=crop', color: '#1e5631', badgeColor: '#16a34a', category: 'News & Agriculture', isLive: true },
+  { id: 'air-krishi', name: 'AIR Krishi Channel', tagline: 'Dedicated Farm Advisory – Doordarshan Kisan', frequency: 'Online', language: 'Hindi', streamUrl: 'https://stream.ddkisan.com/ddkisan/index.m3u8', fallbackUrl: 'https://stream.ddkisan.com/ddkisan/index.m3u8', imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=600&auto=format&fit=crop', color: '#365314', badgeColor: '#65a30d', category: 'Farm Advisory', isLive: true },
+  { id: 'air-national', name: 'AIR National Channel', tagline: 'All India Radio – National Programmes', frequency: 'National', language: 'Hindi / English', streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio049/chunklist.m3u8', fallbackUrl: 'https://www.radioparadise.com/aac-128.m3u8', imageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=600&auto=format&fit=crop', color: '#7c2d12', badgeColor: '#ea580c', category: 'National', isLive: true },
+  { id: 'mann-ki-baat', name: 'Radio Udaan', tagline: 'Farm & Rural Development Stories', frequency: 'Online', language: 'Hindi', streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio016/chunklist.m3u8', fallbackUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio016/chunklist.m3u8', imageUrl: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop', color: '#1e3a5f', badgeColor: '#2563eb', category: 'Rural Development', isLive: true },
+  { id: 'punjab-radio', name: 'AIR Amritsar', tagline: 'Punjab Agricultural Updates & Mandi Rates', frequency: 'Amritsar FM', language: 'Punjabi / Hindi', streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio012/chunklist.m3u8', fallbackUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio012/chunklist.m3u8', imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?q=80&w=600&auto=format&fit=crop', color: '#5b21b6', badgeColor: '#7c3aed', category: 'Regional', isLive: true },
+  { id: 'mp-radio', name: 'AIR Bhopal', tagline: 'MP Farm Advisory & Soybean Mandi Prices', frequency: 'Bhopal FM', language: 'Hindi', streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio019/chunklist.m3u8', fallbackUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio019/chunklist.m3u8', imageUrl: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=600&auto=format&fit=crop', color: '#9f1239', badgeColor: '#e11d48', category: 'Regional', isLive: true },
+];
+
+type StationStatus = 'idle' | 'loading' | 'playing' | 'error';
+
+// ==========================================
+// KISAN SABHA DATA & LOGIC
+// ==========================================
 
 interface Reply {
   id: string;
@@ -26,10 +46,13 @@ interface Post {
   likes: number;
   tags: string[];
   replies: Reply[];
-  isAITyping?: boolean; // Frontend only state for animation
+  isAITyping?: boolean;
 }
 
-export default function KisanSabha() {
+export default function CommunityHub() {
+  const [activeTab, setActiveTab] = useState<'sabha' | 'radio'>('sabha');
+
+  // --- Sabha State ---
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,19 +62,12 @@ export default function KisanSabha() {
     try {
       const res = await fetch('/api/v1/community');
       const data = await res.json();
-      if (data.success) {
-        setPosts(data.posts);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+      if (data.success) setPosts(data.posts);
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
   useEffect(() => {
     fetchPosts();
-    // In a real app we might use websockets or polling here for live updates.
     const poll = setInterval(fetchPosts, 15000); 
     return () => clearInterval(poll);
   }, []);
@@ -59,263 +75,295 @@ export default function KisanSabha() {
   const handlePost = async () => {
     if (!newPostContent.trim()) return;
     setIsSubmitting(true);
-    
     const isQuestion = newPostContent.includes('?');
-    
     try {
-      // 1. Save post to database
       const res = await fetch('/api/v1/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'create_post', content: newPostContent, isQuestion })
       });
       const data = await res.json();
-      
       if (data.success) {
         setNewPostContent('');
-        
-        // Refetch to get the new post with its ID
         await fetchPosts();
-
-        if (isQuestion) {
-          triggerAIExpertResponse(data.postId, newPostContent);
-        }
+        if (isQuestion) triggerAIExpertResponse(data.postId, newPostContent);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (err) { console.error(err); } finally { setIsSubmitting(false); }
   };
 
   const triggerAIExpertResponse = async (postId: string, question: string) => {
-    // 1. Enable frontend typing animation immediately
     setPosts(current => current.map(p => p.id === postId ? { ...p, isAITyping: true } : p));
-    
-    // Simulate natural delay for typing
     const thinkingTime = Math.random() * 2000 + 2000;
-    
     setTimeout(async () => {
       try {
-        // 2. Call Backend AI to generate and save the reply
         await fetch('/api/v1/community/ai-reply', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ postId, question })
         });
-        
-        // 3. Refetch to get the new AI reply from DB
         await fetchPosts();
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) { console.error(err); }
     }, thinkingTime);
   };
 
   const handleLike = async (id: string, type: 'post' | 'reply') => {
-    // Optimistic UI update
-    if (type === 'post') {
-      setPosts(posts.map(p => p.id === id ? { ...p, likes: p.likes + 1 } : p));
-    }
-    
+    if (type === 'post') setPosts(posts.map(p => p.id === id ? { ...p, likes: p.likes + 1 } : p));
     try {
       await fetch('/api/v1/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'like', targetId: id, type })
       });
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
+  // --- Radio State ---
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [statusMap, setStatusMap] = useState<Record<string, StationStatus>>({});
+  const [volume, setVolume] = useState(80);
+  const [muted, setMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+    };
+  }, []);
+
+  const setStatus = (id: string, status: StationStatus) => setStatusMap(prev => ({ ...prev, [id]: status }));
+
+  const playStation = (station: typeof STATIONS[0]) => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+    if (activeId === station.id) { setActiveId(null); return; }
+    setActiveId(station.id);
+    setStatus(station.id, 'loading');
+
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.volume = muted ? 0 : volume / 100;
+    audio.preload = 'none';
+    audio.oncanplay = () => {
+      setStatus(station.id, 'playing');
+      audio.play().catch(() => setStatus(station.id, 'error'));
+    };
+    audio.onerror = () => {
+      if (audio.src !== station.fallbackUrl) { audio.src = station.fallbackUrl; audio.load(); }
+      else { setStatus(station.id, 'error'); setActiveId(null); }
+    };
+    audio.src = station.streamUrl;
+    audio.load();
+    audioRef.current = audio;
+  };
+
+  const handleVolumeChange = (val: number) => {
+    setVolume(val);
+    if (audioRef.current) audioRef.current.volume = val / 100;
+    if (val > 0) setMuted(false);
+  };
+
+  const toggleMute = () => {
+    setMuted(m => {
+      if (audioRef.current) audioRef.current.volume = m ? volume / 100 : 0;
+      return !m;
+    });
+  };
+
+  const activeStation = STATIONS.find(s => s.id === activeId);
+
   return (
-    <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100%', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
+    <div style={{ backgroundColor: 'var(--color-parchment)', minHeight: '100vh', fontFamily: 'var(--font-sans)', color: 'var(--color-ink)' }}>
+      
+      {/* Header & Tabs */}
+      <div style={{ background: '#fff', padding: '28px 24px 0', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2d6a27', marginBottom: 4 }}>
+            <Users size={20} />
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Connect & Learn
+            </span>
+          </div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#111827', margin: '0 0 16px', letterSpacing: '-0.03em' }}>
+            Community Hub
+          </h1>
+
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 16 }}>
+            <button 
+              onClick={() => setActiveTab('sabha')} 
+              style={{ padding: '10px 20px', borderRadius: 24, fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, background: activeTab === 'sabha' ? '#2d6a27' : '#f3f4f6', color: activeTab === 'sabha' ? '#fff' : '#4b5563' }}
+            >
+              <MessageSquare size={18} /> Kisan Sabha
+            </button>
+            <button 
+              onClick={() => setActiveTab('radio')} 
+              style={{ padding: '10px 20px', borderRadius: 24, fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, background: activeTab === 'radio' ? '#2d6a27' : '#f3f4f6', color: activeTab === 'radio' ? '#fff' : '#4b5563' }}
+            >
+              <Radio size={18} /> Krishi Radio
+            </button>
+          </div>
+        </div>
+      </div>
+
       <main style={{ padding: '24px', maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
-        {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-800 to-emerald-600 rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 opacity-10 translate-x-1/4 translate-y-1/4">
-            <Users size={200} />
-          </div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                <Users className="w-6 h-6 text-emerald-50" />
+        {/* ========================================================= */}
+        {/* TAB 1: KISAN SABHA */}
+        {/* ========================================================= */}
+        {activeTab === 'sabha' && (
+          <div className="fade-in flex flex-col gap-6">
+            <div className="bg-gradient-to-r from-emerald-800 to-emerald-600 rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute right-0 bottom-0 opacity-10 translate-x-1/4 translate-y-1/4"><Users size={200} /></div>
+              <div className="relative z-10">
+                <h1 className="text-3xl font-bold mb-2">The Digital Village Square</h1>
+                <p className="text-emerald-100 max-w-lg text-lg">Share stories, ask questions, and get verified answers from the AI Expert and fellow farmers.</p>
               </div>
-              <h1 className="text-3xl font-bold">Kisan Sabha</h1>
             </div>
-            <p className="text-emerald-100 max-w-lg text-lg">
-              The digital village square. Share stories, ask questions, and get verified answers from the AI Expert and fellow farmers.
-            </p>
-          </div>
-        </div>
 
-        {/* Composer */}
-        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-lg">
-              Y
+            <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-200">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-lg">Y</div>
+                <div className="flex-1">
+                  <textarea placeholder="What's happening on your farm? Ask a question with '?' to trigger the AI Expert..." value={newPostContent} onChange={(e) => setNewPostContent(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none h-28 transition-all" />
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
+                    <div className="flex gap-2">
+                      <button className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><ImageIcon className="w-5 h-5" /></button>
+                      <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full"><Sparkles className="w-3.5 h-3.5" /> AI Expert Active</div>
+                    </div>
+                    <button onClick={handlePost} disabled={isSubmitting || !newPostContent.trim()} className={`px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isSubmitting || !newPostContent.trim() ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow'}`}>
+                      {isSubmitting ? <div className="w-5 h-5 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin" /> : <><Send className="w-4 h-4" /> Post Update</>}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <textarea 
-                placeholder="What's happening on your farm? Ask a question with '?' to trigger the AI Expert..."
-                value={newPostContent}
-                onChange={(e) => setNewPostContent(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none h-28 transition-all"
-              />
+
+            <div className="flex flex-col gap-6">
+              <AnimatePresence>
+                {loading && <div className="flex flex-col items-center justify-center text-slate-500 py-12"><div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div><p>Loading community feed...</p></div>}
               
-              <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-                <div className="flex gap-2">
-                  <button className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Attach Photo">
-                    <ImageIcon className="w-5 h-5" />
-                  </button>
-                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full">
-                    <Sparkles className="w-3.5 h-3.5" /> AI Expert Active
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={handlePost}
-                  disabled={isSubmitting || !newPostContent.trim()}
-                  className={`px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all ${
-                    isSubmitting || !newPostContent.trim() 
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm hover:shadow'
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-slate-300 border-t-emerald-600 rounded-full animate-spin" />
-                  ) : (
-                    <><Send className="w-4 h-4" /> Post Update</>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Feed */}
-        <div className="flex flex-col gap-6">
-          <AnimatePresence>
-            {loading && (
-              <div className="flex flex-col items-center justify-center text-slate-500 py-12">
-                 <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                 <p>Loading community feed from server...</p>
-              </div>
-            )}
-          
-            {!loading && posts.map((post) => (
-              <motion.div 
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
-              >
-                {/* Post Content */}
-                <div className="p-5 md:p-6 pb-4">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-3">
-                      <div className={`w-12 h-12 rounded-full ${post.avatarColor} flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-lg`}>
-                        {post.authorName.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <h3 className="font-bold text-slate-900">{post.authorName}</h3>
-                          {post.authorName.includes('You') && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">You</span>}
-                        </div>
-                        <div className="text-sm text-slate-500 font-medium">
-                          {post.authorLocation} • {post.timestamp}
+                {!loading && posts.map((post) => (
+                  <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="p-5 md:p-6 pb-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex gap-3">
+                          <div className={`w-12 h-12 rounded-full ${post.avatarColor} flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-lg`}>{post.authorName.charAt(0)}</div>
+                          <div>
+                            <div className="flex items-center gap-1.5"><h3 className="font-bold text-slate-900">{post.authorName}</h3>{post.authorName.includes('You') && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">You</span>}</div>
+                            <div className="text-sm text-slate-500 font-medium">{post.authorLocation} • {post.timestamp}</div>
+                          </div>
                         </div>
                       </div>
+                      <p className="text-slate-800 text-lg leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                      {post.tags.length > 0 && <div className="flex gap-2 mt-4">{post.tags.map(tag => <span key={tag} className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">#{tag}</span>)}</div>}
                     </div>
-                  </div>
-                  
-                  <p className="text-slate-800 text-lg leading-relaxed whitespace-pre-wrap">
-                    {post.content}
-                  </p>
-                  
-                  {post.tags.length > 0 && (
-                    <div className="flex gap-2 mt-4">
-                      {post.tags.map(tag => (
-                        <span key={tag} className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
-                          #{tag}
-                        </span>
-                      ))}
+
+                    <div className="px-6 py-3 border-y border-slate-100 bg-slate-50 flex items-center gap-6">
+                      <button onClick={() => handleLike(post.id, 'post')} className="flex items-center gap-1.5 text-slate-500 hover:text-rose-500 font-medium transition-colors group"><Heart className="w-5 h-5 group-hover:fill-rose-500 transition-colors" /> <span>{post.likes}</span></button>
+                      <button className="flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 font-medium transition-colors"><MessageSquare className="w-5 h-5" /> <span>{post.replies.length}</span></button>
+                      <button className="flex items-center gap-1.5 text-slate-500 hover:text-emerald-600 font-medium transition-colors ml-auto"><Share2 className="w-5 h-5" /></button>
                     </div>
-                  )}
-                </div>
 
-                {/* Interaction Bar */}
-                <div className="px-6 py-3 border-y border-slate-100 bg-slate-50 flex items-center gap-6">
-                  <button onClick={() => handleLike(post.id, 'post')} className="flex items-center gap-1.5 text-slate-500 hover:text-rose-500 font-medium transition-colors group">
-                    <Heart className="w-5 h-5 group-hover:fill-rose-500 transition-colors" /> 
-                    <span>{post.likes}</span>
-                  </button>
-                  <button className="flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 font-medium transition-colors">
-                    <MessageSquare className="w-5 h-5" /> 
-                    <span>{post.replies.length}</span>
-                  </button>
-                  <button className="flex items-center gap-1.5 text-slate-500 hover:text-emerald-600 font-medium transition-colors ml-auto">
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Replies Section */}
-                {(post.replies.length > 0 || post.isAITyping) && (
-                  <div className="p-4 md:p-6 bg-slate-50/50 flex flex-col gap-4">
-                    {post.replies.map(reply => (
-                      <div key={reply.id} className="flex gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-sm ${
-                          reply.authorType === 'ai' ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-slate-400'
-                        }`}>
-                          {reply.authorType === 'ai' ? <Sparkles className="w-4 h-4" /> : reply.authorName.charAt(0)}
-                        </div>
-                        
-                        <div className={`flex-1 rounded-2xl p-4 ${
-                          reply.authorType === 'ai' 
-                          ? 'bg-indigo-50 border border-indigo-100/50 rounded-tl-none shadow-sm' 
-                          : 'bg-white border border-slate-200 rounded-tl-none shadow-sm'
-                        }`}>
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className={`font-bold text-sm ${reply.authorType === 'ai' ? 'text-indigo-900' : 'text-slate-900'}`}>
-                                {reply.authorName}
-                              </span>
-                              {reply.authorType === 'ai' && <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />}
+                    {(post.replies.length > 0 || post.isAITyping) && (
+                      <div className="p-4 md:p-6 bg-slate-50/50 flex flex-col gap-4">
+                        {post.replies.map(reply => (
+                          <div key={reply.id} className="flex gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-sm ${reply.authorType === 'ai' ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-slate-400'}`}>
+                              {reply.authorType === 'ai' ? <Sparkles className="w-4 h-4" /> : reply.authorName.charAt(0)}
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs text-slate-400 font-medium">{reply.timestamp}</span>
+                            <div className={`flex-1 rounded-2xl p-4 ${reply.authorType === 'ai' ? 'bg-indigo-50 border border-indigo-100/50 rounded-tl-none shadow-sm' : 'bg-white border border-slate-200 rounded-tl-none shadow-sm'}`}>
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-1.5"><span className={`font-bold text-sm ${reply.authorType === 'ai' ? 'text-indigo-900' : 'text-slate-900'}`}>{reply.authorName}</span>{reply.authorType === 'ai' && <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />}</div>
+                                <span className="text-xs text-slate-400 font-medium">{reply.timestamp}</span>
+                              </div>
+                              <p className={`text-sm leading-relaxed whitespace-pre-wrap ${reply.authorType === 'ai' ? 'text-indigo-800' : 'text-slate-700'}`}>{reply.content}</p>
                             </div>
                           </div>
-                          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${reply.authorType === 'ai' ? 'text-indigo-800' : 'text-slate-700'}`}>
-                            {reply.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {/* AI Typing Indicator */}
-                    {post.isAITyping && (
-                      <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white bg-gradient-to-br from-indigo-500 to-purple-600">
-                          <Sparkles className="w-4 h-4" />
-                        </div>
-                        <div className="bg-indigo-50 border border-indigo-100/50 rounded-2xl rounded-tl-none shadow-sm p-4 w-32 flex items-center gap-1">
-                          <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
+                        ))}
+                        {post.isAITyping && (
+                          <div className="flex gap-3">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white bg-gradient-to-br from-indigo-500 to-purple-600"><Sparkles className="w-4 h-4" /></div>
+                            <div className="bg-indigo-50 border border-indigo-100/50 rounded-2xl rounded-tl-none shadow-sm p-4 w-32 flex items-center gap-1">
+                              <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                              <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                              <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
 
+        {/* ========================================================= */}
+        {/* TAB 2: RADIO */}
+        {/* ========================================================= */}
+        {activeTab === 'radio' && (
+          <div className="fade-in">
+            {activeStation && (
+              <div style={{ position: 'sticky', top: 0, zIndex: 50, background: activeStation.color, color: '#fff', padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.25)', borderRadius: 16, marginBottom: 24 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}><img src={activeStation.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{activeStation.name}</div>
+                  <div style={{ fontSize: '0.78rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {statusMap[activeStation.id] === 'loading' ? <><RefreshCw size={12} className="animate-spin" /> Connecting…</> : statusMap[activeStation.id] === 'playing' ? <><Signal size={12} /> LIVE — {activeStation.language}</> : <><WifiOff size={12} /> Connection failed</>}
+                  </div>
+                </div>
+                <button onClick={toggleMute} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.9 }}>{muted ? <VolumeX size={20} /> : <Volume2 size={20} />}</button>
+                <input type="range" min={0} max={100} value={muted ? 0 : volume} onChange={e => handleVolumeChange(Number(e.target.value))} style={{ width: 80, accentColor: '#fff', cursor: 'pointer' }} className="hidden sm:block" />
+                <button onClick={() => playStation(activeStation)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', flexShrink: 0 }}><Pause size={20} fill="currentColor" /></button>
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+              {STATIONS.map(station => {
+                const status = statusMap[station.id] ?? 'idle';
+                const isActive = activeId === station.id;
+                return (
+                  <div key={station.id} style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', boxShadow: isActive ? `0 8px 32px -8px ${station.color}80` : '0 2px 12px rgba(0,0,0,0.06)', border: isActive ? `2px solid ${station.badgeColor}` : '2px solid transparent', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', cursor: 'pointer' }} onClick={() => status !== 'loading' && playStation(station)}>
+                    <div style={{ position: 'relative', height: 140, overflow: 'hidden' }}>
+                      <img src={station.imageUrl} alt={station.name} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s', transform: isActive ? 'scale(1.05)' : 'scale(1)' }} />
+                      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${station.color}cc 0%, transparent 50%)` }} />
+                      <div style={{ position: 'absolute', top: 12, left: 12, background: isActive && status === 'playing' ? '#ef4444' : 'rgba(0,0,0,0.5)', color: '#fff', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 4, transition: 'background 0.3s' }}>
+                        {isActive && status === 'playing' && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', display: 'inline-block', animation: 'pulse 1s infinite' }} />}
+                        {isActive && status === 'playing' ? 'ON AIR' : 'LIVE'}
+                      </div>
+                      <div style={{ position: 'absolute', top: 12, right: 12, background: station.badgeColor, color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20 }}>{station.category}</div>
+                      <div style={{ position: 'absolute', bottom: 12, right: 12, width: 44, height: 44, borderRadius: '50%', background: isActive ? station.badgeColor : 'rgba(255,255,255,0.9)', color: isActive ? '#fff' : station.color, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', transition: 'all 0.2s' }}>
+                        {status === 'loading' && isActive ? <RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} /> : isActive && status === 'playing' ? <Pause size={20} fill="currentColor" /> : status === 'error' && isActive ? <WifiOff size={18} /> : <Play size={20} fill="currentColor" style={{ marginLeft: 3 }} />}
+                      </div>
+                    </div>
+                    <div style={{ padding: '16px 20px' }}>
+                      <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#111827', margin: '0 0 4px' }}>{station.name}</h3>
+                      <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: 0, lineHeight: 1.4 }}>{station.tagline}</p>
+                      <div style={{ display: 'flex', gap: 12, marginTop: 14, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 4 }}><Wifi size={12} /> {station.frequency}</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#9ca3af' }}>🌐 {station.language}</span>
+                      </div>
+                      {status === 'error' && isActive && (
+                        <button onClick={(e) => { e.stopPropagation(); setStatus(station.id, 'idle'); setTimeout(() => playStation(station), 100); }} style={{ marginTop: 12, width: '100%', padding: '8px 0', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, color: '#dc2626', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          <RefreshCw size={14} /> Stream unavailable — Tap to retry
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div style={{ background: '#fff', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, color: '#6b7280', fontSize: '0.82rem', marginTop: 32 }}>
+              <Radio size={16} style={{ color: '#2d6a27', flexShrink: 0 }} />
+              <span>All streams are from <strong>All India Radio (AIR)</strong> public broadcast infrastructure.</span>
+            </div>
+          </div>
+        )}
       </main>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+      `}} />
     </div>
   );
 }

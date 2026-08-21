@@ -294,7 +294,7 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     [messages, language, addMessage, setLoading, speak]
   );
 
-  const startListening = useCallback(async () => {
+  const startListening = useCallback(() => {
     if (!isSpeechSupported) return;
 
     // Stop any ongoing TTS before recording
@@ -302,23 +302,12 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setSpeaking(false);
 
-    // Explicitly request microphone permission first to force the browser prompt.
-    // Some browsers fail to show the prompt when only SpeechRecognition is called.
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-      }
-    } catch (err: any) {
-      console.warn("getUserMedia failed, falling back to SpeechRecognition natively:", err);
-    }
-
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;      // Auto-stops after user finishes speaking
-    recognition.interimResults = true;   // Show live interim text while speaking
+    recognition.continuous = false;
+    recognition.interimResults = true;
     recognition.lang = LANG_CODE_MAP[language];
     recognition.maxAlternatives = 1;
 
@@ -329,16 +318,33 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     recognition.onerror = (event: any) => {
       console.warn("[SpeechRecognition] Error:", event.error);
       setListening(false);
-      // Show helpful message for mic permission denial
-      if (event.error === "not-allowed" || event.error === "network") {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         addMessage({
           role: "model",
-          text: `Voice recognition failed (${event.error}). Please ensure microphone access is allowed in your browser AND your Windows OS Privacy Settings, and check your internet connection.`
+          text: language === "hi"
+            ? "माइक्रोफ़ोन एक्सेस ब्लॉक है। URL बार में 🔒 आइकन पर क्लिक करें → Site settings → Microphone → Allow → पेज रिफ्रेश करें।"
+            : language === "bn"
+            ? "মাইক্রোফোন অ্যাক্সেস ব্লক। URL বারে 🔒 আইকনে ক্লিক করুন → Site settings → Microphone → Allow → পেজ রিফ্রেশ করুন।"
+            : "🎤 Microphone blocked. Fix: Click the 🔒 lock icon in your browser address bar → Site settings → Microphone → Allow → Refresh page."
         });
-      } else {
-         addMessage({
+      } else if (event.error === "network") {
+        addMessage({
           role: "model",
-          text: `Voice recognition error: ${event.error}. Please try typing your message instead.`
+          text: language === "hi"
+            ? "नेटवर्क कनेक्शन की समस्या। कृपया इंटरनेट जांचें और दोबारा कोशिश करें।"
+            : "🌐 Network error. Please check your internet connection and try again."
+        });
+      } else if (event.error === "no-speech") {
+        addMessage({
+          role: "model",
+          text: language === "hi"
+            ? "कोई आवाज़ नहीं मिली। माइक के पास बोलें और दोबारा कोशिश करें।"
+            : "🎤 No speech detected. Please speak clearly and try again."
+        });
+      } else if (event.error !== "aborted") {
+        addMessage({
+          role: "model",
+          text: `Voice input error: ${event.error}. Please try typing your message instead.`
         });
       }
     };
@@ -356,7 +362,6 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
         }
       }
 
-      // Show live text in the textarea while user is speaking
       const displayText = (finalTranscript + interim).trim();
       if (onTranscript && displayText) {
         onTranscript(displayText);
@@ -367,8 +372,7 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
       setListening(false);
       const trimmed = finalTranscript.trim();
       if (trimmed) {
-        // Auto-send the final recognised speech
-        onTranscript?.(""); // Clear the textarea
+        onTranscript?.("");
         sendMessage(trimmed);
       }
     };
@@ -381,6 +385,7 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
       setListening(false);
     }
   }, [language, isSpeechSupported, onTranscript, setListening, setSpeaking, addMessage, sendMessage]);
+
 
   // Stop listening early — will trigger onend which auto-sends
   const stopListening = useCallback(() => {

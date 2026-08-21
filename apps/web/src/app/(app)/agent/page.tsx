@@ -81,37 +81,51 @@ export default function AgentChatPage() {
     e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
   };
 
-  // ── Voice Integration (Bhashini-style) ───────────────────────────────────────
+  // ── Voice Integration ─────────────────────────────────────────────────────────
+  const addSystemMessage = (text: string) => {
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      sender: 'agent',
+      type: 'text',
+      text,
+      agentLabel: 'KisanSeva AI',
+      agentIcon: <Mic size={13}/>,
+    }]);
+  };
+
   const startListening = async () => {
-    // First explicitly request mic permission
+    // If already listening, stop
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    // Check browser support first
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addSystemMessage('🎤 Speech Recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge for voice input.');
+      return;
+    }
+
+    // Explicitly request mic permission
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
       }
     } catch (err: any) {
-      console.warn("Microphone permission check failed:", err);
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.name === 'SecurityError') {
-        // Show helpful in-chat message
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `🎤 **Microphone access is blocked.** Here's how to fix it:\n\n**In Chrome/Edge:**\n1. Click the 🔒 **lock icon** in the address bar (left of the URL)\n2. Click **"Site settings"**\n3. Find **Microphone** → set to **"Allow"**\n4. Refresh the page and try again\n\n**Or press:** \`Ctrl+Shift+P\` → type "Site settings" → allow microphone for this site.`,
-          timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-        }]);
+        addSystemMessage(
+          '🎤 Microphone access is blocked. Here\'s how to fix it:\n\n' +
+          '1. Click the 🔒 lock icon in the address bar (left of the URL)\n' +
+          '2. Click "Site settings"\n' +
+          '3. Find Microphone → set to "Allow"\n' +
+          '4. Refresh the page and try again\n\n' +
+          'Windows users: Also check Settings → Privacy & Security → Microphone → Allow apps to access microphone → ON'
+        );
         return;
       }
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `🎤 **Speech Recognition is not supported in this browser.**\n\nPlease use **Google Chrome** or **Microsoft Edge** for voice input.`,
-        timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-      }]);
-      return;
     }
 
     const recognition = new SpeechRecognition();
@@ -121,10 +135,10 @@ export default function AgentChatPage() {
     recognition.lang = langMap[selectedLang] || 'en-IN';
 
     recognition.onstart = () => setIsListening(true);
-    
+
     recognition.onresult = (event: any) => {
-      let finalTrans = "";
-      let interim = "";
+      let finalTrans = '';
+      let interim = '';
       for (let i = 0; i < event.results.length; i++) {
         if (event.results[i].isFinal) finalTrans += event.results[i][0].transcript;
         else interim += event.results[i][0].transcript;
@@ -143,30 +157,27 @@ export default function AgentChatPage() {
     recognition.onerror = (e: any) => {
       setIsListening(false);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `🎤 **Microphone access is blocked.** Here's how to enable it:\n\n**Step 1:** Look at the address bar — click the **🔒 lock icon** or **ⓘ info icon** on the left.\n\n**Step 2:** Click **"Site settings"** or **"Permissions"**.\n\n**Step 3:** Set **Microphone → Allow**.\n\n**Step 4:** Refresh this page and tap the mic button again.\n\n> **Windows 11 users:** Also check Settings → Privacy & Security → Microphone → Allow apps to access microphone → ON`,
-          timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-        }]);
+        addSystemMessage(
+          '🎤 Microphone access is blocked. To enable:\n\n' +
+          'Step 1: Click the 🔒 lock / ⓘ icon in your browser address bar\n' +
+          'Step 2: Click "Site settings" or "Permissions"\n' +
+          'Step 3: Set Microphone → Allow\n' +
+          'Step 4: Refresh this page and tap the mic button again\n\n' +
+          'Windows 11: Settings → Privacy & Security → Microphone → Allow apps to access microphone → ON'
+        );
       } else if (e.error === 'network') {
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `🌐 **Voice recognition needs an internet connection.** Please check your connection and try again.`,
-          timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-        }]);
-      } else if (e.error === 'no-speech') {
-        // silently ignore, user just didn't speak
+        addSystemMessage('🌐 Voice recognition needs an internet connection. Please check your connection and try again.');
+      } else if (e.error === 'audio-capture') {
+        addSystemMessage('🎤 No microphone was found. Please connect a microphone and try again.');
       }
+      // Silently ignore 'no-speech' and 'aborted'
     };
 
     recognitionRef.current = recognition;
-    
     try {
       recognition.start();
     } catch (e) {
-      console.error("Speech recognition start error:", e);
+      console.error('Speech recognition start error:', e);
       setIsListening(false);
     }
   };

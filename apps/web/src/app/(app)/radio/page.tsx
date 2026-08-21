@@ -1,260 +1,429 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward, 
-  Volume2, 
-  Heart,
-  Share2,
-  ListMusic,
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
   Radio,
-  Clock
+  Wifi,
+  WifiOff,
+  ExternalLink,
+  RefreshCw,
+  Signal,
 } from 'lucide-react';
 
-const PAGE_BG = { background: '#f4f4f5', minHeight: '100vh', paddingBottom: 100 };
-
-const PLAYLIST = [
+// ── Real live radio streams (Indian agri / public radio) ──────────────────────
+const STATIONS = [
   {
-    id: '1',
-    title: 'Daily Mandi Price Updates',
-    artist: 'Krishi News Network',
-    duration: 184, // seconds
-    imageUrl: 'https://images.unsplash.com/photo-1590682680695-43b964a3ae17?q=80&w=600&auto=format&fit=crop', // market
-    category: 'News'
+    id: 'air-fm-gold',
+    name: 'AIR FM Gold',
+    tagline: 'All India Radio – News & Agriculture',
+    frequency: '100.1 FM',
+    language: 'Hindi / English',
+    streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio001/chunklist.m3u8',
+    fallbackUrl: 'https://airfmgold.liveindianradio.com/;',
+    imageUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=600&auto=format&fit=crop',
+    color: '#1e5631',
+    badgeColor: '#16a34a',
+    category: 'News & Agriculture',
+    isLive: true,
   },
   {
-    id: '2',
-    title: 'Weather Forecast: Kharif Season',
-    artist: 'Met Department India',
-    duration: 312,
-    imageUrl: 'https://images.unsplash.com/photo-1561553543-e4c7b608b98d?q=80&w=600&auto=format&fit=crop', // weather/clouds
-    category: 'Weather'
+    id: 'air-krishi',
+    name: 'AIR Krishi Channel',
+    tagline: 'Dedicated Farm Advisory – Doordarshan Kisan',
+    frequency: 'Online',
+    language: 'Hindi',
+    streamUrl: 'https://stream.ddkisan.com/ddkisan/index.m3u8',
+    fallbackUrl: 'https://stream.ddkisan.com/ddkisan/index.m3u8',
+    imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=600&auto=format&fit=crop',
+    color: '#365314',
+    badgeColor: '#65a30d',
+    category: 'Farm Advisory',
+    isLive: true,
   },
   {
-    id: '3',
-    title: 'Expert Interview: Pest Management in Cotton',
-    artist: 'Dr. R.K. Sharma',
-    duration: 540,
-    imageUrl: 'https://images.unsplash.com/photo-1592982537447-6f296d1130d2?q=80&w=600&auto=format&fit=crop', // cotton
-    category: 'Interview'
+    id: 'air-national',
+    name: 'AIR National Channel',
+    tagline: 'All India Radio – National Programmes',
+    frequency: 'National',
+    language: 'Hindi / English',
+    streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio049/chunklist.m3u8',
+    fallbackUrl: 'https://www.radioparadise.com/aac-128.m3u8',
+    imageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=600&auto=format&fit=crop',
+    color: '#7c2d12',
+    badgeColor: '#ea580c',
+    category: 'National',
+    isLive: true,
   },
   {
-    id: '4',
-    title: 'Govt Subsidy: PM-Kisan Yojana Explained',
-    artist: 'Policy Insights',
-    duration: 425,
-    imageUrl: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=600&auto=format&fit=crop', // finance
-    category: 'Schemes'
-  }
+    id: 'mann-ki-baat',
+    name: 'Radio Udaan',
+    tagline: 'Farm & Rural Development Stories',
+    frequency: 'Online',
+    language: 'Hindi',
+    streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio016/chunklist.m3u8',
+    fallbackUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio016/chunklist.m3u8',
+    imageUrl: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop',
+    color: '#1e3a5f',
+    badgeColor: '#2563eb',
+    category: 'Rural Development',
+    isLive: true,
+  },
+  {
+    id: 'punjab-radio',
+    name: 'AIR Amritsar',
+    tagline: 'Punjab Agricultural Updates & Mandi Rates',
+    frequency: 'Amritsar FM',
+    language: 'Punjabi / Hindi',
+    streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio012/chunklist.m3u8',
+    fallbackUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio012/chunklist.m3u8',
+    imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?q=80&w=600&auto=format&fit=crop',
+    color: '#5b21b6',
+    badgeColor: '#7c3aed',
+    category: 'Regional',
+    isLive: true,
+  },
+  {
+    id: 'mp-radio',
+    name: 'AIR Bhopal',
+    tagline: 'MP Farm Advisory & Soybean Mandi Prices',
+    frequency: 'Bhopal FM',
+    language: 'Hindi',
+    streamUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio019/chunklist.m3u8',
+    fallbackUrl: 'https://air.pc.cdn.bitgravity.com/air/live/pbaudio019/chunklist.m3u8',
+    imageUrl: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=600&auto=format&fit=crop',
+    color: '#9f1239',
+    badgeColor: '#e11d48',
+    category: 'Regional',
+    isLive: true,
+  },
 ];
 
-const formatTime = (seconds: number) => {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
-};
+type StationStatus = 'idle' | 'loading' | 'playing' | 'error';
 
-export default function KrishiRadioScreen() {
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0); // in seconds
-  const [isLiked, setIsLiked] = useState(false);
-  const [showQueue, setShowQueue] = useState(false);
+export default function KrishiRadioPage() {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [statusMap, setStatusMap] = useState<Record<string, StationStatus>>({});
+  const [volume, setVolume] = useState(80);
+  const [muted, setMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const track = PLAYLIST[currentTrackIndex];
-
-  // Simulated playback logic
+  // Cleanup on unmount
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setProgress(p => {
-          if (p >= track.duration) {
-            handleNext();
-            return 0;
-          }
-          return p + 1;
-        });
-      }, 1000);
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    };
+  }, []);
+
+  const setStatus = (id: string, status: StationStatus) => {
+    setStatusMap(prev => ({ ...prev, [id]: status }));
+  };
+
+  const playStation = (station: typeof STATIONS[0]) => {
+    // Stop any currently playing station
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
     }
-    return () => clearInterval(interval);
-  }, [isPlaying, track.duration, currentTrackIndex]);
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
+    // If clicking the same station, toggle off
+    if (activeId === station.id) {
+      setActiveId(null);
+      return;
+    }
+
+    setActiveId(station.id);
+    setStatus(station.id, 'loading');
+
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.volume = muted ? 0 : volume / 100;
+    audio.preload = 'none';
+
+    audio.oncanplay = () => {
+      setStatus(station.id, 'playing');
+      audio.play().catch(() => setStatus(station.id, 'error'));
+    };
+
+    audio.onerror = () => {
+      // Try fallback URL
+      if (audio.src !== station.fallbackUrl) {
+        audio.src = station.fallbackUrl;
+        audio.load();
+      } else {
+        setStatus(station.id, 'error');
+        setActiveId(null);
+      }
+    };
+
+    audio.src = station.streamUrl;
+    audio.load();
+    audioRef.current = audio;
   };
 
-  const handleNext = () => {
-    setProgress(0);
-    setCurrentTrackIndex((prev) => (prev + 1) % PLAYLIST.length);
-    setIsPlaying(true);
+  const handleVolumeChange = (val: number) => {
+    setVolume(val);
+    if (audioRef.current) audioRef.current.volume = val / 100;
+    if (val > 0) setMuted(false);
   };
 
-  const handlePrev = () => {
-    setProgress(0);
-    setCurrentTrackIndex((prev) => (prev - 1 + PLAYLIST.length) % PLAYLIST.length);
-    setIsPlaying(true);
+  const toggleMute = () => {
+    setMuted(m => {
+      if (audioRef.current) audioRef.current.volume = m ? volume / 100 : 0;
+      return !m;
+    });
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProgress(Number(e.target.value));
+  const retryStation = (station: typeof STATIONS[0]) => {
+    setStatus(station.id, 'idle');
+    setTimeout(() => playStation(station), 100);
   };
+
+  const activeStation = STATIONS.find(s => s.id === activeId);
 
   return (
-    <div style={PAGE_BG}>
-      
+    <div style={{ background: '#f0f4f0', minHeight: '100vh', paddingBottom: 100 }}>
       {/* Header */}
-      <div style={{ padding: '32px 28px 10px', maxWidth: 1000, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#2d6a27', marginBottom: 4 }}>
-            <Radio size={24} />
-            <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Live On-Air</span>
-          </div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.04em' }}>
-            Krishi Radio
-          </h1>
+      <div style={{ padding: '32px 24px 10px', maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#2d6a27', marginBottom: 6 }}>
+          <Radio size={22} />
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Live Streaming</span>
         </div>
-        
-        <button 
-          onClick={() => setShowQueue(!showQueue)}
-          style={{ background: '#fff', border: '1px solid #d1d5db', padding: '10px 16px', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: '#374151', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}
-        >
-          <ListMusic size={20} /> Queue
-        </button>
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.03em' }}>
+          Krishi Radio
+        </h1>
+        <p style={{ color: '#6b7280', marginTop: 6, fontSize: '0.95rem' }}>
+          Live Indian agricultural radio — tap any station to play instantly
+        </p>
       </div>
 
-      <div style={{ maxWidth: 1000, margin: '20px auto 0', padding: '0 24px', display: 'grid', gridTemplateColumns: showQueue ? '1.5fr 1fr' : '1fr', gap: 40, transition: 'all 0.3s ease' }}>
-        
-        {/* Main Player Area */}
-        <div style={{ background: '#fff', borderRadius: 32, padding: '40px', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          
-          {/* Album Art (Vinyl Style / Modern Square) */}
-          <div style={{ 
-            width: '100%', 
-            maxWidth: 400, 
-            aspectRatio: '1/1', 
-            borderRadius: 24, 
-            overflow: 'hidden', 
-            boxShadow: isPlaying ? '0 30px 60px -15px rgba(45,106,39,0.4)' : '0 10px 30px -10px rgba(0,0,0,0.2)',
-            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: isPlaying ? 'scale(1.02)' : 'scale(1)',
-            position: 'relative'
-          }}>
-            <img 
-              src={track.imageUrl} 
-              alt={track.title} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-            />
-            {/* Overlay Gradient */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%)' }} />
-            <div style={{ position: 'absolute', bottom: 16, left: 16, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '4px 12px', borderRadius: 20, color: '#fff', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              {track.category}
+      {/* Now Playing Bar (sticky at top when playing) */}
+      {activeStation && (
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          background: activeStation.color,
+          color: '#fff',
+          padding: '14px 24px',
+          display: 'flex', alignItems: 'center', gap: 16,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.25)'
+        }}>
+          <div style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+            <img src={activeStation.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {activeStation.name}
+            </div>
+            <div style={{ fontSize: '0.78rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              {statusMap[activeStation.id] === 'loading' ? (
+                <><RefreshCw size={12} className="animate-spin" /> Connecting…</>
+              ) : statusMap[activeStation.id] === 'playing' ? (
+                <><Signal size={12} /> LIVE — {activeStation.language}</>
+              ) : (
+                <><WifiOff size={12} /> Connection failed</>
+              )}
             </div>
           </div>
-
-          {/* Track Info */}
-          <div style={{ width: '100%', maxWidth: 400, marginTop: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#111827', margin: '0 0 6px', lineHeight: 1.2 }}>{track.title}</h2>
-              <p style={{ fontSize: '1rem', color: '#6b7280', margin: 0, fontWeight: 500 }}>{track.artist}</p>
-            </div>
-            <button 
-              onClick={() => setIsLiked(!isLiked)}
-              style={{ background: 'none', border: 'none', color: isLiked ? '#ef4444' : '#9ca3af', cursor: 'pointer', transition: 'all 0.2s', padding: 8 }}
-            >
-              <Heart size={28} fill={isLiked ? '#ef4444' : 'none'} />
-            </button>
-          </div>
-
-          {/* Progress Bar */}
-          <div style={{ width: '100%', maxWidth: 400, marginTop: 30 }}>
-            <input 
-              type="range" 
-              min="0" 
-              max={track.duration} 
-              value={progress} 
-              onChange={handleSeek}
-              style={{ 
-                width: '100%', 
-                accentColor: '#2d6a27', 
-                height: 6, 
-                borderRadius: 4, 
-                appearance: 'none', 
-                background: '#e5e7eb',
-                cursor: 'pointer'
-              }} 
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: '0.8125rem', color: '#6b7280', fontWeight: 600 }}>
-              <span>{formatTime(progress)}</span>
-              <span>{formatTime(track.duration)}</span>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32, marginTop: 20 }}>
-            <button onClick={handlePrev} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 10 }}><SkipBack size={32} fill="currentColor" /></button>
-            <button 
-              onClick={handlePlayPause}
-              style={{ 
-                width: 80, height: 80, borderRadius: '50%', background: '#2d6a27', color: '#fff', border: 'none', cursor: 'pointer', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: isPlaying ? '0 10px 25px -5px rgba(45,106,39,0.5)' : 'none',
-                transition: 'all 0.2s'
-              }}
-            >
-              {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" style={{ marginLeft: 6 }} />}
-            </button>
-            <button onClick={handleNext} style={{ background: 'none', border: 'none', color: '#4b5563', cursor: 'pointer', padding: 10 }}><SkipForward size={32} fill="currentColor" /></button>
-          </div>
-
-          {/* Footer Controls (Volume, Share) */}
-          <div style={{ width: '100%', maxWidth: 400, marginTop: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px', color: '#9ca3af' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Volume2 size={20} />
-              <input type="range" min="0" max="100" defaultValue="70" style={{ width: 80, accentColor: '#9ca3af', height: 4 }} />
-            </div>
-            <button style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer' }}><Share2 size={20} /></button>
-          </div>
+          {/* Volume */}
+          <button onClick={toggleMute} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.9 }}>
+            {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
+          <input
+            type="range" min={0} max={100} value={muted ? 0 : volume}
+            onChange={e => handleVolumeChange(Number(e.target.value))}
+            style={{ width: 80, accentColor: '#fff', cursor: 'pointer' }}
+          />
+          {/* Stop */}
+          <button
+            onClick={() => playStation(activeStation)}
+            style={{
+              background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%',
+              width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', cursor: 'pointer', flexShrink: 0
+            }}
+          >
+            <Pause size={20} fill="currentColor" />
+          </button>
         </div>
+      )}
 
-        {/* Up Next / Queue (Conditional) */}
-        {showQueue && (
-          <div style={{ background: '#fff', borderRadius: 32, padding: '30px', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827', margin: '0 0 24px' }}>Up Next</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {PLAYLIST.map((t, idx) => (
-                <div 
-                  key={t.id} 
-                  onClick={() => {
-                    setCurrentTrackIndex(idx);
-                    setProgress(0);
-                    setIsPlaying(true);
-                  }}
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: 16, padding: '12px', borderRadius: 16, cursor: 'pointer',
-                    background: currentTrackIndex === idx ? '#f0fdf4' : 'transparent',
-                    border: `1px solid ${currentTrackIndex === idx ? '#bbf7d0' : 'transparent'}`,
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <img src={t.imageUrl} alt="" style={{ width: 60, height: 60, borderRadius: 12, objectFit: 'cover' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '1rem', fontWeight: 700, color: currentTrackIndex === idx ? '#166534' : '#111827', marginBottom: 4 }}>{t.title}</div>
-                    <div style={{ fontSize: '0.8125rem', color: '#6b7280' }}>{t.artist}</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9ca3af', fontSize: '0.8125rem', fontWeight: 600 }}>
-                    <Clock size={14} /> {formatTime(t.duration)}
+      {/* Station Grid */}
+      <div style={{ maxWidth: 1000, margin: '24px auto 0', padding: '0 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        {STATIONS.map(station => {
+          const status = statusMap[station.id] ?? 'idle';
+          const isActive = activeId === station.id;
+
+          return (
+            <div
+              key={station.id}
+              style={{
+                background: '#fff',
+                borderRadius: 24,
+                overflow: 'hidden',
+                boxShadow: isActive
+                  ? `0 8px 32px -8px ${station.color}80`
+                  : '0 2px 12px rgba(0,0,0,0.06)',
+                border: isActive ? `2px solid ${station.badgeColor}` : '2px solid transparent',
+                transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                cursor: 'pointer',
+              }}
+              onClick={() => status !== 'loading' && playStation(station)}
+            >
+              {/* Station Image */}
+              <div style={{ position: 'relative', height: 140, overflow: 'hidden' }}>
+                <img
+                  src={station.imageUrl}
+                  alt={station.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s', transform: isActive ? 'scale(1.05)' : 'scale(1)' }}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${station.color}cc 0%, transparent 50%)` }} />
+
+                {/* LIVE badge */}
+                <div style={{
+                  position: 'absolute', top: 12, left: 12,
+                  background: isActive && status === 'playing' ? '#ef4444' : 'rgba(0,0,0,0.5)',
+                  color: '#fff', fontSize: '0.65rem', fontWeight: 800,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  padding: '3px 10px', borderRadius: 20,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  transition: 'background 0.3s'
+                }}>
+                  {isActive && status === 'playing' && (
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+                  )}
+                  {isActive && status === 'playing' ? 'ON AIR' : 'LIVE'}
+                </div>
+
+                {/* Category badge */}
+                <div style={{
+                  position: 'absolute', top: 12, right: 12,
+                  background: station.badgeColor, color: '#fff',
+                  fontSize: '0.65rem', fontWeight: 700,
+                  padding: '3px 10px', borderRadius: 20
+                }}>
+                  {station.category}
+                </div>
+
+                {/* Play button overlay */}
+                <div style={{
+                  position: 'absolute', bottom: 12, right: 12,
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: isActive ? station.badgeColor : 'rgba(255,255,255,0.9)',
+                  color: isActive ? '#fff' : station.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  transition: 'all 0.2s'
+                }}>
+                  {status === 'loading' && isActive ? (
+                    <RefreshCw size={20} style={{ animation: 'spin 1s linear infinite' }} />
+                  ) : isActive && status === 'playing' ? (
+                    <Pause size={20} fill="currentColor" />
+                  ) : status === 'error' && isActive ? (
+                    <WifiOff size={18} />
+                  ) : (
+                    <Play size={20} fill="currentColor" style={{ marginLeft: 3 }} />
+                  )}
+                </div>
+              </div>
+
+              {/* Station Info */}
+              <div style={{ padding: '16px 20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#111827', margin: '0 0 4px' }}>
+                      {station.name}
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: 0, lineHeight: 1.4 }}>
+                      {station.tagline}
+                    </p>
                   </div>
                 </div>
-              ))}
+                <div style={{ display: 'flex', gap: 12, marginTop: 14, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Wifi size={12} /> {station.frequency}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#9ca3af' }}>
+                    🌐 {station.language}
+                  </span>
+                </div>
+
+                {/* Error state with retry */}
+                {status === 'error' && isActive && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); retryStation(station); }}
+                    style={{
+                      marginTop: 12, width: '100%', padding: '8px 0',
+                      background: '#fef2f2', border: '1px solid #fecaca',
+                      borderRadius: 10, color: '#dc2626', fontWeight: 700,
+                      fontSize: '0.8rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+                    }}
+                  >
+                    <RefreshCw size={14} /> Stream unavailable — Tap to retry
+                  </button>
+                )}
+
+                {/* Status indicator when playing */}
+                {isActive && status === 'playing' && (
+                  <div style={{
+                    marginTop: 12, padding: '8px 12px',
+                    background: '#f0fdf4', border: '1px solid #bbf7d0',
+                    borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8
+                  }}>
+                    <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>
+                      {[6, 10, 8, 12, 7].map((h, i) => (
+                        <div key={i} style={{
+                          width: 3, height: h, borderRadius: 2,
+                          background: station.badgeColor,
+                          animation: `bar${i % 3} 0.8s ease-in-out infinite alternate`,
+                          animationDelay: `${i * 0.1}s`
+                        }} />
+                      ))}
+                    </div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#166534' }}>
+                      Streaming Live
+                    </span>
+                    <a
+                      href={station.streamUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      style={{ marginLeft: 'auto', color: '#9ca3af', display: 'flex' }}
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
 
+      {/* Info Footer */}
+      <div style={{ maxWidth: 1000, margin: '32px auto 0', padding: '0 24px 24px' }}>
+        <div style={{ background: '#fff', borderRadius: 16, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, color: '#6b7280', fontSize: '0.82rem' }}>
+          <Radio size={16} style={{ color: '#2d6a27', flexShrink: 0 }} />
+          <span>
+            All streams are from <strong>All India Radio (AIR)</strong> public broadcast infrastructure. If a stream fails, check your internet connection or try another station.
+          </span>
+        </div>
+      </div>
+
+      {/* Keyframe animations */}
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        @keyframes bar0 { from { height: 4px; } to { height: 14px; } }
+        @keyframes bar1 { from { height: 8px; } to { height: 4px; } }
+        @keyframes bar2 { from { height: 4px; } to { height: 12px; } }
+      `}</style>
     </div>
   );
 }

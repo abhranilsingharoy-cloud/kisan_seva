@@ -306,54 +306,54 @@ flowchart TB
     classDef user fill:#000000,stroke:#ffffff,stroke-width:2px,color:#fff,rx:20px,ry:20px;
 
     %% Client Layer
-    User([🌾 Farmer / User]):::user
+    User(["🌾 Farmer / User"]):::user
     
     subgraph ClientLayer ["📱 Client Layer (Next.js 16)"]
-        UI[React UI Components & Zustand State]:::frontend
-        Voice[MediaRecorder Audio Capture]:::frontend
-        Maps[Leaflet Farm Maps]:::frontend
+        UI["React UI Components & Zustand State"]:::frontend
+        Voice["MediaRecorder Audio Capture"]:::frontend
+        Maps["Leaflet Farm Maps"]:::frontend
     end
 
     %% Vercel API Layer
     subgraph VercelAPI ["⚡ Vercel Serverless Functions"]
-        RouteAgent[/api/agent<br/>(AI Chat Router)]:::api
-        RouteTranscribe[/api/transcribe<br/>(Voice to Text)]:::api
-        RouteOverpass[/api/overpass<br/>(3-Mirror Proxy)]:::api
-        RouteTTS[/api/v1/tts<br/>(Google TTS Proxy)]:::api
-        RouteData[/api/v1/*<br/>(Market, Weather, Diagnose)]:::api
+        RouteAgent["/api/agent<br/>(AI Chat Router)"]:::api
+        RouteTranscribe["/api/transcribe<br/>(Voice to Text)"]:::api
+        RouteOverpass["/api/overpass<br/>(3-Mirror Proxy)"]:::api
+        RouteTTS["/api/v1/tts<br/>(Google TTS Proxy)"]:::api
+        RouteData["/api/v1/*<br/>(Market, Weather, Diagnose)"]:::api
     end
 
     %% Database & Auth
     subgraph CoreServices ["🗄️ Core Services"]
-        Clerk[🔐 Clerk Authentication]:::db
-        Supabase[(🐘 Supabase PostgreSQL<br/>& Document Storage)]:::db
+        Clerk["🔐 Clerk Authentication"]:::db
+        Supabase["🐘 Supabase PostgreSQL<br/>& Document Storage"]:::db
     end
 
     %% Python ML Backend
     subgraph MLBackend ["🧠 Python ML Service (FastAPI)"]
-        Orchestrator{🤖 Master Orchestrator}:::python
+        Orchestrator{"🤖 Master Orchestrator"}:::python
         
         subgraph Agents ["7-Agent System"]
-            A1[🌿 Diagnosis Agent]:::agent
-            A2[📊 Market Price Agent]:::agent
-            A3[🌤️ Weather Agent]:::agent
-            A4[🌱 Soil Health Agent]:::agent
-            A5[🚨 Outbreak Agent]:::agent
-            A6[📚 Knowledge Agent]:::agent
-            A7[📱 SMS/IVR Agent]:::agent
+            A1["🌿 Diagnosis Agent"]:::agent
+            A2["📊 Market Price Agent"]:::agent
+            A3["🌤️ Weather Agent"]:::agent
+            A4["🌱 Soil Health Agent"]:::agent
+            A5["🚨 Outbreak Agent"]:::agent
+            A6["📚 Knowledge Agent"]:::agent
+            A7["📱 SMS/IVR Agent"]:::agent
         end
         
-        RAG[(📑 RAG Vector Store)]:::python
+        RAG[("📑 RAG Vector Store")]:::python
     end
 
     %% External APIs
     subgraph ExternalServices ["🌐 External APIs & AI Models"]
-        GroqLLM[🧠 Groq Llama-3.3-70B]:::external
-        GroqWhisper[🎤 Groq Whisper]:::external
-        Vision[👁️ Gemini / Nvidia NIM]:::external
-        GovtAPI[📈 Agmarknet API]:::external
-        WeatherAPI[🌩️ OpenWeatherMap]:::external
-        MapAPI[🗺️ OSM Overpass / MapTiler]:::external
+        GroqLLM["🧠 Groq Llama-3.3-70B"]:::external
+        GroqWhisper["🎤 Groq Whisper"]:::external
+        Vision["👁️ Gemini / Nvidia NIM"]:::external
+        GovtAPI["📈 Agmarknet API"]:::external
+        WeatherAPI["🌩️ OpenWeatherMap"]:::external
+        MapAPI["🗺️ OSM Overpass / MapTiler"]:::external
     end
 
     %% Connections - User & Frontend
@@ -375,7 +375,7 @@ flowchart TB
     RouteOverpass -->|Proxied Query| MapAPI
     RouteAgent -.->|Primary Mode| Orchestrator
     RouteAgent -->|Fallback Mode| GroqLLM
-    RouteData -.->|Dedicated ML| FastAPI[FastAPI App]:::python
+    RouteData -.->|Dedicated ML| FastAPI["FastAPI App"]:::python
     FastAPI --> Orchestrator
 
     %% Connections - ML to Agents

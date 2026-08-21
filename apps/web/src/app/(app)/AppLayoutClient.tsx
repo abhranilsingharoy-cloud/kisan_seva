@@ -154,11 +154,7 @@ export default function AppLayoutClient({
           </div>
         </div>
 
-        {/* Live status pill */}
-        <div style={{ margin: '8px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#84cc16', display: 'inline-block', boxShadow: '0 0 6px #84cc16', animation: 'none' }} />
-          <span style={{ fontSize: '0.75rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
-        </div>
+
         
         <style dangerouslySetInnerHTML={{ __html: `
           .sidebar-nav-scroll::-webkit-scrollbar { display: none; }

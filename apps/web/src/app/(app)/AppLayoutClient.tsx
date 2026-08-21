@@ -144,9 +144,9 @@ export default function AppLayoutClient({
       <aside className="hidden md:flex flex-col w-64 shrink-0" style={{ background: 'linear-gradient(180deg, #1a2e1a 0%, #1e3a1e 60%, #162816 100%)', boxShadow: '4px 0 24px rgba(0,0,0,0.18)' }}>
         
         {/* Brand */}
-        <div className="px-5 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-4 py-3 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ background: 'rgba(101,163,13,0.25)', borderRadius: '10px', padding: '6px', border: '1px solid rgba(101,163,13,0.35)' }}>
-            <img src="/icon.jpg" alt="KisanSeva" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', display: 'block' }} />
+            <img src="/icon.jpg" alt="KisanSeva" style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover', display: 'block' }} />
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.125rem', color: '#fff', letterSpacing: '-0.3px' }}>KisanSeva</div>
@@ -155,16 +155,16 @@ export default function AppLayoutClient({
         </div>
 
         {/* Live status pill */}
-        <div style={{ margin: '8px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#84cc16', display: 'inline-block', boxShadow: '0 0 6px #84cc16', animation: 'none' }} />
-          <span style={{ fontSize: '0.75rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
+        <div style={{ margin: '4px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '6px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#84cc16', display: 'inline-block', boxShadow: '0 0 6px #84cc16', animation: 'none' }} />
+          <span style={{ fontSize: '0.65rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
         </div>
         
         <style dangerouslySetInnerHTML={{ __html: `
           .sidebar-nav-scroll::-webkit-scrollbar { display: none; }
           .sidebar-nav-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         `}} />
-        <nav className="sidebar-nav-scroll" style={{ flex: 1, padding: '2px 12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1px' }}>
+        <nav className="sidebar-nav-scroll" style={{ flex: 1, padding: '2px 12px 6px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0px' }}>
           {APP_LINKS.map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
@@ -173,8 +173,8 @@ export default function AppLayoutClient({
                 key={link.name} 
                 href={link.href}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px',
-                  borderRadius: '10px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.85rem',
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 10px',
+                  borderRadius: '8px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.8rem',
                   fontWeight: isActive ? 700 : 500,
                   backgroundColor: isActive ? 'rgba(101,163,13,0.22)' : 'transparent',
                   color: isActive ? '#a3e635' : 'rgba(255,255,255,0.55)',
@@ -183,7 +183,7 @@ export default function AppLayoutClient({
                 onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; } }}
               >
-                <Icon size={16} style={{ color: isActive ? '#84cc16' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+                <Icon size={14} style={{ color: isActive ? '#84cc16' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
                 <span style={{ flex: 1 }}>{link.name}</span>
                 {isActive && <ChevronRight size={14} style={{ color: '#84cc16', opacity: 0.7 }} />}
               </Link>
@@ -192,17 +192,17 @@ export default function AppLayoutClient({
         </nav>
 
         {/* Bottom user card */}
-        <div style={{ margin: '0 12px 8px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ margin: '0 12px 6px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <Link
             href="/settings"
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '10px', textDecoration: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.15s', backgroundColor: 'transparent' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', textDecoration: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.15s', backgroundColor: 'transparent' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; }}
           >
-            <Settings size={17} style={{ flexShrink: 0 }} />
+            <Settings size={15} style={{ flexShrink: 0 }} />
             Settings
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div style={{ flexShrink: 0 }}>
               <UserButton appearance={{ elements: { userButtonAvatarBox: "w-8 h-8" } }} />
             </div>

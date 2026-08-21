@@ -140,7 +140,7 @@ const MOCK_EQUIPMENT = [
   }
 ];
 
-export default function RentalsPage() {
+export function RentalsTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [maxDistance, setMaxDistance] = useState<number>(15);

@@ -170,7 +170,7 @@ const LeafMap = dynamic(() => import('@/components/ColdStorageMap'), { ssr: fals
 )});
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function ColdStoragePage() {
+export function StorageTab() {
   const [status, setStatus] = useState<Status>('idle');
   const [results, setResults] = useState<ColdStorage[]>([]);
   const [error, setError] = useState('');

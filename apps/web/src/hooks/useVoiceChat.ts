@@ -311,7 +311,22 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     setSpeaking(false);
 
     try {
-      // Request mic — this will show the browser permission popup properly
+      // Check permission state first using Permissions API
+      if (navigator.permissions) {
+        const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        if (permissionStatus.state === 'denied') {
+          const siteUrl = encodeURIComponent(window.location.origin);
+          addMessage({
+            role: 'model',
+            text: language === 'hi'
+              ? `माइक्रोफ़ोन स्थायी रूप से ब्लॉक है। Chrome में यह लिंक खोलें:\nchrome://settings/content/siteDetails?site=${siteUrl}\nफिर Microphone → Allow करें और पेज रिफ्रेश करें।`
+              : `🎤 Microphone is permanently blocked for this site.\n\nTo fix it in Chrome:\n1. Copy and paste this in a new tab: chrome://settings/content/siteDetails?site=${siteUrl}\n2. Find Microphone → change to "Allow"\n3. Refresh this page and try again\n\nOR: Click the 🔒 icon in the address bar → Site settings → Microphone → Allow`,
+          });
+          return;
+        }
+      }
+
+      // Request mic — will show browser permission popup if not yet decided
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 

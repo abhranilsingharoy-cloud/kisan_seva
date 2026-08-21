@@ -83,24 +83,34 @@ export default function AgentChatPage() {
 
   // ── Voice Integration (Bhashini-style) ───────────────────────────────────────
   const startListening = async () => {
-    // 1. Force the browser to show the microphone permission prompt natively
+    // First explicitly request mic permission
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Stop the tracks immediately, we just needed to trigger the permission prompt
         stream.getTracks().forEach(track => track.stop());
       }
     } catch (err: any) {
       console.warn("Microphone permission check failed:", err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        alert("Microphone is BLOCKED. Please click the Lock icon 🔒 in your browser's URL bar, go to Permissions, and Allow the Microphone.");
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.name === 'SecurityError') {
+        // Show helpful in-chat message
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `🎤 **Microphone access is blocked.** Here's how to fix it:\n\n**In Chrome/Edge:**\n1. Click the 🔒 **lock icon** in the address bar (left of the URL)\n2. Click **"Site settings"**\n3. Find **Microphone** → set to **"Allow"**\n4. Refresh the page and try again\n\n**Or press:** \`Ctrl+Shift+P\` → type "Site settings" → allow microphone for this site.`,
+          timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        }]);
         return;
       }
     }
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech Recognition is not supported in this browser. Please use Chrome or Edge.");
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `🎤 **Speech Recognition is not supported in this browser.**\n\nPlease use **Google Chrome** or **Microsoft Edge** for voice input.`,
+        timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      }]);
       return;
     }
 
@@ -133,7 +143,21 @@ export default function AgentChatPage() {
     recognition.onerror = (e: any) => {
       setIsListening(false);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        alert("Microphone permission denied. Please allow mic access in your browser settings to use voice features.");
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `🎤 **Microphone access is blocked.** Here's how to enable it:\n\n**Step 1:** Look at the address bar — click the **🔒 lock icon** or **ⓘ info icon** on the left.\n\n**Step 2:** Click **"Site settings"** or **"Permissions"**.\n\n**Step 3:** Set **Microphone → Allow**.\n\n**Step 4:** Refresh this page and tap the mic button again.\n\n> **Windows 11 users:** Also check Settings → Privacy & Security → Microphone → Allow apps to access microphone → ON`,
+          timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } else if (e.error === 'network') {
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `🌐 **Voice recognition needs an internet connection.** Please check your connection and try again.`,
+          timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        }]);
+      } else if (e.error === 'no-speech') {
+        // silently ignore, user just didn't speak
       }
     };
 

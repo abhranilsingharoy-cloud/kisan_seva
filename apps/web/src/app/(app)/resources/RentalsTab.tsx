@@ -26,7 +26,7 @@ const MOCK_EQUIPMENT = [
     distance: 2.4, // km
     rating: 4.9,
     reviews: 31,
-    pricePerHour: 450,
+    pricePerHour: 900,
     imageUrl: '/equipment/tractor_blue.jpg',
     description: 'Modern blue New Holland tractor in excellent condition. High horsepower, AC cabin. Includes driver.'
   },
@@ -38,7 +38,7 @@ const MOCK_EQUIPMENT = [
     distance: 5.1,
     rating: 4.8,
     reviews: 56,
-    pricePerHour: 2200,
+    pricePerHour: 2800,
     imageUrl: '/equipment/combine_harvester.jpg',
     description: 'Large green combine harvester. Extremely fast field clearing for wheat and soybeans.'
   },
@@ -50,7 +50,7 @@ const MOCK_EQUIPMENT = [
     distance: 1.5,
     rating: 4.6,
     reviews: 18,
-    pricePerHour: 180,
+    pricePerHour: 250,
     imageUrl: '/equipment/rotavator.jpg',
     description: 'Heavy duty red rotavator. Excellent for breaking up hard soil. Tractor not included.'
   },
@@ -62,7 +62,7 @@ const MOCK_EQUIPMENT = [
     distance: 8.0,
     rating: 5.0,
     reviews: 42,
-    pricePerHour: 1200,
+    pricePerHour: 2500,
     imageUrl: '/images/rentals/drone.jpg',
     description: 'Automated pesticide spraying drone. Includes licensed operator.'
   },
@@ -74,7 +74,7 @@ const MOCK_EQUIPMENT = [
     distance: 12.5,
     rating: 4.5,
     reviews: 12,
-    pricePerHour: 400,
+    pricePerHour: 700,
     imageUrl: '/images/rentals/swaraj_tractor.jpg',
     description: 'Reliable 48 HP tractor. Bare equipment rental (no driver).'
   },
@@ -86,7 +86,7 @@ const MOCK_EQUIPMENT = [
     distance: 22.0,
     rating: 4.7,
     reviews: 84,
-    pricePerHour: 1800,
+    pricePerHour: 2600,
     imageUrl: '/equipment/combine_harvester.jpg',
     description: 'Multi-crop combine harvester. High efficiency.'
   },
@@ -98,7 +98,7 @@ const MOCK_EQUIPMENT = [
     distance: 3.2,
     rating: 4.3,
     reviews: 15,
-    pricePerHour: 380,
+    pricePerHour: 650,
     imageUrl: '/images/rentals/mahindra_tractor.jpg',
     description: 'Solid 45 HP workhorse for general farm duties.'
   },
@@ -110,7 +110,7 @@ const MOCK_EQUIPMENT = [
     distance: 4.5,
     rating: 4.4,
     reviews: 9,
-    pricePerHour: 120,
+    pricePerHour: 200,
     imageUrl: '/images/rentals/seed_drill.jpg',
     description: 'Automatic seed drill implement. Perfect for precise sowing.'
   },
@@ -122,7 +122,7 @@ const MOCK_EQUIPMENT = [
     distance: 6.8,
     rating: 4.6,
     reviews: 22,
-    pricePerHour: 350,
+    pricePerHour: 550,
     imageUrl: '/images/rentals/eicher_tractor.jpg',
     description: 'Compact 40 HP tractor, highly fuel efficient.'
   },
@@ -134,7 +134,7 @@ const MOCK_EQUIPMENT = [
     distance: 14.1,
     rating: 4.8,
     reviews: 6,
-    pricePerHour: 200,
+    pricePerHour: 300,
     imageUrl: '/images/rentals/potato_planter.jpg',
     description: 'Two-row automatic potato planter implement.'
   }

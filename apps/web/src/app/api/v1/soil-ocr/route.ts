@@ -12,17 +12,19 @@ export async function POST(request: Request) {
     // Convert file to Base64
     const buffer = await file.arrayBuffer();
     const base64Image = Buffer.from(buffer).toString('base64');
-    const mimeType = file.type || 'image/jpeg';
-    const dataUrl = `data:${mimeType};base64,${base64Image}`;
+    let mimeType = file.type || 'image/jpeg';
+    
+    // Gemini requires precise mime types, map common ones if missing
+    if (mimeType === 'image/jpg') mimeType = 'image/jpeg';
 
-    // Get OpenAI Key from environment
-    const apiKey = process.env.OPENAI_API_KEY;
+    // Get Gemini Key from environment
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.warn("No OPENAI_API_KEY found, falling back to mock response.");
-      return generateMockResponse();
+      console.warn("No GEMINI_API_KEY found, falling back to mock response.");
+      return generateMockResponse("No GEMINI_API_KEY found");
     }
 
-    // Prepare OpenAI request
+    // Prepare Gemini request
     const systemPrompt = `You are an expert AI Agronomist analyzing Soil Health Cards via OCR.
 Extract the soil metrics (N, P, K, pH, Organic Carbon, etc.) from the image if visible. 
 If no text is visible or the image is not a soil card, make highly educated realistic estimates based on the visual soil type or return realistic Indian agricultural averages.
@@ -42,44 +44,42 @@ You must ALWAYS respond with ONLY a valid JSON object matching exactly this stru
   "tags": ["Low Nitrogen", "Good pH"],
   "overallHealth": 75
 }
-Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object. Use realistic metric values based on the image.`;
+Do not wrap in markdown tags. Just return the raw JSON object.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
+        contents: [
           {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analyze this soil health card or soil image and provide the JSON report." },
-              { type: "image_url", image_url: { url: dataUrl } }
+            parts: [
+              { text: systemPrompt },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64Image
+                }
+              }
             ]
           }
         ],
-        max_tokens: 1000,
-        temperature: 0.2
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json"
+        }
       })
     });
 
     if (!response.ok) {
       const errTxt = await response.text();
-      console.error("OpenAI API Error:", errTxt);
-      return generateMockResponse(); // Fallback on error
+      console.error("Gemini API Error:", errTxt);
+      return generateMockResponse("Gemini API error or rate limit");
     }
 
     const aiData = await response.json();
-    let jsonText = aiData.choices[0].message.content;
+    let jsonText = aiData.candidates[0].content.parts[0].text;
     
-    // Clean up potential markdown formatting
+    // Clean up potential markdown formatting just in case
     jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
     
     const parsedData = JSON.parse(jsonText);
@@ -91,11 +91,11 @@ Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object. U
 
   } catch (error) {
     console.error('Soil OCR Real API Error:', error);
-    return generateMockResponse(); // Ultimate fallback
+    return generateMockResponse("Failed to parse Gemini response"); 
   }
 }
 
-function generateMockResponse() {
+function generateMockResponse(reason: string) {
   return NextResponse.json({
     success: true,
     data: {
@@ -111,7 +111,7 @@ function generateMockResponse() {
         { week: "Week 3 (Vegetative)", action: "Correct pH", product: "Agricultural Lime", quantity: "100 kg/acre", priority: "high" },
         { week: "Week 6 (Flowering)", action: "Foliar Spray", product: "Zinc Sulphate", quantity: "2 kg/acre", priority: "medium" }
       ],
-      diagnosis: "The AI API fell back to mock data. Nitrogen and Organic Carbon levels are suboptimal. Apply Agricultural Lime to correct pH.",
+      diagnosis: `The AI API fell back to mock data (${reason}). Nitrogen and Organic Carbon levels are suboptimal. Apply Agricultural Lime to correct pH.`,
       tags: ["Fallback Mode", "Low Nitrogen"],
       overallHealth: 68
     }

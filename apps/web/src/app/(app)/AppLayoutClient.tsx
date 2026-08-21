@@ -155,16 +155,16 @@ export default function AppLayoutClient({
         </div>
 
         {/* Live status pill */}
-        <div style={{ margin: '6px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '8px', padding: '7px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#84cc16', display: 'inline-block', boxShadow: '0 0 6px #84cc16', animation: 'none' }} />
-          <span style={{ fontSize: '0.7rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
+        <div style={{ margin: '8px 16px', backgroundColor: 'rgba(101,163,13,0.15)', border: '1px solid rgba(101,163,13,0.3)', borderRadius: '8px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#84cc16', display: 'inline-block', boxShadow: '0 0 6px #84cc16', animation: 'none' }} />
+          <span style={{ fontSize: '0.75rem', color: '#86efac', fontWeight: 600 }}>All Systems Online</span>
         </div>
         
         <style dangerouslySetInnerHTML={{ __html: `
           .sidebar-nav-scroll::-webkit-scrollbar { display: none; }
           .sidebar-nav-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         `}} />
-        <nav className="sidebar-nav-scroll" style={{ flex: 1, padding: '2px 12px 8px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1px' }}>
+        <nav className="sidebar-nav-scroll" style={{ flex: 1, padding: '2px 12px 6px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {APP_LINKS.map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
@@ -173,8 +173,8 @@ export default function AppLayoutClient({
                 key={link.name} 
                 href={link.href}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px',
-                  borderRadius: '8px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.825rem',
+                  display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px',
+                  borderRadius: '8px', textDecoration: 'none', transition: 'all 0.15s ease', fontSize: '0.85rem',
                   fontWeight: isActive ? 700 : 500,
                   backgroundColor: isActive ? 'rgba(101,163,13,0.22)' : 'transparent',
                   color: isActive ? '#a3e635' : 'rgba(255,255,255,0.55)',
@@ -183,7 +183,7 @@ export default function AppLayoutClient({
                 onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'; } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)'; } }}
               >
-                <Icon size={15} style={{ color: isActive ? '#84cc16' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+                <Icon size={16} style={{ color: isActive ? '#84cc16' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
                 <span style={{ flex: 1 }}>{link.name}</span>
                 {isActive && <ChevronRight size={14} style={{ color: '#84cc16', opacity: 0.7 }} />}
               </Link>

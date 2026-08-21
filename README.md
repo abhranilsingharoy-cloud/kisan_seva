@@ -19,7 +19,7 @@
 
 <br/>
 
-> **🏆 Hackathon Project** — A production-ready, full-stack AI platform built to bridge the digital divide for India's 140 million+ farming families.
+> **🏆 Hackathon Submission** — An innovative, highly scalable Agritech ecosystem leveraging **Multi-Agent AI**, **Voice-First Accessibility**, and **Real-Time Data** to solve critical on-ground challenges for India's 140 million farming families.
 
 <br/>
 

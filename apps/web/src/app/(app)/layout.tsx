@@ -15,12 +15,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileData) {
         profile = profileData;
       } else if (error) {
-        console.error('Supabase profile fetch error:', error);
+        console.error('Supabase profile fetch error:', JSON.stringify(error, null, 2));
       }
     } catch (err) {
       console.error('Failed to fetch profile from Supabase:', err);

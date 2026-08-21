@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Filter, AlertTriangle, Bug, Leaf, X, ChevronRight, Droplets, ThermometerSun } from 'lucide-react';
+import { Search, Filter, AlertTriangle, Bug, Leaf, X, ChevronRight, Droplets, ThermometerSun, Check } from 'lucide-react';
 
 const PAGE_BG = { background: '#f9fafb', minHeight: '100vh', paddingBottom: 100 };
 

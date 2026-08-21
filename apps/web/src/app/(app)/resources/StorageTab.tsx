@@ -80,14 +80,16 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
 out center tags;
   `;
 
-  const res = await fetch('https://overpass-api.de/api/interpreter', {
+  // Use our server-side proxy to avoid CORS issues and get mirror fallback
+  const res = await fetch('/api/overpass', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'data=' + encodeURIComponent(query),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
   });
 
-  if (!res.ok) throw new Error('Overpass API error ' + res.status);
+  if (!res.ok) throw new Error('Overpass proxy error ' + res.status);
   const data = await res.json();
+  if (data.error) throw new Error(data.error);
 
   const seen = new Set<string>();
   const results: ColdStorage[] = [];

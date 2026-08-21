@@ -34,7 +34,6 @@ export const metadata: Metadata = {
     images: ['/og-image.png']
   },
   robots: { index: true, follow: true },
-  manifest: '/manifest.json',
   icons: {
     icon: '/icon.jpg',
     apple: '/icon.jpg',
@@ -56,32 +55,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                // Listen for the SW_KILLED message and force a hard reload
-                if ('serviceWorker' in navigator) {
-                  navigator.serviceWorker.addEventListener('message', function(event) {
-                    if (event.data && event.data.type === 'SW_KILLED') {
-                      window.location.reload(true);
-                    }
-                  });
-
-                  // Also proactively unregister any existing SWs from the page side
-                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                    registrations.forEach(function(reg) { reg.unregister(); });
-                  });
-
-                  // And nuke all caches from the page side too
-                  if ('caches' in window) {
-                    caches.keys().then(function(keys) {
-                      keys.forEach(function(key) { caches.delete(key); });
-                    });
-                  }
-                }
-              })();
-            `
-          }} />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link

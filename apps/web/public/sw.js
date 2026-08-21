@@ -1,34 +1,30 @@
-// KisanSeva SW Killer v3 — wipes all caches, unregisters self, force-reloads
-const CACHE_BUST_KEY = 'ks_cache_killed_v3';
-
-self.addEventListener('install', function(event) {
+self.addEventListener('install', function(e) {
+  // Take over the page immediately
   self.skipWaiting();
 });
 
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    (async function() {
-      // Delete ALL caches
-      const cacheKeys = await caches.keys();
-      await Promise.all(cacheKeys.map(key => caches.delete(key)));
-
-      // Claim all open clients before we unregister
-      await self.clients.claim();
-
-      const allClients = await self.clients.matchAll({ includeUncontrolled: true });
-
-      // Unregister self
-      await self.registration.unregister();
-
-      // Tell every open tab to do a hard reload
-      for (const client of allClients) {
-        client.postMessage({ type: 'SW_KILLED' });
-      }
-    })()
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    // 1. Unregister the service worker
+    self.registration.unregister()
+      .then(function() {
+        // 2. Clear all caches created by this or previous service workers
+        return caches.keys().then(function(keys) {
+          return Promise.all(
+            keys.map(function(key) {
+              return caches.delete(key);
+            })
+          );
+        });
+      })
+      .then(function() {
+        // 3. Force all clients (browser tabs) to reload without cache
+        return self.clients.matchAll({ type: 'window' }).then(function(windowClients) {
+          for (var i = 0; i < windowClients.length; i++) {
+            var client = windowClients[i];
+            client.navigate(client.url);
+          }
+        });
+      })
   );
-});
-
-// Do not intercept any fetches — pass everything through to the network
-self.addEventListener('fetch', function(event) {
-  event.respondWith(fetch(event.request));
 });

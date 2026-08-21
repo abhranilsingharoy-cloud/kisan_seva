@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/KisanSeva_logo.png" alt="KisanSeva Logo" width="120" height="120" style="border-radius:24px"/>
+<img src="https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/icon.jpg" alt="KisanSeva Logo" width="120" height="120" style="border-radius:24px; box-shadow: 0 4px 14px rgba(0,0,0,0.1);"/>
 
 # 🌾 KisanSeva — किसान सेवा
 
@@ -20,6 +20,12 @@
 <br/>
 
 > **🏆 Hackathon Project** — A production-ready, full-stack AI platform built to bridge the digital divide for India's 140 million+ farming families.
+
+<br/>
+
+<a href="https://kisan-seva-ks.vercel.app/" target="_blank">
+  <img src="https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/hero-screenshot.png" alt="KisanSeva Landing Page" width="100%" style="border-radius:12px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);"/>
+</a>
 
 <br/>
 

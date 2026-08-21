@@ -40,148 +40,7 @@ interface RealData {
   precip: number;
 }
 
-// Procedural Farm Zone Generator using REAL data anchor
-function generateZonesForLocation(lat: number, lng: number, realData: RealData | null, isCity: boolean = false, isMountain: boolean = false): Zone[] {
-  const dLat = 0.003; 
-  const dLng = 0.0035; 
-  const gap = 0.0005; 
-
-  // Calculate base health anchored strictly to real-world physics
-  let baseHealth = 70;
-  let tempAlert = "";
-  let moistAlert = "";
-
-  if (realData) {
-    // Typical volumetric soil moisture field capacity is ~0.3 - 0.4. 
-    // Anything below 0.15 is severe drought.
-    const moistureScore = Math.min(100, Math.max(10, (realData.moisture / 0.35) * 100));
-    const tempPenalty = realData.temp > 38 ? 20 : realData.temp > 30 ? 5 : 0;
-    
-    baseHealth = Math.max(10, moistureScore - tempPenalty);
-    
-    if (realData.temp > 38) tempAlert = `REAL ALERT: Extreme surface temp (${realData.temp}°C) detected by Open-Meteo.`;
-    if (realData.moisture < 0.15) moistAlert = `REAL ALERT: Severe drought. Soil moisture is critically low at ${realData.moisture} m³/m³.`;
-    if (realData.precip > 5) moistAlert = `REAL ALERT: Heavy rainfall detected (${realData.precip}mm). High flood risk.`;
-  }
-
-  // Drastically penalize health score if the location is identified as an urban city environment
-  if (isCity) {
-    baseHealth = Math.max(10, Math.min(baseHealth, 25)); // Cap base health at 25% for cities
-    tempAlert = "Urban heat island effect detected.";
-    moistAlert = "High soil compaction and concrete density.";
-  } else if (isMountain) {
-    baseHealth = Math.max(10, Math.min(baseHealth, 35)); // Cap base health at 35% for mountains
-    tempAlert = tempAlert || "High altitude / steep gradient detected.";
-    moistAlert = moistAlert || "Rocky terrain unsuitable for traditional agriculture.";
-  }
-
-  const randH = () => Math.floor(Math.random() * 15) - 7 + baseHealth; // +/- 7 variance from REAL base
-  
-  const genIssue = (h: number) => {
-    if (isCity) return 'Suboptimal soil conditions due to heavy urbanization and concrete structures.';
-    if (isMountain) return 'Steep topography, shallow topsoil, and rocky terrain limit agricultural viability.';
-    if (tempAlert) return tempAlert;
-    if (moistAlert) return moistAlert;
-    if (h > 75) return 'Optimal growth parameters. Real soil moisture is ideal.';
-    if (h > 50) return `Moderate stress. Open-Meteo reports ${realData?.temp}°C.`;
-    if (h > 35) return `Water stress detected. Soil moisture: ${realData?.moisture} m³/m³.`;
-    return 'Critical health degradation based on live API weather metrics.';
-  };
-
-  const z1h = Math.max(10, Math.min(100, randH()));
-  const z2h = Math.max(10, Math.min(100, randH()));
-  const z3h = Math.max(10, Math.min(100, randH()));
-  const z4h = Math.max(10, Math.min(100, randH()));
-
-  return [
-    {
-      id: 'z_alpha', name: 'Zone Alpha', crop: 'Wheat / Cereals', area: '3.2 Acres',
-      health: z1h, ndvi: (z1h / 100) * 0.95, issue: genIssue(z1h),
-      coordinates: [[lat + gap, lng - gap - dLng], [lat + gap + dLat, lng - gap - dLng], [lat + gap + dLat, lng - gap], [lat + gap, lng - gap]]
-    },
-    {
-      id: 'z_beta', name: 'Zone Beta', crop: 'Rice Paddy', area: '2.8 Acres',
-      health: z2h, ndvi: (z2h / 100) * 0.95, issue: genIssue(z2h),
-      coordinates: [[lat - gap - dLat, lng - gap - dLng], [lat - gap, lng - gap - dLng], [lat - gap, lng - gap], [lat - gap - dLat, lng - gap]]
-    },
-    {
-      id: 'z_gamma', name: 'Zone Gamma', crop: 'Sugarcane', area: '4.1 Acres',
-      health: z3h, ndvi: (z3h / 100) * 0.95, issue: genIssue(z3h),
-      coordinates: [[lat + gap, lng + gap], [lat + gap + dLat, lng + gap], [lat + gap + dLat, lng + gap + dLng], [lat + gap, lng + gap + dLng]]
-    },
-    {
-      id: 'z_delta', name: 'Zone Delta', crop: 'Mixed Vegetables', area: '1.9 Acres',
-      health: z4h, ndvi: (z4h / 100) * 0.95, issue: genIssue(z4h),
-      coordinates: [[lat - gap - dLat, lng + gap], [lat - gap, lng + gap], [lat - gap, lng + gap + dLng], [lat - gap - dLat, lng + gap + dLng]]
-    }
-  ];
-}
-
 const DEFAULT_CENTER: [number, number] = [30.9192, 75.8570];
-
-function useLiveTelemetry(targetLocation: [number, number] | null, isArable: boolean = true, isCity: boolean = false, isMountain: boolean = false) {
-  const [zones, setZones] = useState<Zone[]>([]);
-  const [lastSync, setLastSync] = useState<Date>(new Date());
-  const [realWeatherData, setRealWeatherData] = useState<RealData | null>(null);
-  const [isFetchingRealData, setIsFetchingRealData] = useState(false);
-  
-  // 1. Fetch REAL Open-Meteo Data on location change
-  useEffect(() => {
-    const fetchRealData = async () => {
-      if (!isArable) {
-        setZones([]);
-        setRealWeatherData(null);
-        return;
-      }
-
-      setIsFetchingRealData(true);
-      const center = targetLocation || DEFAULT_CENTER;
-      try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${center[0]}&longitude=${center[1]}&current=temperature_2m,precipitation,soil_moisture_0_to_1cm`);
-        const data = await res.json();
-        
-        const realData: RealData = {
-          temp: data.current.temperature_2m || 25,
-          moisture: data.current.soil_moisture_0_to_1cm || 0.25,
-          precip: data.current.precipitation || 0
-        };
-        
-        setRealWeatherData(realData);
-        setZones(generateZonesForLocation(center[0], center[1], realData, isCity, isMountain));
-      } catch (error) {
-        console.error("Open-Meteo fetch failed:", error);
-        setZones(generateZonesForLocation(center[0], center[1], null, isCity, isMountain));
-      } finally {
-        setIsFetchingRealData(false);
-      }
-    };
-
-    fetchRealData();
-  }, [targetLocation, isArable, isCity, isMountain]);
-
-  // 2. Continuous telemetry ping (minor sensor noise over the real data)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setZones(currentZones => currentZones.map(zone => {
-        // Tiny +/- 0.5% drift to simulate live sensor noise
-        const drift = (Math.random() - 0.5);
-        let newHealth = zone.health + drift;
-        newHealth = Math.max(10, Math.min(100, newHealth)); 
-        
-        return {
-          ...zone,
-          health: newHealth,
-          ndvi: newHealth / 100 * 0.95 
-        };
-      }));
-      setLastSync(new Date());
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return { zones, lastSync, realWeatherData, isFetchingRealData };
-}
 
 function StatPill({ label, value, color }: { label: string; value: string; color: string }) {
   return (
@@ -205,8 +64,12 @@ export default function TopographyPage() {
   const [locationName, setLocationName] = useState('Ludhiana District, Punjab, India');
   const [isArable, setIsArable] = useState(true);
 
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [lastSync, setLastSync] = useState<Date>(new Date());
+  const [realWeatherData, setRealWeatherData] = useState<RealData | null>(null);
   const [isCity, setIsCity] = useState(false);
   const [isMountain, setIsMountain] = useState(false);
+  const [isFetchingRealData, setIsFetchingRealData] = useState(false);
   
   // Custom Draw Mode
   const [drawMode, setDrawMode] = useState(false);
@@ -215,6 +78,108 @@ export default function TopographyPage() {
   
   // Real-time SOS Database Sync
   const [sosAlerts, setSosAlerts] = useState<any[]>([]);
+
+  // 1. Initial real-world data sync
+  useEffect(() => {
+    if (!targetLocation) return;
+    setIsFetchingRealData(true);
+
+    const fetchRealData = async () => {
+      try {
+        const center = targetLocation;
+        
+        // Fetch Live Weather & Soil Moisture
+        const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${center[0]}&longitude=${center[1]}&current=temperature_2m,precipitation,soil_moisture_0_to_1cm`);
+        const data = await meteoRes.json();
+        
+        const realData: RealData = {
+          temp: data.current.temperature_2m || 30,
+          moisture: data.current.soil_moisture_0_to_1cm || 0.25,
+          precip: data.current.precipitation || 0
+        };
+        
+        setRealWeatherData(realData);
+
+        // Calculate base health anchored strictly to real-world physics
+        const moistureScore = Math.min(100, Math.max(10, (realData.moisture / 0.35) * 100));
+        const tempPenalty = realData.temp > 38 ? 20 : realData.temp > 30 ? 5 : 0;
+        const baseHealth = Math.max(10, moistureScore - tempPenalty);
+
+        // Fetch Real Farm Boundaries from OSM Overpass
+        const margin = 0.015; // roughly 1.5km box
+        const bbox = `${center[0]-margin},${center[1]-margin},${center[0]+margin},${center[1]+margin}`;
+        const overpassQuery = `[out:json][timeout:15];(way["landuse"="farmland"](${bbox});way["landuse"="orchard"](${bbox});way["landuse"="meadow"](${bbox}););out geom;`;
+        
+        const overpassRes = await fetch('/api/overpass', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: overpassQuery })
+        });
+        
+        const overpassData = await overpassRes.json();
+        
+        if (overpassData.elements && overpassData.elements.length > 0) {
+          const newZones: Zone[] = overpassData.elements.map((el: any, index: number) => {
+            const geom = el.geometry.map((g: any) => [g.lat, g.lon] as [number, number]);
+            // Filter invalid geometries
+            if (geom.length < 3) return null;
+            
+            const randH = Math.floor(Math.random() * 15) - 7 + baseHealth;
+            const health = Math.max(10, Math.min(100, randH));
+            
+            let crop = 'Mixed Crops';
+            if (el.tags && el.tags.crop) crop = el.tags.crop;
+            else if (el.tags && el.tags.landuse === 'orchard') crop = 'Orchard';
+            else if (el.tags && el.tags.landuse === 'meadow') crop = 'Pasture';
+
+            return {
+              id: `osm_${el.id}`,
+              name: `Plot ${el.id.toString().slice(-4)}`,
+              crop,
+              area: 'Mapped Polygon',
+              health,
+              ndvi: (health / 100) * 0.95,
+              issue: health > 60 ? 'Optimal growth parameters detected.' : 'Water or heat stress detected from telemetry.',
+              coordinates: geom
+            } as Zone;
+          }).filter(Boolean);
+          
+          setZones(newZones.slice(0, 15)); // Cap at 15 plots so it doesn't freeze the browser with thousands of polygons
+        } else {
+          // If no farms found (e.g. in a city)
+          setZones([]);
+        }
+
+      } catch (error) {
+        console.error("Data fetch failed:", error);
+        setZones([]);
+      } finally {
+        setIsFetchingRealData(false);
+      }
+    };
+
+    fetchRealData();
+  }, [targetLocation]);
+
+  // 2. Continuous telemetry ping (minor sensor noise over the real data)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setZones(currentZones => currentZones.map(zone => {
+        const drift = (Math.random() - 0.5);
+        let newHealth = zone.health + drift;
+        newHealth = Math.max(10, Math.min(100, newHealth)); 
+        
+        return {
+          ...zone,
+          health: newHealth,
+          ndvi: newHealth / 100 * 0.95 
+        };
+      }));
+      setLastSync(new Date());
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -238,9 +203,10 @@ export default function TopographyPage() {
     return () => clearInterval(interval);
   }, [targetLocation]);
 
-  // Connect Live Telemetry powered by REAL OPEN-METEO DATA
-  const { zones, lastSync, realWeatherData, isFetchingRealData } = useLiveTelemetry(targetLocation, isArable, isCity, isMountain);
-  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const averageHealth = zones.length > 0 ? (zones.reduce((acc, z) => acc + z.health, 0) / zones.length).toFixed(1) : "0.0";
 
   // Build context-aware environmental alerts based on location

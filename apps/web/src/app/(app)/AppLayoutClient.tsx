@@ -225,9 +225,9 @@ export default function AppLayoutClient({
             <button className="md:hidden" style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }} onClick={() => setMobileMenuOpen(true)}>
               <Menu size={24} />
             </button>
-            <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <img src="/icon.jpg" alt="KisanSeva" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
-              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1a2e1a' }}>KisanSeva</span>
+            <div className="md:hidden flex items-center gap-2">
+              <img src="/icon.jpg" alt="KisanSeva" className="w-7 h-7 rounded-md object-cover" />
+              <span className="font-extrabold text-lg text-[#1a2e1a]">KisanSeva</span>
             </div>
             {/* Desktop breadcrumb */}
             <div className="hidden md:flex" style={{ alignItems: 'center', gap: '6px' }}>

@@ -93,7 +93,7 @@ export default function AgentChatPage() {
     }]);
   };
 
-  const startListening = async () => {
+  const startListening = () => {
     // If already listening, stop
     if (isListening && recognitionRef.current) {
       recognitionRef.current.stop();
@@ -108,33 +108,15 @@ export default function AgentChatPage() {
       return;
     }
 
-    // Explicitly request mic permission
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-      }
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.name === 'SecurityError') {
-        addSystemMessage(
-          '🎤 Microphone access is blocked. Here\'s how to fix it:\n\n' +
-          '1. Click the 🔒 lock icon in the address bar (left of the URL)\n' +
-          '2. Click "Site settings"\n' +
-          '3. Find Microphone → set to "Allow"\n' +
-          '4. Refresh the page and try again\n\n' +
-          'Windows users: Also check Settings → Privacy & Security → Microphone → Allow apps to access microphone → ON'
-        );
-        return;
-      }
-    }
-
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
     const langMap: Record<string, string> = { en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN' };
     recognition.lang = langMap[selectedLang] || 'en-IN';
 
-    recognition.onstart = () => setIsListening(true);
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
 
     recognition.onresult = (event: any) => {
       let finalTrans = '';
@@ -156,29 +138,30 @@ export default function AgentChatPage() {
 
     recognition.onerror = (e: any) => {
       setIsListening(false);
+      console.error('[Voice] SpeechRecognition error:', e.error);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         addSystemMessage(
-          '🎤 Microphone access is blocked. To enable:\n\n' +
-          'Step 1: Click the 🔒 lock / ⓘ icon in your browser address bar\n' +
-          'Step 2: Click "Site settings" or "Permissions"\n' +
-          'Step 3: Set Microphone → Allow\n' +
-          'Step 4: Refresh this page and tap the mic button again\n\n' +
-          'Windows 11: Settings → Privacy & Security → Microphone → Allow apps to access microphone → ON'
+          '🎤 Microphone blocked by browser.\n\n' +
+          'Fix: While on this page, click the 🔒 lock icon in the address bar → Site settings → Microphone → Allow → Refresh page.'
         );
       } else if (e.error === 'network') {
-        addSystemMessage('🌐 Voice recognition needs an internet connection. Please check your connection and try again.');
+        addSystemMessage('🌐 Cannot reach Google speech servers. Check your internet and try again.');
       } else if (e.error === 'audio-capture') {
-        addSystemMessage('🎤 No microphone was found. Please connect a microphone and try again.');
+        addSystemMessage('🎤 No microphone found. Please connect a microphone and try again.');
+      } else if (e.error === 'aborted') {
+        // silently ignore — user stopped it
+      } else if (e.error === 'no-speech') {
+        addSystemMessage('🎤 No speech detected. Try speaking louder and closer to the mic.');
       }
-      // Silently ignore 'no-speech' and 'aborted'
     };
 
     recognitionRef.current = recognition;
     try {
       recognition.start();
-    } catch (e) {
-      console.error('Speech recognition start error:', e);
+    } catch (e: any) {
+      console.error('[Voice] Start error:', e);
       setIsListening(false);
+      addSystemMessage('🎤 Could not start voice input. Please try refreshing the page.');
     }
   };
 

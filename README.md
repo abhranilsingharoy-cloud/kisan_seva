@@ -1,313 +1,528 @@
 <div align="center">
 
-# 🌾 KisanSeva 
+<img src="https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/KisanSeva_logo.png" alt="KisanSeva Logo" width="120" height="120" style="border-radius:24px"/>
 
-**AI-Powered Multi-Agent Agricultural Advisory System**
+# 🌾 KisanSeva — किसान सेवा
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
+### *Empowering Every Farmer with the Power of AI*
 
-KisanSeva is a comprehensive platform built to empower farmers with real-time market prices, crop disease diagnosis, localized weather forecasts, and a conversational AI assistant composed of 7 specialized agricultural agents.
+<br/>
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Groq](https://img.shields.io/badge/Groq-Llama_3.3_70B-FF6B35?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)](https://clerk.dev/)
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://kisan-seva-ks.vercel.app/)
+[![Turbo](https://img.shields.io/badge/Monorepo-Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)](https://turbo.build/)
+
+<br/>
+
+> **🏆 Hackathon Project** — A production-ready, full-stack AI platform built to bridge the digital divide for India's 140 million+ farming families.
+
+<br/>
+
+[🌐 **Live Demo**](https://kisan-seva-ks.vercel.app/) &nbsp;|&nbsp; [📂 **GitHub**](https://github.com/abhranilsingharoy-cloud/kisan_seva) &nbsp;|&nbsp; [📋 **Report Issue**](https://github.com/abhranilsingharoy-cloud/kisan_seva/issues)
 
 </div>
 
 ---
 
-## 🚀 Key Features in Detail
+## 📸 Screenshots
 
-### 1. 🤖 7-Agent AI Advisory System (AI Agent & Chatbot)
-A highly advanced, conversational AI assistant composed of 7 specialized agents. 
-- **Voice-Activated & Multilingual:** Farmers can click the microphone to speak in English, Hindi, or Bengali. The AI responds natively in their language.
-- **Context-Aware Routing:** The AI orchestrator automatically routes the farmer's question to the correct specialized agent.
+<div align="center">
 
-### 2. 👁️ Crop Diagnose (Vision AI)
-Farmers can upload a photo of a diseased crop directly from their phone.
-- **Multi-Model Support:** Choose between **Google Gemini Vision** or **Nvidia NIM Vision** to instantly scan the leaf.
-- **Actionable Treatment Plans:** The AI identifies the disease, explains the cause, and provides step-by-step biological and chemical treatment recommendations.
+| Dashboard | AI Agent Chat | Crop Diagnosis |
+|:---------:|:-------------:|:--------------:|
+| Smart farm overview with live weather & alerts | 7-agent multilingual voice chat | Upload photo → instant disease diagnosis |
 
-### 3. 📊 Live B2B Market & Pricing (Agmarknet)
-A real-time marketplace dashboard designed to help farmers get the best prices.
-- **Live Mandi Data:** Pulls real-time agricultural market prices directly from the Government of India's Agmarknet database.
-- **Price Trends & Analytics:** View historical charts and AI-generated summaries to decide when and where to sell.
+| Mandi Prices | Farm Resources | Cold Storage Finder |
+|:-----------:|:--------------:|:-------------------:|
+| Live Agmarknet data with price trends | Equipment rentals with real images | Live OSM-powered cold storage map |
 
-### 4. 🗺️ Farm Map & Weather Advisory
-Features an interactive map built with Leaflet and MapTiler, allowing farmers to visualize regional data.
-- **Localized Weather:** Integrated with OpenWeatherMap API to provide hyper-local weather data.
-- **Irrigation Scheduling:** The AI uses the temperature and forecast to recommend watering schedules.
-
-### 5. 🌱 Soil Health & My Plots
-- **Fertilizer Planning:** Farmers can input their soil type or NPK values to receive a customized fertilizer schedule.
-- **My Plots:** Track and manage individual farm plots, monitor crop lifecycles, and schedule harvesting tasks.
-
-### 6. 🤝 Community SOS & Kisan Sabha
-- **SOS Emergency Broadcast:** Instant emergency alerts (locust attacks, severe weather, sudden disease outbreaks) broadcast to nearby farmers.
-- **Kisan Sabha:** A community forum where farmers can connect, discuss local agricultural issues, and share traditional knowledge.
-
-### 7. 🚜 Agri-Credit, Schemes & Equipment
-- **Agri-Credit:** Built-in loan calculators and credit advisory to help farmers secure financial support.
-- **Government Schemes:** AI-curated list of eligible government agricultural schemes.
-- **Equipment:** A hub for managing, renting, or buying modern farming machinery.
-
-### 8. 🔗 Crop Traceability
-- **Farm-to-Fork Tracking:** A robust system to track the lifecycle of the crop, generating QR codes to prove authenticity and organic status to B2B buyers.
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Why KisanSeva?
+
+India has **140 million farming families**. Most lack access to:
+- ❌ Real-time market prices (forced to sell low to middlemen)
+- ❌ Expert crop disease diagnosis (crop loss from undetected disease)
+- ❌ Personalized weather & irrigation advice
+- ❌ Government scheme awareness
+- ❌ Equipment rental networks
+
+**KisanSeva solves all of this** — in Hindi, Bengali, Tamil, Telugu and English — right from a smartphone.
+
+---
+
+## 🚀 Feature Showcase
+
+### 🤖 1. 7-Agent AI Advisory System
+> *The brain of KisanSeva — a multi-agent AI orchestration system*
+
+A conversational AI assistant powered by **7 specialized agricultural agents** working in parallel, coordinated by a Master Orchestrator.
+
+| Agent | Role | Technology |
+|-------|------|-----------|
+| 🌿 **Diagnosis Agent** | Identifies crop disease from symptoms or image | Groq Llama-3 + Gemini Vision |
+| 📊 **Market Price Agent** | Fetches live Agmarknet mandi prices | Agmarknet API + LangChain |
+| 🌤️ **Weather Advisory Agent** | Hyper-local weather + irrigation scheduling | OpenWeatherMap API |
+| 🌱 **Soil Health Agent** | NPK analysis, fertilizer recommendations | RAG + Groq |
+| 🚨 **Outbreak Monitor Agent** | Detects regional crop disease patterns | Groq + aggregated data |
+| 📚 **Knowledge Base Agent** | Agricultural best practices via RAG | Local Vector Store |
+| 📱 **SMS/IVR Agent** | Serves farmers without smartphones | Twilio/IVR bridge |
+
+**🎤 Voice Input:** Record audio locally with `MediaRecorder` → transcribed via **Groq Whisper** → works on HTTP/HTTPS without permission issues  
+**🗣️ Multilingual TTS:** Responds in Hindi/Bengali via **Google Translate TTS proxy** · English via Web Speech API  
+**🌐 5 Languages:** English · हिंदी · বাংলা · தமிழ் · తెలుగు
+
+---
+
+### 👁️ 2. Crop Disease Diagnosis (Vision AI)
+> *Snap a photo → get a diagnosis in under 5 seconds*
+
+Farmers upload a photo of a sick crop leaf. The AI returns:
+- ✅ Disease name & scientific classification
+- ✅ Severity level (Low / Moderate / High)
+- ✅ Confidence score with visual bar
+- ✅ Step-by-step treatment plan (chemical + organic)
+- ✅ Prevention tips & farmer feedback system
+
+**Supported Models:** Google Gemini Vision · Nvidia NIM Vision
+
+---
+
+### 📊 3. Live Mandi Price Comparator
+> *Beat the middleman — know your crop's real worth*
+
+- 📡 **Real-time data** from Government of India's **Agmarknet** database
+- 📈 **7-day price trend** visual bar chart per commodity
+- 🔔 **Price Alert System** — get notified when your target price is reached
+- 🗺️ **10-mandi comparison table** with distance and modal price
+- 📤 **Share / Export** best price to WhatsApp
+
+---
+
+### 🗺️ 4. Smart Farm Map & Weather Advisory
+- **Interactive Leaflet Map** powered by MapTiler with satellite & terrain layers
+- **Hyper-local weather** (temperature, humidity, wind, rainfall forecast)
+- **5-day forecast** with crop-specific irrigation recommendations
+- **Plot overlay** — visualize your own farm plots on the map
+
+---
+
+### 🌱 5. Soil Health & Smart Crop Planner
+- **NPK Calculator** — input soil test values, get fertilizer plan
+- **Crop Stage Tracker** — visual timeline from sowing to harvest
+- **My Plots** — manage multiple farm plots with area, crop, and schedule data
+- **Weekly Schedule Table** — irrigation and fertilizer calendar
+
+---
+
+### 🏚️ 6. Farm Resources Hub
+- **🚜 Equipment Rentals** — browse tractors, harvesters, drones, implements with real photos, hourly rates (₹) and owner contact
+- **🧊 Cold Storage Finder** — live search via **OpenStreetMap Overpass API** (server-side proxied through 3 mirrors for reliability) showing nearby cold storage with phone, distance, and Google Maps directions
+- **Realistic pricing** matching actual Indian hourly rental market rates
+
+---
+
+### 🤝 7. Community Hub (Kisan Sabha)
+- **📢 SOS Emergency Broadcast** — alert nearby farmers about locust attacks, flash floods, or disease outbreaks
+- **💬 Kisan Sabha Forum** — community discussions, traditional knowledge sharing
+- **📋 Traceability QR** — farm-to-fork crop lifecycle tracking with QR code generation for B2B buyers
+
+---
+
+### 💳 8. Agri-Credit & Government Schemes
+- **Loan Calculator** — EMI estimation for Kisan Credit Card and crop loans
+- **AI-curated Schemes** — eligibility-matched government scheme discovery (PM-KISAN, PMFBY, KCC)
+- **Docs Locker** — securely store land records, Aadhaar, bank documents
+
+---
+
+## 🛠️ Complete Tech Stack
+
+<div align="center">
 
 ### Frontend
-- **Framework:** Next.js 14 (App Router), React 19
-- **Styling:** Tailwind CSS, Framer Motion (Animations)
-- **State Management:** Zustand
-- **Maps:** Leaflet & MapTiler
+| Technology | Purpose | Version |
+|-----------|---------|---------|
+| **Next.js** | Full-stack React framework | 16.3 (Turbopack) |
+| **React** | UI library | 19.x |
+| **Tailwind CSS** | Utility-first styling | v4 |
+| **Zustand** | Global state management | v5 |
+| **Framer Motion** | Animations & transitions | v13 |
+| **Leaflet + React-Leaflet** | Interactive farm maps | v1.9 |
+| **Lucide React** | Icon library | v1.31 |
+| **Recharts** | Data visualization charts | v3 |
+| **next-intl** | Internationalization (i18n) | v4 |
+| **TanStack Query** | Server state & data fetching | v5 |
 
 ### Backend & Cloud
-- **API:** Next.js Serverless Functions
-- **Database:** Supabase (PostgreSQL)
-- **Authentication:** Clerk
-- **Hosting:** Vercel
+| Technology | Purpose |
+|-----------|---------|
+| **Next.js API Routes** | Serverless backend functions |
+| **Supabase** | PostgreSQL database + storage |
+| **Clerk** | Authentication & user management |
+| **Vercel** | Hosting + edge deployment |
+| **Turborepo** | Monorepo build orchestration |
 
-### Machine Learning & AI
-- **Framework:** Python, FastAPI, Uvicorn
-- **AI Orchestration:** LangChain
-- **LLMs:** Groq (Llama-3.3-70b), Google Gemini Vision, Nvidia NIM
-- **Data Integration:** Agmarknet API, OpenWeatherMap
+### AI & Machine Learning
+| Technology | Purpose |
+|-----------|---------|
+| **Groq (Llama-3.3-70B)** | Primary LLM for all agents |
+| **Groq Whisper** | Voice-to-text transcription |
+| **Google Gemini Vision** | Crop disease image analysis |
+| **Nvidia NIM Vision** | Alternative vision model |
+| **FastAPI + Uvicorn** | Python ML microservice |
+| **LangChain** | Agent orchestration framework |
+| **Google Translate TTS** | Multilingual text-to-speech |
+
+### External APIs
+| API | Data |
+|-----|------|
+| **Agmarknet (Govt. of India)** | Live mandi agricultural prices |
+| **OpenWeatherMap** | Hyper-local weather forecasts |
+| **OpenStreetMap Overpass** | Cold storage facility locations |
+| **Nominatim** | Geocoding (city → coordinates) |
+| **MapTiler** | Satellite & terrain map tiles |
+
+</div>
 
 ---
 
-## 🏗️ Visual Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
-    %% Styling
-    classDef frontend fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
-    classDef backend fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#fff;
-    classDef python fill:#1e293b,stroke:#f59e0b,stroke-width:2px,color:#fff;
-    classDef cloud fill:#020617,stroke:#8b5cf6,stroke-width:2px,color:#fff;
-    classDef ai fill:#4c1d95,stroke:#c084fc,stroke-width:2px,color:#fff;
+    classDef frontend fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef backend fill:#0f2a1a,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef python fill:#2d1b00,stroke:#f59e0b,stroke-width:2px,color:#fff;
+    classDef cloud fill:#1a0a2e,stroke:#8b5cf6,stroke-width:2px,color:#fff;
+    classDef ai fill:#2d0a0a,stroke:#ef4444,stroke-width:2px,color:#fff;
     classDef agent fill:#0f172a,stroke:#eab308,stroke-width:1px,color:#e2e8f0;
 
-    %% Client Layer
     subgraph Client ["📱 Client Layer"]
-        User([🌾 Farmer / User])
-        WebUI[🖥️ Next.js Web App<br/>React, Tailwind, Zustand]:::frontend
+        User([🌾 Farmer])
+        WebUI[🖥️ Next.js 16 App<br/>React 19 · Tailwind v4 · Zustand]:::frontend
     end
 
-    %% Cloud Services Layer
-    subgraph Services ["☁️ Cloud Services & Databases"]
-        Clerk[🔐 Clerk<br/>Authentication]:::cloud
-        Supabase[(🗄️ Supabase<br/>PostgreSQL & Storage)]:::cloud
-        Firebase[🔔 Firebase<br/>Push Notifications]:::cloud
+    subgraph Vercel ["⚡ Vercel Serverless Functions"]
+        AgentAPI[/api/agent<br/>Groq Llama-3.3]:::backend
+        TranscribeAPI[/api/transcribe<br/>Groq Whisper]:::backend
+        OverpassAPI[/api/overpass<br/>3-Mirror Proxy]:::backend
+        TTSAPI[/api/v1/tts<br/>Google TTS Proxy]:::backend
     end
 
-    %% API Layer (Vercel)
-    subgraph Vercel ["⚡ Vercel Serverless API Layer"]
-        API_Gateway[⚙️ API Gateway / Middleware]:::backend
-        V_Auth[Auth Routes]:::backend
-        V_DB[DB Routes]:::backend
-        V_Agent[Fallback AI Route]:::backend
+    subgraph Cloud ["☁️ Cloud Services"]
+        Clerk[🔐 Clerk Auth]:::cloud
+        Supabase[(🗄️ Supabase<br/>PostgreSQL)]:::cloud
     end
 
-    %% Python ML Layer
-    subgraph ML ["🧠 Python Multi-Agent Service (Local/Dedicated)"]
-        FastAPI[🚀 FastAPI / Uvicorn]:::python
-        Orchestrator{🤖 Master<br/>Orchestrator}:::python
-        
-        %% The 7 Agents
-        A1[Crop Diagnosis Agent]:::agent
-        A2[Market Price Agent]:::agent
-        A3[Weather Advisory Agent]:::agent
-        A4[Soil Health Agent]:::agent
-        A5[Outbreak Monitor Agent]:::agent
-        A6[Knowledge Base Agent]:::agent
-        A7[SMS / IVR Agent]:::agent
-        
-        RAG[(📚 Local RAG<br/>Vector Store)]:::python
+    subgraph ML ["🧠 Python Multi-Agent Backend"]
+        FastAPI[🚀 FastAPI]:::python
+        Orchestrator{Master Orchestrator}:::python
+        A1[Diagnosis Agent]:::agent
+        A2[Market Agent]:::agent
+        A3[Weather Agent]:::agent
+        A4[Soil Agent]:::agent
+        A5[Outbreak Agent]:::agent
+        A6[Knowledge Agent]:::agent
+        A7[SMS/IVR Agent]:::agent
+        RAG[(📚 Vector Store)]:::python
     end
 
-    %% External APIs & LLMs
-    subgraph External ["🌐 External APIs & LLMs"]
-        Groq[🧠 Groq Llama-3.3<br/>Primary Reasoning]:::ai
-        Vision[👁️ Gemini / Nvidia NIM<br/>Image Diagnostics]:::ai
-        Agmarknet[📊 Agmarknet API<br/>Live Mandi Prices]:::cloud
-        OpenWeather[🌤️ OpenWeather API]:::cloud
-        MapTiler[🗺️ MapTiler Maps]:::cloud
+    subgraph External ["🌐 External APIs"]
+        Groq[🧠 Groq LLM]:::ai
+        Whisper[🎤 Groq Whisper]:::ai
+        Vision[👁️ Gemini Vision]:::ai
+        Agmarknet[📊 Agmarknet]:::cloud
+        OWM[🌤️ OpenWeather]:::cloud
+        OSM[🗺️ Overpass API]:::cloud
     end
 
-    %% Flows
-    User -- Interacts --> WebUI
-    WebUI -- Authenticates --> Clerk
-    WebUI -- API Requests --> API_Gateway
-    
-    API_Gateway --> V_Auth
-    API_Gateway --> V_DB
-    API_Gateway --> V_Agent
+    User --> WebUI
+    WebUI --> Clerk
+    WebUI --> AgentAPI
+    WebUI --> TranscribeAPI
+    WebUI --> OverpassAPI
+    WebUI --> TTSAPI
 
-    V_Auth -. Validates .-> Clerk
-    V_DB -- CRUD Ops --> Supabase
-    WebUI -- Map Tiles --> MapTiler
-    
-    %% AI Flow
-    V_Agent -. Local Dev Mode .-> FastAPI
-    V_Agent -- Fallback Mode --> Groq
-    V_Agent -- Vision Tasks --> Vision
-    
-    %% Python ML Internal Flow
+    AgentAPI --> Groq
+    AgentAPI -.Local Mode.-> FastAPI
+    TranscribeAPI --> Whisper
+    OverpassAPI --> OSM
+
     FastAPI --> Orchestrator
-    Orchestrator --> A1
-    Orchestrator --> A2
-    Orchestrator --> A3
-    Orchestrator --> A4
-    Orchestrator --> A5
-    Orchestrator --> A6
-    Orchestrator --> A7
-    
+    Orchestrator --> A1 & A2 & A3 & A4 & A5 & A6 & A7
     A6 <--> RAG
-    
-    %% Agents to External
-    A1 -- Uses --> Vision
-    A2 -- Fetches --> Agmarknet
-    A3 -- Fetches --> OpenWeather
-    Orchestrator -- Reasons with --> Groq
-```
+    A1 --> Vision
+    A2 --> Agmarknet
+    A3 --> OWM
+    Orchestrator --> Groq
 
-*Note: When hosted on Vercel, the Next.js API gracefully falls back to using the Groq API directly if the local Python ML service is offline.*
+    WebUI --> Supabase
+```
 
 ---
 
-## 📂 Detailed Folder Architecture
+## 📂 Project Structure
 
-The platform uses a **Turborepo** monorepo structure to perfectly organize the Next.js frontend and the Python Machine Learning service.
-
-```text
-kisan_seva/
-├── turbo.json                   # Monorepo task runner configuration
-├── package.json                 # Root dependencies and workspace definitions
+```
+kisan_seva/                          # 🏠 Turborepo Monorepo Root
+├── turbo.json                       # Build pipeline configuration
+├── pnpm-workspace.yaml              # Workspace package definitions
+├── supabase_schema.sql              # Database schema (plots, profiles, alerts)
 │
 ├── apps/
-│   ├── web/                     # 🌐 Next.js Frontend Application
-│   │   ├── src/
-│   │   │   ├── app/             # Next.js App Router (Pages & API)
-│   │   │   │   ├── api/v1/      # Serverless API routes (B2B, market, diagnose, weather, TTS)
-│   │   │   │   └── [locale]/    # Internationalized routing for EN, HI, BN
-│   │   │   │       ├── (app)/   # Protected dashboard routes (schedule, market, diagnose)
-│   │   │   │       └── (public)/# Public marketing pages and landing page
-│   │   │   │
-│   │   │   ├── components/      # Modular React UI Components
-│   │   │   │   ├── chat/        # Floating chatbot UI, message bubbles, language selector
-│   │   │   │   ├── features/    # Core feature UI (Mandi tables, diagnosis scanners, charts)
-│   │   │   │   ├── home/        # Landing page components (Hero, Testimonials, Map visualizations)
-│   │   │   │   ├── layout/      # Navbar, AgriFooter, offline indicators, translation widgets
-│   │   │   │   └── ui/          # Generic reusable elements (buttons, full-page scrollers)
-│   │   │   │
-│   │   │   ├── hooks/           # Custom React hooks
-│   │   │   │   └── useVoiceChat.ts # Handles microphone access, speech-to-text, and fallback logic
-│   │   │   │
-│   │   │   ├── lib/             # Core Utilities & State Management
-│   │   │   │   ├── chatStore.ts # Zustand global state manager for the AI chat history
-│   │   │   │   └── supabase/    # Supabase authentication and database clients (server/client)
-│   │   │   │
-│   │   │   ├── i18n/            # next-intl configuration and translation dictionaries
-│   │   │   ├── .env.production  # Production environment variables (auto-synced to Vercel)
-│   │   │   ├── middleware.ts    # Clerk Auth and Next-Intl routing interceptors
-│   │   │   ├── next.config.ts   # Next.js compiler settings and PWA configuration
-│   │   │   └── tailwind.config.ts # Custom Tailwind theme colors and animations
 │   │
-│   └── ml-service/              # 🧠 Python Multi-Agent & Machine Learning Backend
-│       ├── main.py              # FastAPI server entry point (routes requests to the Orchestrator)
-│       ├── requirements.txt     # Python dependencies (FastAPI, LangChain, Uvicorn, Torch)
+│   ├── web/                         # 🌐 Next.js Frontend (Main App)
+│   │   ├── public/
+│   │   │   ├── images/rentals/      # Equipment photos (drone, tractors, planters)
+│   │   │   └── chatbot-avatar.jpg   # AI assistant avatar
+│   │   │
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── (app)/           # 🔒 Protected dashboard routes
+│   │       │   │   ├── layout.tsx   # App shell (sidebar, auth check)
+│   │       │   │   ├── AppLayoutClient.tsx  # Sidebar nav with all 16 items
+│   │       │   │   ├── agent/       # 🤖 AI Agent chat page (7 agents)
+│   │       │   │   ├── dashboard/   # 📊 Farm overview dashboard
+│   │       │   │   ├── resources/   # 🚜 Equipment rentals + cold storage
+│   │       │   │   │   ├── RentalsTab.tsx   # Equipment cards with real images
+│   │       │   │   │   └── StorageTab.tsx   # OSM cold storage finder
+│   │       │   │   ├── market/      # 📈 Mandi price comparator
+│   │       │   │   ├── schedule/    # 📅 Irrigation & fertilizer schedule
+│   │       │   │   ├── diagnose/    # 👁️ Crop disease diagnosis
+│   │       │   │   ├── soil/        # 🌱 Soil health & NPK analysis
+│   │       │   │   ├── plots/       # 🗺️ My farm plots manager
+│   │       │   │   ├── community/   # 🤝 Kisan Sabha community forum
+│   │       │   │   ├── schemes/     # 💰 Government schemes
+│   │       │   │   ├── agri-credit/ # 💳 Loan calculator
+│   │       │   │   └── traceability/# 🔗 QR-based crop tracking
+│   │       │   │
+│   │       │   └── api/             # ⚙️ Serverless API Routes
+│   │       │       ├── agent/       # Groq Llama-3.3 chat endpoint
+│   │       │       ├── transcribe/  # Groq Whisper voice-to-text
+│   │       │       ├── overpass/    # OSM Overpass 3-mirror proxy
+│   │       │       └── v1/          # Proxied routes → Python ML service
+│   │       │           └── tts/     # Google Translate TTS proxy
+│   │       │
+│   │       ├── components/
+│   │       │   ├── chat/            # Floating AI chatbot widget
+│   │       │   ├── ColdStorageMap.tsx # Leaflet map for storage finder
+│   │       │   └── ui/              # Shared UI primitives
+│   │       │
+│   │       ├── hooks/
+│   │       │   └── useVoiceChat.ts  # MediaRecorder → Whisper voice pipeline
+│   │       │
+│   │       └── lib/
+│   │           ├── chatStore.ts     # Zustand AI chat state
+│   │           └── supabase/        # DB client (server + browser)
+│   │
+│   └── ml-service/                  # 🧠 Python FastAPI Multi-Agent Backend
+│       ├── main.py                  # FastAPI entry point
+│       ├── requirements.txt         # Dependencies
 │       │
-│       ├── agents/              # The 7-Agent Architecture
-│       │   ├── orchestrator/    # The "Brain" that decides which agent should answer
+│       ├── agents/
+│       │   ├── orchestrator/        # Master Orchestrator (routes queries)
 │       │   │   ├── master_orchestrator.py
 │       │   │   └── agent_registry.py
-│       │   ├── specialist/      # The specific "Expert" agents
-│       │   │   ├── diagnosis_agent.py      # Handles crop diseases
-│       │   │   ├── mandi_price_agent.py    # Fetches real-time Agmarknet data
-│       │   │   ├── weather_advisory_agent.py # Connects to OpenWeather
-│       │   │   ├── soil_health_agent.py    # Generates NPK fertilizer plans
+│       │   ├── specialist/          # The 7 Expert Agents
+│       │   │   ├── diagnosis_agent.py
+│       │   │   ├── mandi_price_agent.py
+│       │   │   ├── weather_advisory_agent.py
+│       │   │   ├── soil_health_agent.py
 │       │   │   ├── outbreak_detection_agent.py
-│       │   │   ├── sms_ivr_agent.py        
-│       │   │   ├── knowledge_base_agent.py # RAG queries
-│       │   │   └── feedback_agent.py       # Collects user feedback
-│       │   └── base/
-│       │       └── base_agent.py # LangChain base class template for all agents
+│       │   │   ├── knowledge_base_agent.py
+│       │   │   └── sms_ivr_agent.py
+│       │   └── base/base_agent.py   # LangChain base class
 │       │
-│       ├── knowledge_base/      # RAG (Retrieval-Augmented Generation) System
+│       ├── knowledge_base/          # RAG Vector Store
 │       │   ├── crop_disease_db.py
-│       │   └── vector_store.py  # Embeddings for agricultural documents
+│       │   └── vector_store.py
 │       │
-│       ├── training/            # Custom Model Training Scripts (Future-proofing)
-│       │   ├── scripts/         # Scripts for Google Colab model training and evaluation
-│       │   ├── configs/         # Model hyperparameter configs
-│       │   └── data/            # Dataset loaders for images
-│       │
-│       └── utils/               # Python Utility Functions
-│           ├── llm_client.py    # Connection to Groq Llama-3.3-70b
-│           ├── image_utils.py   # Processes images for Gemini/Nvidia NIM
-│           ├── language_utils.py # Translation layer
-│           └── sentry_init.py   # Error tracking
+│       └── training/                # ML Model Training Pipeline
+│           ├── configs/model_config.py
+│           ├── scripts/             # Training & evaluation scripts
+│           └── data/                # Dataset loaders
 ```
 
 ---
 
-## ⚙️ How to Run Locally
+## ⚙️ Local Development Setup
 
-You have two options for running the project locally depending on what you want to test.
+### Prerequisites
+- Node.js 20+ & pnpm 9+
+- Python 3.11+ (for ML service)
+- Git
 
-### Option 1: Quick Start (Frontend + Cloud AI)
-Run this if you just want to see the UI. The AI features will automatically fall back to using the cloud Groq API.
+### Quick Start (Frontend Only)
 
-1. Install dependencies in the root folder:
-   ```bash
-   pnpm install
-   ```
-2. Start the web frontend:
-   ```bash
-   pnpm run dev
-   ```
-3. Open `http://localhost:5173` in your browser.
+```bash
+# 1. Clone the repo
+git clone https://github.com/abhranilsingharoy-cloud/kisan_seva.git
+cd kisan_seva
 
-### Option 2: Full Stack (Frontend + Python Multi-Agent Backend)
-Run this if you want to test the full 7-agent Python orchestration system locally. You will need **two terminal windows**.
+# 2. Install all dependencies
+pnpm install
 
-**Terminal 1 (Start the Python ML Server):**
+# 3. Set up environment variables
+cp apps/web/.env.example apps/web/.env.local
+# Fill in your API keys (see Environment Variables section below)
+
+# 4. Start the dev server
+pnpm run dev
+
+# Open http://localhost:5173
+```
+
+### Full Stack (Frontend + Python ML Service)
+
+**Terminal 1 — Python ML Service:**
 ```bash
 cd apps/ml-service
-# Activate your virtual environment
-.\.venv\Scripts\activate   # Windows
-# source .venv/bin/activate # Mac/Linux
+python -m venv .venv
 
-# Start the FastAPI server
+# Windows
+.\.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-**Terminal 2 (Start the Web Frontend):**
+**Terminal 2 — Next.js Frontend:**
 ```bash
-# From the root repository folder
+# From repo root
 pnpm run dev
 ```
-Open `http://localhost:5173` in your browser. The web app will now automatically detect and use your local Python ML server!
+
+> The Next.js app auto-detects the local Python service and routes AI requests to it. If offline, it gracefully falls back to the Groq cloud API.
+
+### HTTPS Local Development (for Microphone Access)
+
+```bash
+cd apps/web
+npx next dev --port 5173 --experimental-https
+# Open https://localhost:5173 — microphone will work!
+```
 
 ---
 
 ## 🔐 Environment Variables
 
-To run the project, ensure you have the required API keys configured in `apps/web/.env.local`:
-- `GROQ_API_KEY` (AI Chatbot)
-- `GEMINI_API_KEY` & `NVIDIA_NIM_KEY` (Crop Vision)
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` & `CLERK_SECRET_KEY` (Auth)
-- `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Database)
+Create `apps/web/.env.local`:
 
-*(For production deployments, these are securely configured in Vercel).*
+```env
+# ── AI & LLM ────────────────────────────────────────
+GROQ_API_KEY=your_groq_api_key         # Llama-3.3-70B chat + Whisper transcription
+GEMINI_API_KEY=your_gemini_api_key     # Crop disease vision (Gemini)
+NVIDIA_NIM_KEY=your_nvidia_nim_key     # Crop disease vision (NIM)
+
+# ── Authentication (Clerk) ───────────────────────────
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+
+# ── Database (Supabase) ─────────────────────────────
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+
+# ── Maps ────────────────────────────────────────────
+NEXT_PUBLIC_MAPTILER_KEY=your_maptiler_key
+
+# ── Weather ─────────────────────────────────────────
+OPENWEATHER_API_KEY=your_openweather_key
+
+# ── Python ML Service (local dev only) ──────────────
+NEXT_PUBLIC_ML_SERVICE_URL=http://localhost:8000
+```
 
 ---
 
-## 👨‍💻 Owner & Credits
+## 🌍 API Endpoints
 
-Designed and developed by **Abhranil Singha Roy**.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/agent` | AI chat — Groq Llama-3.3-70B |
+| `POST` | `/api/transcribe` | Voice → text via Groq Whisper |
+| `POST` | `/api/overpass` | OSM Overpass proxy (3 mirrors) |
+| `GET`  | `/api/v1/tts` | Google TTS proxy for Hindi/Bengali |
+| `GET`  | `/api/v1/market` | Live Agmarknet mandi prices |
+| `POST` | `/api/v1/diagnose` | Crop disease diagnosis |
+| `GET`  | `/api/v1/weather` | Location weather forecast |
 
-Built with passion for agricultural innovation and AI technology. 🌾
+---
+
+## 🌟 Hackathon Highlights
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║            🏆  WHAT MAKES KISANSEVA STAND OUT                   ║
+╠══════════════════════════════════════════════════════════════════╣
+║  ✅  7-Agent AI Architecture with Master Orchestrator           ║
+║  ✅  Voice input via MediaRecorder → Groq Whisper (no HTTPS!)   ║
+║  ✅  TTS in Hindi + Bengali via Google Translate proxy           ║
+║  ✅  Real live data — Agmarknet + OpenStreetMap + OpenWeather   ║
+║  ✅  Server-side Overpass proxy with 3-mirror fallback           ║
+║  ✅  Supabase + Clerk — production-grade auth & database        ║
+║  ✅  Turborepo monorepo — Next.js + Python in one repo          ║
+║  ✅  Deployed live on Vercel — test it right now!               ║
+║  ✅  5 Indian languages supported (EN/HI/BN/TA/TE)             ║
+║  ✅  Cold storage finder with live map (zero mock data!)        ║
+║  ✅  Full ML training pipeline for custom disease model         ║
+║  ✅  QR-based crop traceability for B2B buyers                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [x] 7-agent AI advisory system
+- [x] Voice input (MediaRecorder + Groq Whisper)
+- [x] Multilingual TTS (Hindi, Bengali)
+- [x] Live mandi prices (Agmarknet)
+- [x] Crop disease diagnosis (Gemini Vision)
+- [x] Cold storage finder (OSM live data)
+- [x] Equipment rental marketplace
+- [x] Farm map with plots
+- [x] Government schemes discovery
+- [x] QR crop traceability
+- [ ] Offline-first PWA with service worker
+- [ ] Push notifications for price alerts
+- [ ] WhatsApp Business API integration
+- [ ] Mobile app (React Native)
+- [ ] Custom trained PlantVillage disease model (38 classes)
+- [ ] Satellite NDVI crop health monitoring
+
+---
+
+## 👨‍💻 Developer
+
+<div align="center">
+
+**Abhranil Singha Roy**
+
+[![GitHub](https://img.shields.io/badge/GitHub-abhranilsingharoy--cloud-181717?style=for-the-badge&logo=github)](https://github.com/abhranilsingharoy-cloud)
+[![Email](https://img.shields.io/badge/Email-abhranilsingharoy%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:abhranilsingharoy@gmail.com)
+
+*Built with ❤️ for India's farming community — because every farmer deserves the best technology.*
+
+</div>
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if KisanSeva inspired you!**
+
+[![Star History](https://img.shields.io/github/stars/abhranilsingharoy-cloud/kisan_seva?style=social)](https://github.com/abhranilsingharoy-cloud/kisan_seva)
+
+Made with 🌾 · Powered by AI · Built for Bharat
+
+</div>

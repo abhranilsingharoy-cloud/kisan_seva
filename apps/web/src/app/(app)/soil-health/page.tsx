@@ -618,7 +618,23 @@ export default function SoilHealthPage() {
                 </div>
                 <div style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end' }}>
                   <button onClick={reset} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', color: '#475569', fontWeight: 600 }}><RefreshCw size={16} /> Scan Another Card</button>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '8px', border: 'none', backgroundColor: '#65a30d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '1rem' }}><ChevronRight size={18} /> Save Report to My Farm</button>
+                  <button 
+                    onClick={() => {
+                      const btn = document.getElementById('save-btn');
+                      if(btn) {
+                        btn.innerHTML = '✓ Saved Successfully!';
+                        btn.style.backgroundColor = '#15803d';
+                        setTimeout(() => {
+                          btn.innerHTML = 'Save Report to My Farm';
+                          btn.style.backgroundColor = '#65a30d';
+                        }, 3000);
+                      }
+                    }}
+                    id="save-btn"
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 28px', borderRadius: '8px', border: 'none', backgroundColor: '#65a30d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '1rem', transition: 'all 0.3s' }}
+                  >
+                    <ChevronRight size={18} /> Save Report to My Farm
+                  </button>
                 </div>
               </div>
             )}

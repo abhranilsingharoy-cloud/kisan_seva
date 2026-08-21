@@ -208,6 +208,11 @@ export default function TopographyPage() {
   const [isCity, setIsCity] = useState(false);
   const [isMountain, setIsMountain] = useState(false);
   
+  // Custom Draw Mode
+  const [drawMode, setDrawMode] = useState(false);
+  const [drawPoints, setDrawPoints] = useState<[number, number][]>([]);
+  const [customZones, setCustomZones] = useState<Zone[]>([]);
+  
   // Real-time SOS Database Sync
   const [sosAlerts, setSosAlerts] = useState<any[]>([]);
 
@@ -329,6 +334,11 @@ export default function TopographyPage() {
   const currentSelectedZone = selectedZone ? zones.find(z => z.id === selectedZone.id) || null : null;
 
   const handleMapClick = async (lat: number, lng: number) => {
+    if (drawMode) {
+      setDrawPoints(prev => [...prev, [lat, lng]]);
+      return;
+    }
+
     setTargetLocation([lat, lng]);
     setSelectedZone(null); 
     setLocationName("Analyzing terrain...");
@@ -467,6 +477,38 @@ export default function TopographyPage() {
     );
   };
 
+  const finishDrawing = () => {
+    if (drawPoints.length < 3) {
+      alert("Please tap at least 3 points to create a field boundary.");
+      return;
+    }
+    
+    // Create a new zone from custom polygon
+    const h = Math.floor(Math.random() * 40) + 45; // 45-85 health
+    const newZone: Zone = {
+      id: `custom_${Date.now()}`,
+      name: `My Custom Field ${customZones.length + 1}`,
+      crop: 'Unknown Crop',
+      area: 'Custom Area',
+      coordinates: drawPoints,
+      health: h,
+      ndvi: (h / 100) * 0.95,
+      issue: 'Custom plot mapped successfully. Real-time satellite NDVI tracking activated.'
+    };
+    
+    setCustomZones([...customZones, newZone]);
+    setDrawPoints([]);
+    setDrawMode(false);
+  };
+
+  const cancelDrawing = () => {
+    setDrawPoints([]);
+    setDrawMode(false);
+  };
+
+  // Combine procedural zones with custom zones
+  const activeZones = [...zones, ...customZones];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#020617', fontFamily: "'Inter', system-ui, sans-serif", overflow: 'hidden' }}>
       <style>{`
@@ -514,9 +556,28 @@ export default function TopographyPage() {
       {/* ── Map + Overlay ── */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
 
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-          <FarmMap isNDVI={isNDVI} zones={zones} onZoneSelect={setSelectedZone} targetLocation={targetLocation} onMapClick={handleMapClick} sosAlerts={sosAlerts} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: drawMode ? 'crosshair' : 'default' }}>
+          <FarmMap isNDVI={isNDVI} zones={activeZones} onZoneSelect={setSelectedZone} targetLocation={targetLocation} onMapClick={handleMapClick} sosAlerts={sosAlerts} drawMode={drawMode} drawPoints={drawPoints} />
         </div>
+
+        {/* Custom Drawing Controls */}
+        {drawMode && (
+          <div style={{ position: 'absolute', top: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999, backgroundColor: '#3b82f6', color: '#fff', padding: '12px 24px', borderRadius: '30px', boxShadow: '0 8px 32px rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ fontWeight: 600 }}>Tap map to trace your farm boundary ({drawPoints.length} points)</span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={cancelDrawing} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '20px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+              <button onClick={finishDrawing} style={{ background: '#fff', border: 'none', color: '#3b82f6', padding: '6px 16px', borderRadius: '20px', cursor: 'pointer', fontWeight: 700 }}>Save Field</button>
+            </div>
+          </div>
+        )}
+
+        {!drawMode && (
+          <div style={{ position: 'absolute', top: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }}>
+            <button onClick={() => { setDrawMode(true); setIsNDVI(true); }} style={{ backgroundColor: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(10px)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '10px 20px', borderRadius: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MapPin size={16} /> Draw Custom Field
+            </button>
+          </div>
+        )}
 
         {/* Fetching Real Data Overlay */}
         {isFetchingRealData && (

@@ -136,9 +136,11 @@ interface FarmMapProps {
   targetLocation: [number, number] | null;
   onMapClick?: (lat: number, lng: number) => void;
   sosAlerts?: any[];
+  drawMode?: boolean;
+  drawPoints?: [number, number][];
 }
 
-export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, onMapClick, sosAlerts = [] }: FarmMapProps) {
+export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, onMapClick, sosAlerts = [], drawMode = false, drawPoints = [] }: FarmMapProps) {
   const defaultCenter: [number, number] = [30.9192, 75.8570];
   const mapRef = React.useRef<L.Map | null>(null);
 
@@ -242,6 +244,24 @@ export default function FarmMap({ isNDVI, zones, onZoneSelect, targetLocation, o
             </React.Fragment>
           );
         })}
+
+        {/* --- Custom Drawing Mode Overlay --- */}
+        {drawPoints.length > 0 && (
+          <>
+            <Polygon 
+              positions={drawPoints} 
+              pathOptions={{ color: '#3b82f6', weight: 2, fillColor: '#3b82f6', fillOpacity: 0.2, dashArray: '4, 4' }} 
+            />
+            {drawPoints.map((pt, i) => (
+              <Circle 
+                key={i} 
+                center={pt} 
+                radius={3} 
+                pathOptions={{ color: '#fff', weight: 2, fillColor: '#3b82f6', fillOpacity: 1 }} 
+              />
+            ))}
+          </>
+        )}
       </MapContainer>
     </div>
   );

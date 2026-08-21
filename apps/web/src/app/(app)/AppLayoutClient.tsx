@@ -71,8 +71,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/storage': 'Cold Storage',
   '/radio': 'Krishi Radio',
   '/documents': 'Document Locker',
-  '/fertilizer': 'Fertilizer Calculator',
-  '/seeds': 'Seed Recommender',
+  '/crop-planner': 'Crop Advisory & Planner',
   '/disease-library': 'Disease Library',
 };
 
@@ -86,8 +85,7 @@ const APP_LINKS = [
   { name: 'My Plots', href: '/schedule', icon: Calendar },
   { name: 'Farm Map', href: '/topography', icon: Map },
   { name: 'Agri-Credit', href: '/finance', icon: Wallet },
-  { name: 'Fertilizer Calc', href: '/fertilizer', icon: Calculator },
-  { name: 'Seed Matcher', href: '/seeds', icon: Sprout },
+  { name: 'Crop Planner', href: '/crop-planner', icon: Sprout },
   { name: 'Schemes', href: '/schemes', icon: Landmark },
   { name: 'Equipment', href: '/rentals', icon: Tractor },
   { name: 'Cold Storage', href: '/storage', icon: Warehouse },

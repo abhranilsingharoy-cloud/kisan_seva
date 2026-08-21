@@ -63,7 +63,7 @@ const MOCK_EQUIPMENT = [
     rating: 5.0,
     reviews: 42,
     pricePerHour: 1200,
-    imageUrl: '/equipment/combine_harvester.jpg',
+    imageUrl: '/images/rentals/drone.jpg',
     description: 'Automated pesticide spraying drone. Includes licensed operator.'
   },
   {

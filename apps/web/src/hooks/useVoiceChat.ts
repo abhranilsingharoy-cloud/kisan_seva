@@ -294,104 +294,120 @@ export function useVoiceChat(onTranscript?: (text: string) => void) {
     [messages, language, addMessage, setLoading, speak]
   );
 
-  const startListening = useCallback(() => {
-    if (!isSpeechSupported) return;
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
-    // Stop any ongoing TTS before recording
+  const startListening = useCallback(async () => {
+    if (isListening) {
+      // Stop if already recording
+      mediaRecorderRef.current?.stop();
+      return;
+    }
+
+    // Stop any ongoing TTS
     synthRef.current?.cancel();
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setSpeaking(false);
 
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = LANG_CODE_MAP[language];
-    recognition.maxAlternatives = 1;
-
-    let finalTranscript = "";
-
-    recognition.onstart = () => setListening(true);
-
-    recognition.onerror = (event: any) => {
-      console.warn("[SpeechRecognition] Error:", event.error);
-      setListening(false);
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        addMessage({
-          role: "model",
-          text: language === "hi"
-            ? "माइक्रोफ़ोन एक्सेस ब्लॉक है। URL बार में 🔒 आइकन पर क्लिक करें → Site settings → Microphone → Allow → पेज रिफ्रेश करें।"
-            : language === "bn"
-            ? "মাইক্রোফোন অ্যাক্সেস ব্লক। URL বারে 🔒 আইকনে ক্লিক করুন → Site settings → Microphone → Allow → পেজ রিফ্রেশ করুন।"
-            : "🎤 Microphone blocked. Fix: Click the 🔒 lock icon in your browser address bar → Site settings → Microphone → Allow → Refresh page."
-        });
-      } else if (event.error === "network") {
-        addMessage({
-          role: "model",
-          text: language === "hi"
-            ? "नेटवर्क कनेक्शन की समस्या। कृपया इंटरनेट जांचें और दोबारा कोशिश करें।"
-            : "🌐 Network error. Please check your internet connection and try again."
-        });
-      } else if (event.error === "no-speech") {
-        addMessage({
-          role: "model",
-          text: language === "hi"
-            ? "कोई आवाज़ नहीं मिली। माइक के पास बोलें और दोबारा कोशिश करें।"
-            : "🎤 No speech detected. Please speak clearly and try again."
-        });
-      } else if (event.error !== "aborted") {
-        addMessage({
-          role: "model",
-          text: `Voice input error: ${event.error}. Please try typing your message instead.`
-        });
-      }
-    };
-
-    recognition.onresult = (event: any) => {
-      let interim = "";
-      finalTranscript = "";
-
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript + " ";
-        } else {
-          interim += result[0].transcript;
-        }
-      }
-
-      const displayText = (finalTranscript + interim).trim();
-      if (onTranscript && displayText) {
-        onTranscript(displayText);
-      }
-    };
-
-    recognition.onend = () => {
-      setListening(false);
-      const trimmed = finalTranscript.trim();
-      if (trimmed) {
-        onTranscript?.("");
-        sendMessage(trimmed);
-      }
-    };
-
-    recognitionRef.current = recognition;
     try {
-      recognition.start();
-    } catch (e) {
-      console.error("[SpeechRecognition] Start failed:", e);
+      // Request mic — this will show the browser permission popup properly
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : 'audio/ogg';
+
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        // Stop all mic tracks
+        stream.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+        setListening(false);
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        audioChunksRef.current = [];
+
+        if (audioBlob.size < 1000) return; // Too short — ignore
+
+        // Send to our Whisper transcription endpoint
+        setLoading(true);
+        try {
+          const fd = new FormData();
+          fd.append('audio', audioBlob, 'audio.webm');
+          fd.append('language', language);
+
+          const resp = await fetch('/api/transcribe', { method: 'POST', body: fd });
+          if (!resp.ok) throw new Error(`Transcribe failed: ${resp.status}`);
+          const { text } = await resp.json();
+
+          if (text && text.trim()) {
+            onTranscript?.('');
+            sendMessage(text.trim());
+          }
+        } catch (err) {
+          console.error('[Voice] Transcription error:', err);
+          addMessage({
+            role: 'model',
+            text: language === 'hi'
+              ? 'आवाज़ पहचानने में त्रुटि। कृपया टाइप करके अपना संदेश भेजें।'
+              : '🎤 Could not transcribe audio. Please type your message instead.',
+          });
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      setListening(true);
+      recorder.start();
+
+      // Auto-stop after 8 seconds if user doesn't stop manually
+      setTimeout(() => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+          mediaRecorderRef.current.stop();
+        }
+      }, 8000);
+
+    } catch (err: any) {
+      console.error('[Voice] Mic error:', err);
       setListening(false);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        addMessage({
+          role: 'model',
+          text: language === 'hi'
+            ? 'माइक्रोफ़ोन एक्सेस ब्लॉक है। URL बार में 🔒 आइकन → Site settings → Microphone → Allow → पेज रिफ्रेश करें।'
+            : language === 'bn'
+            ? 'মাইক্রোফোন ব্লক। 🔒 আইকনে ক্লিক করুন → Site settings → Microphone → Allow → রিফ্রেশ।'
+            : '🎤 Microphone blocked. Click the 🔒 lock icon in your browser address bar → Site settings → Microphone → Allow → Refresh page.',
+        });
+      } else {
+        addMessage({
+          role: 'model',
+          text: `🎤 Could not access microphone: ${err.message}`,
+        });
+      }
     }
-  }, [language, isSpeechSupported, onTranscript, setListening, setSpeaking, addMessage, sendMessage]);
+  }, [isListening, language, onTranscript, setListening, setSpeaking, setLoading, addMessage, sendMessage]);
 
-
-  // Stop listening early — will trigger onend which auto-sends
+  // Stop listening early
   const stopListening = useCallback(() => {
-    recognitionRef.current?.stop();
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    streamRef.current?.getTracks().forEach(t => t.stop());
     setListening(false);
   }, [setListening]);
+
 
   const sendGreeting = useCallback(
     (lang: ChatLanguage) => {

@@ -105,8 +105,13 @@ export default function AppLayoutClient({
   const [notifs, setNotifs] = useState<Notif[]>(DEFAULT_NOTIFICATIONS);
 
   useEffect(() => {
-    const saved = localStorage.getItem('ks_notifications');
-    if (saved) setNotifs(JSON.parse(saved));
+    const loadNotifs = () => {
+      const saved = localStorage.getItem('ks_notifications');
+      if (saved) setNotifs(JSON.parse(saved));
+    };
+    loadNotifs();
+    window.addEventListener('storage', loadNotifs);
+    return () => window.removeEventListener('storage', loadNotifs);
   }, []);
 
   const saveNotifs = (updated: Notif[]) => {

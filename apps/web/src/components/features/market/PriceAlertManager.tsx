@@ -51,8 +51,9 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
     }
   }, [currentPrice, selectedCrop]);
 
-  const handleSetAlert = () => {
+  const handleSetAlert = async () => {
     if (!alertTargetPrice) return;
+    
     const newAlert = { crop: selectedCrop, state: selectedState || 'All States', price: alertTargetPrice, type: alertType, date: new Date().toISOString() };
     const existing = getSafeAlerts();
     localStorage.setItem('kisan_seva_price_alerts', JSON.stringify([...existing, newAlert]));
@@ -60,6 +61,49 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
     setToastMessage(`Alert set: ${selectedCrop} ${alertType} ₹${alertTargetPrice}`);
     setTimeout(() => setToastMessage(null), 3000);
     setIsOpen(false);
+
+    // --- Web Push Notification Implementation for Hackathon Demo ---
+    if ('Notification' in window) {
+      let perm = Notification.permission;
+      if (perm === 'default') {
+        perm = await Notification.requestPermission();
+      }
+      
+      if (perm === 'granted') {
+        // 1. Initial confirmation push
+        new Notification('Price Alert Set', {
+          body: `We will notify you when ${selectedCrop} drops ${alertType} ₹${alertTargetPrice}/q in ${selectedState || 'all states'}.`,
+          icon: '/icon.jpg'
+        });
+
+        // 2. Simulate the alert triggering a few seconds later for the demo
+        setTimeout(() => {
+          const triggerMsg = `🚨 Market Spike! ${selectedCrop} just hit your target price of ₹${alertTargetPrice}/q at Azadpur Mandi.`;
+          
+          // Show OS Push Notification
+          new Notification('KisanSeva Alert', {
+            body: triggerMsg,
+            icon: '/icon.jpg',
+            vibrate: [200, 100, 200]
+          });
+
+          // Add to Global Bell Notifications (ks_notifications)
+          const existingGlobal = JSON.parse(localStorage.getItem('ks_notifications') || '[]');
+          const newGlobalNotif = {
+            id: Date.now().toString(),
+            icon: 'market',
+            title: 'Target Price Reached',
+            body: triggerMsg,
+            time: 'Just now',
+            read: false
+          };
+          localStorage.setItem('ks_notifications', JSON.stringify([newGlobalNotif, ...existingGlobal]));
+          
+          // Tell AppLayoutClient to re-render the bell icon
+          window.dispatchEvent(new Event('storage'));
+        }, 5000);
+      }
+    }
   };
 
   const handleDeleteAlert = (index: number) => {

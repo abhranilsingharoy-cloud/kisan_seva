@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/icon.jpg" alt="KisanSeva Logo" width="120" height="120" style="border-radius:24px;"/>
+<img src="./apps/web/public/icon.jpg" alt="KisanSeva Logo" width="120" height="120" style="border-radius:24px;"/>
 
 # 🌾 KisanSeva — किसान सेवा
 
@@ -25,7 +25,7 @@
 
 | 🏠 Landing Page | 📊 Smart Dashboard |
 |:-:|:-:|
-| ![KisanSeva Landing](https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/hero-screenshot.png) | ![KisanSeva Dashboard](https://raw.githubusercontent.com/abhranilsingharoy-cloud/kisan_seva/main/apps/web/public/dashboard-screenshot.png) |
+| ![KisanSeva Landing](./apps/web/public/hero-screenshot.png) | ![KisanSeva Dashboard](./apps/web/public/dashboard-screenshot.png) |
 | *"Empower your farm, grow your future"* | *Live weather · Plot tracker · Nearby markets* |
 
 <br/>

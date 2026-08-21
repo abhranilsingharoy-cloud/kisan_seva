@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       if (profileData) {
         profile = profileData;
       } else if (error) {
-        if (error.code !== '22P02') {
+        if (error.code !== '22P02' && error.code !== 'PGRST303') {
           console.error('Supabase profile fetch error:', JSON.stringify(error, null, 2));
         }
       }

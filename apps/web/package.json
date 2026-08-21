@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 5173",
+    "dev:https": "next dev --port 5173 --experimental-https",
     "build": "rm -rf .next && next build",
     "start": "next start",
     "lint": "eslint"

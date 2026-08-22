@@ -193,69 +193,20 @@ export default function AgentChatPage() {
   };
 
   // ── Intent Detection ────────────────────────────────────────────────────────
-  const detectIntent = (q: string) => {
+    const detectIntent = (q: string) => {
     const lower = q.toLowerCase();
     if (/tomato|brown|spot|disease|blight|leaf|fungi|rot/.test(lower)) {
-      return {
-        routedAgents: ['Diagnosis Agent', 'Knowledge Base'],
-        type: 'diagnosis' as MessageType,
-        agentLabel: 'Diagnosis Agent',
-        agentIcon: <Activity size={13}/>,
-        data: {
-          disease: 'Early Blight (Alternaria Solani)', crop: 'Tomato', confidence: 91, severity: 'Moderate',
-          treatment: [
-            'Remove and destroy infected lower leaves immediately.',
-            'Apply Mancozeb 75 WP @ 2.5 g/litre as foliar spray.',
-            'Avoid overhead irrigation — keep foliage dry.',
-            'Follow up with Copper Oxychloride after 7 days.',
-          ],
-          organic: 'Neem oil 5 ml/litre or Bacillus subtilis spray every 7 days.',
-        },
-      };
+      return { routedAgents: ['Diagnosis Agent', 'Knowledge Base'], type: 'diagnosis' as MessageType, agentLabel: 'Diagnosis Agent', agentIcon: <Activity size={13}/>, data: null };
     }
     if (/price|mandi|onion|bhav|market|sell|rate/.test(lower)) {
-      return {
-        routedAgents: ['Market Agent'],
-        type: 'price' as MessageType,
-        agentLabel: 'Market Agent',
-        agentIcon: <TrendingUp size={13}/>,
-        data: {
-          bestMarket: 'Azadpur Delhi', bestPrice: '₹2,340', unit: 'qtl',
-          mandis: [
-            { name: 'Azadpur Delhi', price: '₹2,340', delta: '+45', trend: 'up'   },
-            { name: 'Lasalgaon, MH', price: '₹2,100', delta: '-10', trend: 'down' },
-            { name: 'Pune APMC',     price: '₹2,250', delta: '+20', trend: 'up'   },
-          ],
-        },
-      };
+      return { routedAgents: ['Market Agent'], type: 'price' as MessageType, agentLabel: 'Market Agent', agentIcon: <TrendingUp size={13}/>, data: null };
     }
     if (/water|irrigation|wheat|paani|sinchayee|moisture/.test(lower)) {
-      return {
-        routedAgents: ['Weather Agent', 'Soil Health Agent'],
-        type: 'weather' as MessageType,
-        agentLabel: 'Weather + Soil Agent',
-        agentIcon: <CloudSun size={13}/>,
-        data: {
-          recommendation: 'Irrigate 28 mm today',
-          summary: 'Hot and dry — soil moisture at root zone is 42%. No rain forecast for 3 days.',
-          forecast: [
-            { day: 'Today', temp: '34°', icon: '☀️' },
-            { day: 'Tomorrow', temp: '36°', icon: '🌤' },
-            { day: 'Wed', temp: '33°', icon: '⛅' },
-          ],
-        },
-      };
+      return { routedAgents: ['Weather Agent', 'Soil Health Agent'], type: 'weather' as MessageType, agentLabel: 'Weather + Soil Agent', agentIcon: <CloudSun size={13}/>, data: null };
     }
-    return {
-      routedAgents: ['Knowledge Base', 'Master Orchestrator'],
-      type: 'text' as MessageType,
-      agentLabel: 'KisanSeva AI',
-      agentIcon: <Brain size={13}/>,
-      data: null,
-    };
+    return { routedAgents: ['Knowledge Base', 'Master Orchestrator'], type: 'text' as MessageType, agentLabel: 'KisanSeva AI', agentIcon: <Brain size={13}/>, data: null };
   };
 
-  // ── Handle Send ─────────────────────────────────────────────────────────────
   const handleSend = async (overrideText?: string) => {
     const text = (overrideText ?? inputText).trim();
     if (!text || isThinking) return;
@@ -272,9 +223,7 @@ export default function AgentChatPage() {
     setIsThinking(false);
     setActiveAgents([]);
 
-    const responseText = intent.data
-      ? (apiResult?.result?.text ?? 'Analysis complete. See details below.')
-      : (apiResult?.result?.text ?? 'Based on agricultural best practices, monitor your field and maintain optimal irrigation schedules.');
+    const responseText = apiResult?.result?.text || 'I am sorry, but I am unable to connect to the server right now. Please try again.';
 
     setMessages(prev => [...prev, {
       id: (Date.now() + 1).toString(),

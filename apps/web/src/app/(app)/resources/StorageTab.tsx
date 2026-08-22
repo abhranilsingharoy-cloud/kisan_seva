@@ -95,12 +95,12 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
           if (dist > radiusKm) continue;
 
           // deduplicate
-          const key = ${name}--;
+          const key = `${name}-${Math.round(elLat * 1000)}-${Math.round(elLon * 1000)}`;
           if (seen.has(key)) continue;
           seen.add(key);
 
           results.push({
-            id: osm-,
+            id: `osm-${el.id}`,
             name,
             address: tags['addr:full'] || tags['addr:street'] || tags['addr:city'] || (dist < 2 ? 'Nearby' : 'Regional Facility'),
             lat: elLat,

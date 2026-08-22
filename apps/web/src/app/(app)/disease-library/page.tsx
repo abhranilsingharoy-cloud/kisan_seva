@@ -7,7 +7,7 @@ import massiveDiseases from './massive_diseases.json';
 const PAGE_BG = { background: '#f9fafb', minHeight: '100vh', paddingBottom: 100 };
 
 // Injected from Executive Research Summary
-const DISEASES = [
+const DISEASES: any[] = [
   ...massiveDiseases,
   // WHEAT
   {
@@ -17,6 +17,8 @@ const DISEASES = [
     crop: 'Wheat',
     severity: 'High',
     cause: 'Fungal (Basidiomycete)',
+    region: 'Global',
+    growth_stage: 'Vegetative to Flowering',
     affected_hosts: 'Wheat (Triticum aestivum, T. durum) and some grasses. Hosts include spring and winter wheats.',
     symptoms: [
       'Linear yellow-orange pustules (uredinia) appear in stripes along leaf veins.',
@@ -349,6 +351,8 @@ const DISEASES = [
 export default function DiseaseLibraryPage() {
   const [search, setSearch] = useState('');
   const [filterCrop, setFilterCrop] = useState('All');
+  const [filterSeverity, setFilterSeverity] = useState('All');
+  const [filterRegion, setFilterRegion] = useState('All');
   const [selected, setSelected] = useState<typeof DISEASES[0] | null>(null);
   const [aiDiseases, setAiDiseases] = useState<typeof DISEASES>([]);
   const [isAiSearching, setIsAiSearching] = useState(false);
@@ -358,7 +362,9 @@ export default function DiseaseLibraryPage() {
 
   const filtered = combinedDiseases.filter(d => {
     if (filterCrop !== 'All' && !d.crop.includes(filterCrop)) return false;
-    if (search && !d.name.toLowerCase().includes(search.toLowerCase()) && !d.symptoms.some(s => s.toLowerCase().includes(search.toLowerCase()))) return false;
+    if (filterSeverity !== 'All' && d.severity !== filterSeverity) return false;
+    if (filterRegion !== 'All' && d.region && !d.region.includes(filterRegion)) return false;
+    if (search && !d.name.toLowerCase().includes(search.toLowerCase()) && !d.symptoms.some((s: string) => s.toLowerCase().includes(search.toLowerCase()))) return false;
     return true;
   });
 
@@ -389,7 +395,9 @@ export default function DiseaseLibraryPage() {
     }
   };
 
-  const categories = ['All', 'Wheat', 'Maize', 'Rice', 'Tomato', 'Potato', 'Cotton', 'Sugarcane', 'Banana', 'Citrus'];
+  const categories = ['All', 'Wheat', 'Maize', 'Rice', 'Tomato', 'Potato', 'Onion', 'Cotton', 'Sugarcane', 'Banana', 'Citrus', 'Soybean', 'Apple'];
+  const severities = ['All', 'Low', 'Moderate', 'High', 'Critical'];
+  const regions = ['All', 'Global', 'Asia', 'North America', 'South America', 'Europe', 'Africa', 'Tropics'];
 
   return (
     <div style={PAGE_BG}>
@@ -414,12 +422,32 @@ export default function DiseaseLibraryPage() {
             />
           </div>
 
-          <style>{`
-            .filter-scroll::-webkit-scrollbar { display: none; }
-            .filter-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-          `}</style>
+          {/* Filters Row */}
+          <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f3f4f6', padding: '4px 12px', borderRadius: 20 }}>
+              <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>Severity:</span>
+              <select 
+                value={filterSeverity} 
+                onChange={e => setFilterSeverity(e.target.value)}
+                style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#111827', cursor: 'pointer' }}
+              >
+                {severities.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
 
-          <div className="filter-scroll" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f3f4f6', padding: '4px 12px', borderRadius: 20 }}>
+              <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>Region:</span>
+              <select 
+                value={filterRegion} 
+                onChange={e => setFilterRegion(e.target.value)}
+                style={{ background: 'transparent', border: 'none', outline: 'none', fontSize: '0.85rem', fontWeight: 600, color: '#111827', cursor: 'pointer' }}
+              >
+                {regions.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingBottom: 4 }}>
             {categories.map(c => (
               <button key={c} onClick={() => setFilterCrop(c)} style={{ padding: '8px 16px', borderRadius: 20, fontWeight: 600, fontSize: '0.875rem', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', background: filterCrop === c ? '#2d6a27' : '#f3f4f6', color: filterCrop === c ? '#fff' : '#4b5563', transition: 'background 0.2s' }}>
                 {c}
@@ -458,19 +486,26 @@ export default function DiseaseLibraryPage() {
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#111827' }}>{d.name}</h3>
                   <div style={{ fontSize: '0.8125rem', color: '#6b7280', fontStyle: 'italic' }}>{d.scientific}</div>
                 </div>
-                <span style={{ background: d.severity === 'Critical' ? '#7f1d1d' : '#fef2f2', color: d.severity === 'Critical' ? '#fff' : '#dc2626', padding: '4px 10px', borderRadius: 12, fontSize: '0.75rem', fontWeight: 700 }}>
+                <span style={{ background: d.severity === 'Critical' ? '#7f1d1d' : (d.severity === 'High' ? '#fef2f2' : '#fffbeb'), color: d.severity === 'Critical' ? '#fff' : (d.severity === 'High' ? '#dc2626' : '#d97706'), padding: '4px 10px', borderRadius: 12, fontSize: '0.75rem', fontWeight: 700 }}>
                   {d.severity} Risk
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
                 <span style={{ background: '#f3f4f6', color: '#4b5563', padding: '4px 10px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600 }}>{d.crop}</span>
                 <span style={{ background: '#f0f9ff', color: '#0369a1', padding: '4px 10px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>{d.cause}</span>
+                {d.region && <span style={{ background: '#f5f3ff', color: '#6d28d9', padding: '4px 10px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600 }}>{d.region}</span>}
               </div>
+              {d.growth_stage && (
+                <div style={{ marginBottom: 12, fontSize: '0.8rem', color: '#4b5563', fontWeight: 600 }}>
+                  <span style={{ color: '#9ca3af' }}>Stage:</span> {d.growth_stage}
+                </div>
+              )}
               <p style={{ margin: 0, fontSize: '0.875rem', color: '#4b5563', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {d.symptoms.join(' ')}
               </p>
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#2d6a27', fontSize: '0.875rem', fontWeight: 600 }}>
-                View Full Profile <ChevronRight size={16} />
+              
+              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', color: '#16a34a', fontSize: '0.875rem', fontWeight: 700 }}>
+                View Full Profile <ChevronRight size={16} style={{ marginLeft: 4 }} />
               </div>
             </div>
           ))}
@@ -491,6 +526,7 @@ export default function DiseaseLibraryPage() {
                   <span style={{ background: '#e2e8f0', color: '#334155', padding: '4px 12px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>{selected.crop}</span>
                   <span style={{ background: '#dbeafe', color: '#1e40af', padding: '4px 12px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>{selected.cause}</span>
                   <span style={{ background: selected.severity === 'Critical' ? '#7f1d1d' : '#fef2f2', color: selected.severity === 'Critical' ? '#fff' : '#dc2626', padding: '4px 12px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>{selected.severity} Impact</span>
+                  {selected.growth_stage && <span style={{ background: '#ecfccb', color: '#3f6212', padding: '4px 12px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 700 }}>Stage: {selected.growth_stage}</span>}
                 </div>
               </div>
               <button onClick={() => setSelected(null)} style={{ background: '#e2e8f0', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}><X size={20} /></button>
@@ -518,7 +554,7 @@ export default function DiseaseLibraryPage() {
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111827', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}><SearchCode size={20} color="#8b5cf6" /> Symptoms & Diagnosis</h4>
                   <div style={{ background: '#f5f3ff', padding: 20, borderRadius: 12, border: '1px solid #ede9fe', marginBottom: 16 }}>
                     <ul style={{ margin: 0, paddingLeft: 24, color: '#4c1d95', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                      {selected.symptoms.map((s, i) => <li key={i} style={{ marginBottom: 8 }}>{s}</li>)}
+                      {selected.symptoms.map((s: string, i: number) => <li key={i} style={{ marginBottom: 8 }}>{s}</li>)}
                     </ul>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -557,13 +593,13 @@ export default function DiseaseLibraryPage() {
                     <div style={{ background: '#eff6ff', padding: 20, borderRadius: 12, border: '1px solid #bfdbfe' }}>
                       <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Beaker size={16}/> Chemical Control</div>
                       <ul style={{ margin: 0, paddingLeft: 20, color: '#1e3a8a', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                        {selected.chemical.map((t, i) => <li key={i} style={{ marginBottom: 6 }}>{t}</li>)}
+                        {selected.chemical.map((t: string, i: number) => <li key={i} style={{ marginBottom: 6 }}>{t}</li>)}
                       </ul>
                     </div>
                     <div style={{ background: '#f0fdf4', padding: 20, borderRadius: 12, border: '1px solid #bbf7d0' }}>
                       <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Leaf size={16}/> Organic / Natural</div>
                       <ul style={{ margin: 0, paddingLeft: 20, color: '#14532d', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                        {selected.organic.map((o, i) => <li key={i} style={{ marginBottom: 6 }}>{o}</li>)}
+                        {selected.organic.map((o: string, i: number) => <li key={i} style={{ marginBottom: 6 }}>{o}</li>)}
                       </ul>
                     </div>
                   </div>

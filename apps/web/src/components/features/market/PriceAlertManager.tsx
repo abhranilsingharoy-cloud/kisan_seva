@@ -83,8 +83,7 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
           // Show OS Push Notification
           new Notification('KisanSeva Alert', {
             body: triggerMsg,
-            icon: '/icon.jpg',
-            vibrate: [200, 100, 200]
+            icon: '/icon.jpg'
           });
 
           // Add to Global Bell Notifications (ks_notifications)

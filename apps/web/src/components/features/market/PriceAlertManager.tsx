@@ -23,6 +23,8 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
   
   const [alertTargetPrice, setAlertTargetPrice] = useState('2500');
   const [alertType, setAlertType] = useState('above');
+  const [useWhatsApp, setUseWhatsApp] = useState(false);
+  const [waNumber, setWaNumber] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const [savedAlerts, setSavedAlerts] = useState<any[]>([]);
@@ -53,11 +55,38 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
 
   const handleSetAlert = async () => {
     if (!alertTargetPrice) return;
+    if (useWhatsApp && !waNumber) {
+      alert("Please enter a WhatsApp number");
+      return;
+    }
     
-    const newAlert = { crop: selectedCrop, state: selectedState || 'All States', price: alertTargetPrice, type: alertType, date: new Date().toISOString() };
+    const newAlert = { 
+      crop: selectedCrop, 
+      state: selectedState || 'All States', 
+      price: alertTargetPrice, 
+      type: alertType, 
+      date: new Date().toISOString(),
+      waNumber: useWhatsApp ? waNumber : null
+    };
+    
     const existing = getSafeAlerts();
     localStorage.setItem('kisan_seva_price_alerts', JSON.stringify([...existing, newAlert]));
     
+    if (useWhatsApp) {
+      try {
+        await fetch('/api/v1/whatsapp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: waNumber.replace(/[^0-9]/g, ''),
+            message: `KisanSeva: Alert successfully set for ${selectedCrop}! We will notify you when the price goes ${alertType} ₹${alertTargetPrice}/quintal in ${selectedState || 'all states'}.`
+          })
+        });
+      } catch (e) {
+        console.error('Failed to trigger WhatsApp message:', e);
+      }
+    }
+
     setToastMessage(`Alert set: ${selectedCrop} ${alertType} ₹${alertTargetPrice}`);
     setTimeout(() => setToastMessage(null), 3000);
     setIsOpen(false);
@@ -77,14 +106,30 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
         });
 
         // 2. Simulate the alert triggering a few seconds later for the demo
-        setTimeout(() => {
-          const triggerMsg = `🚨 Market Spike! ${selectedCrop} just hit your target price of ₹${alertTargetPrice}/q at Azadpur Mandi.`;
+        setTimeout(async () => {
+          const triggerMsg = `Market Alert: ${selectedCrop} price has dropped ${alertType} ₹${alertTargetPrice}/qtl in ${selectedState || 'your area'}. Current price: ₹${currentPrice}/qtl.`;
           
           // Show OS Push Notification
           new Notification('KisanSeva Alert', {
             body: triggerMsg,
             icon: '/icon.jpg'
           });
+
+          // Send WhatsApp Notification if opted in
+          if (newAlert.waNumber) {
+            try {
+              await fetch('/api/v1/whatsapp/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  to: newAlert.waNumber.replace(/[^0-9]/g, ''),
+                  message: `🚨 *KisanSeva Market Alert* 🚨\n\n${triggerMsg}`
+                })
+              });
+            } catch (e) {
+              console.error('Failed to trigger WA alert:', e);
+            }
+          }
 
           // Add to Global Bell Notifications (ks_notifications)
           const existingGlobal = JSON.parse(localStorage.getItem('ks_notifications') || '[]');
@@ -158,7 +203,26 @@ export default function PriceAlertManager({ selectedCrop, selectedState, current
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px', color: 'var(--color-saddle)' }}>Notification Method</label>
+                    
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: useWhatsApp ? '8px' : '0' }}>
+                      <input type="checkbox" checked={useWhatsApp} onChange={(e) => setUseWhatsApp(e.target.checked)} /> 
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366" stroke="#25D366" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                        Get WhatsApp Business Alerts
+                      </span>
+                    </label>
+
+                    {useWhatsApp && (
+                      <div style={{ paddingLeft: '24px' }}>
+                        <input type="tel" className="input" placeholder="e.g. +91 9876543210" value={waNumber} onChange={(e) => setWaNumber(e.target.value)} style={{ width: '100%', fontSize: '0.875rem', padding: '6px 12px' }} />
+                        <p style={{ fontSize: '0.75rem', color: 'var(--color-bark)', margin: '4px 0 0' }}>We will send an immediate confirmation message.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                   <button type="button" className="btn btn-ghost" onClick={() => setIsOpen(false)}>Cancel</button>
                   <button type="button" className="btn btn-primary" onClick={handleSetAlert}>Set Alert</button>
                 </div>

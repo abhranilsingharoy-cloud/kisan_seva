@@ -45,13 +45,12 @@ CRITICAL: You MUST answer in ${targetLang}.`;
     if (!response.ok) {
       const errText = await response.text();
       console.error("Groq API Error:", response.status, errText);
-      throw new Error("Failed to fetch from Groq");
+      return NextResponse.json({ result: { text: `API Error ${response.status}: ${errText}` } }, { status: 500 });
     }
 
     const data = await response.json();
-    let reply = data.choices?.[0]?.message?.content || "I am currently unable to process this request. Please try again later.";
+    let reply = data.choices?.[0]?.message?.content || "";
     
-    // Fallback if content was empty but reasoning was present
     if (!reply && data.choices?.[0]?.message?.reasoning) {
         reply = "I understand. I am processing your request based on agricultural best practices.";
     }
@@ -62,8 +61,8 @@ CRITICAL: You MUST answer in ${targetLang}.`;
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Agent API Route Error:", error);
-    return NextResponse.json({ result: { text: "Sorry, I am facing some technical difficulties right now. Please check my connection." } }, { status: 500 });
+    return NextResponse.json({ result: { text: `Server Error: ${error.message}` } }, { status: 500 });
   }
 }

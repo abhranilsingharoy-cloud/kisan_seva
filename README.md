@@ -583,12 +583,12 @@ OPENWEATHER_API_KEY=...
 - [x] QR crop traceability
 - [x] Docs Locker (secure document storage)
 - [x] SOS Emergency Broadcast
-- [ ] Offline-first PWA with background sync
-- [ ] Push notifications for price alerts
-- [ ] WhatsApp Business API integration
+- [x] Offline-first PWA with background sync
+- [x] Push notifications for price alerts
+- [x] WhatsApp Business API integration
 - [ ] Mobile app (React Native)
-- [ ] Custom trained PlantVillage disease model (38 classes)
-- [ ] Satellite NDVI crop health monitoring
+- [x] Custom trained PlantVillage disease model (38 classes)
+- [x] Satellite NDVI crop health monitoring
 
 ---
 

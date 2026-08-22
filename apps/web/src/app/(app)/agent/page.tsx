@@ -5,7 +5,8 @@ import {
   Bot, Send, Camera, Zap, CheckCircle, Leaf,
   TrendingUp, CloudSun, Brain, MessageSquare, Star, ThumbsUp, ThumbsDown,
   Home, Activity, Plus, Mic, Image as ImageIcon,
-  ChevronRight, Loader2, Globe, BarChart2, Droplets, AlertTriangle, BookOpen, PhoneCall, X
+  ChevronRight, Loader2, Globe, BarChart2, Droplets, AlertTriangle, BookOpen, PhoneCall, X,
+  Square
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

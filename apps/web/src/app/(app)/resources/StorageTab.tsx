@@ -34,21 +34,6 @@ interface ColdStorage {
 
 type Status = 'idle' | 'locating' | 'searching' | 'done' | 'error';
 
-// ─── Haversine ─────────────────────────────────────────────────────────────────
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// ─── Overpass — comprehensive query ──────────────────────────────────────────
-
 const FALLBACK_STORAGES: ColdStorage[] = [
   { id: 'f1', name: 'Kisan Cold Storage', address: 'Hooghly, West Bengal', lat: 22.9012, lon: 88.3899, distanceKm: 0, phone: '+91 9830011223', mapsUrl: '' },
   { id: 'f2', name: 'AgriFresh Cold Chain', address: 'Burdwan, West Bengal', lat: 23.2324, lon: 87.8615, distanceKm: 0, phone: '+91 9432244556', mapsUrl: '' },
@@ -67,77 +52,155 @@ const FALLBACK_STORAGES: ColdStorage[] = [
   { id: 'f15', name: 'Assam Cold Chain', address: 'Guwahati, Assam', lat: 26.1445, lon: 91.7362, distanceKm: 0, phone: '+91 9864012345', mapsUrl: '' }
 ];
 
-async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<{results: ColdStorage[], isFallback: boolean}> {
-  const r = radiusKm * 1000;
-  let results: ColdStorage[] = [];
-  let isFallback = false;
-
-  const query = `[out:json][timeout:15];(node["amenity"="cold_storage"](around:${r},${lat},${lon});way["amenity"="cold_storage"](around:${r},${lat},${lon});relation["amenity"="cold_storage"](around:${r},${lat},${lon});node["building"="cold_storage"](around:${r},${lat},${lon});node["name"~"cold storage",i](around:${r},${lat},${lon});node["name"~"sheetgriha",i](around:${r},${lat},${lon}););out center tags;`;
-
-  try {
-    const res = await fetch('/api/overpass', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (!data.error && data.elements) {
-        const seen = new Set<string>();
-        for (const el of data.elements) {
-          const elLat = el.lat ?? el.center?.lat;
-          const elLon = el.lon ?? el.center?.lon;
-          if (!elLat || !elLon) continue;
-          const tags = el.tags || {};
-          let name = tags.name || tags['name:en'] || 'Local Cold Storage';
-          const dist = haversineKm(lat, lon, elLat, elLon);
-          if (dist > radiusKm) continue;
-
-          // deduplicate
-          const key = `${name}-${Math.round(elLat * 1000)}-${Math.round(elLon * 1000)}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-
-          results.push({
-            id: `osm-${el.id}`,
-            name,
-            address: tags['addr:full'] || tags['addr:street'] || tags['addr:city'] || (dist < 2 ? 'Nearby' : 'Regional Facility'),
-            lat: elLat,
-            lon: elLon,
-            distanceKm: dist,
-            phone: tags.phone || tags.contact,
-            website: tags.website,
-            operator: tags.operator,
-            capacity: tags.capacity,
-            mapsUrl: `https://www.google.com/maps/search/?api=1&query=${elLat},${elLon}`
-          });
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("Overpass API failed, will use fallback data");
-  }
-
-  // If no results from OSM within radius, or if API failed, show the closest 3 from fallback (even if > radiusKm)
-  if (results.length === 0) {
-    isFallback = true;
-    const fallbackWithDist = FALLBACK_STORAGES.map(s => {
-      const d = haversineKm(lat, lon, s.lat, s.lon);
-      return { ...s, distanceKm: d, mapsUrl: `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}` };
-    });
-    // Sort by distance and take the closest 3
-    fallbackWithDist.sort((a, b) => a.distanceKm - b.distanceKm);
-    results = fallbackWithDist.slice(0, 3);
-  } else {
-    results.sort((a, b) => a.distanceKm - b.distanceKm);
-  }
-
-  return { results, isFallback };
+// ─── Haversine ─────────────────────────────────────────────────────────────────
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// ─── Overpass — comprehensive query ──────────────────────────────────────────
+async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<{results: ColdStorage[], isFallback: boolean}> {
+  const r = radiusKm * 1000;
 
+  // Wide net: OSM tags + name patterns common in India (Hindi, Bengali, Tamil etc.)
+  const query = `
+[out:json][timeout:30];
+(
+  node["amenity"="cold_storage"](around:${r},${lat},${lon});
+  way["amenity"="cold_storage"](around:${r},${lat},${lon});
+  relation["amenity"="cold_storage"](around:${r},${lat},${lon});
+  node["building"="cold_storage"](around:${r},${lat},${lon});
+  way["building"="cold_storage"](around:${r},${lat},${lon});
+  node["industrial"="cold_storage"](around:${r},${lat},${lon});
+  way["industrial"="cold_storage"](around:${r},${lat},${lon});
+  node["landuse"="industrial"]["name"~"cold storage",i](around:${r},${lat},${lon});
+  way["landuse"="industrial"]["name"~"cold storage",i](around:${r},${lat},${lon});
+  node["name"~"cold storage",i](around:${r},${lat},${lon});
+  way["name"~"cold storage",i](around:${r},${lat},${lon});
+  node["name"~"sheetgriha",i](around:${r},${lat},${lon});
+  way["name"~"sheetgriha",i](around:${r},${lat},${lon});
+  node["name"~"sheeth bhandar",i](around:${r},${lat},${lon});
+  way["name"~"sheeth bhandar",i](around:${r},${lat},${lon});
+  node["name"~"refrigerat",i]["amenity"~"storage|warehouse|industrial"](around:${r},${lat},${lon});
+  way["name"~"refrigerat",i]["amenity"~"storage|warehouse|industrial"](around:${r},${lat},${lon});
+  node["name"~"hims cold",i](around:${r},${lat},${lon});
+  way["name"~"hims cold",i](around:${r},${lat},${lon});
+  node["name"~"frozen",i]["amenity"~"warehouse|storage|industrial"](around:${r},${lat},${lon});
+  way["name"~"frozen",i]["amenity"~"warehouse|storage|industrial"](around:${r},${lat},${lon});
+);
+out center tags;
+  `;
+
+  // Use our server-side proxy to avoid CORS issues and get mirror fallback
+  const res = await fetch('/api/overpass', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!res.ok) throw new Error('Overpass proxy error ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+
+  const seen = new Set<string>();
+  const results: ColdStorage[] = [];
+
+  for (const el of data.elements as any[]) {
+    const elLat: number = el.lat ?? el.center?.lat;
+    const elLon: number = el.lon ?? el.center?.lon;
+    if (!elLat || !elLon) continue;
+
+    const tags = el.tags ?? {};
+    const name: string =
+      tags.name || tags['name:en'] || tags['name:hi'] || 'Cold Storage Facility';
+
+    // Dedup by name + rounded coords
+    const key = name.toLowerCase().slice(0, 20) + '_' + elLat.toFixed(3);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const addrParts = [
+      tags['addr:housenumber'],
+      tags['addr:street'],
+      tags['addr:village'] || tags['addr:suburb'],
+      tags['addr:city'] || tags['addr:town'] || tags['addr:district'],
+      tags['addr:state'],
+    ].filter(Boolean);
+
+    results.push({
+      id: String(el.id),
+      name,
+      address: addrParts.length > 0 ? addrParts.join(', ') : '',
+      lat: elLat,
+      lon: elLon,
+      distanceKm: haversineKm(lat, lon, elLat, elLon),
+      phone: tags.phone || tags['contact:phone'] || tags['contact:mobile'],
+      website: tags.website || tags['contact:website'],
+      openingHours: tags.opening_hours,
+      operator: tags.operator,
+      capacity: tags.capacity || tags['storage:capacity'],
+      mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${elLat},${elLon}`,
+    });
+  }
+
+  return results.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 40);
+}
+
+// ─── Geocode (Nominatim) ──────────────────────────────────────────────────────
+async function geocode(query: string): Promise<{ lat: number; lon: number; name: string } | null> {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ', India')}&format=json&limit=1`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'KisanSeva/1.0' } });
+  const data = await res.json();
+  if (!data.length) return null;
+  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0] };
+}
+
+async function reverseGeocode(lat: number, lon: number): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      { headers: { 'User-Agent': 'KisanSeva/1.0' } }
+    );
+    const data = await res.json();
+    return (
+      data.address?.village ||
+      data.address?.town ||
+      data.address?.city ||
+      data.address?.district ||
+      data.address?.state ||
+      'your location'
+    );
+  } catch {
+    return 'your location';
+  }
+}
+
+// ─── Leaf map (dynamic import so it only loads client-side) ───────────────────
+const LeafMap = dynamic(() => import('@/components/ColdStorageMap'), { ssr: false, loading: () => (
+  <div style={{ height: 340, background: '#1e293b', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+    Loading map…
+  </div>
+)});
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export function StorageTab() {
+  const [status, setStatus] = useState<Status>('idle');
+  const [results, setResults] = useState<ColdStorage[]>([]);
+  const [error, setError] = useState('');
+  const [cityName, setCityName] = useState('');
   const [isFallbackData, setIsFallbackData] = useState(false);
+  const [centerCoords, setCenterCoords] = useState<[number, number] | null>(null);
+  const [manualCity, setManualCity] = useState('');
+  const [radiusKm, setRadiusKm] = useState(50);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const runSearch = useCallback(async (lat: number, lon: number, name: string) => {
     setStatus('searching');
@@ -455,12 +518,12 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
                   </div>
                 )}
                 <div style={{ marginTop: 20, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 12, padding: '14px 18px', display: 'flex', gap: 10 }}>
-                <Info size={16} style={{ color: '#0ea5e9', flexShrink: 0, marginTop: 2 }} />
-                <p style={{ margin: 0, fontSize: '0.82rem', color: '#075985', lineHeight: 1.5 }}>
-                  Results are from <strong>OpenStreetMap (Overpass API)</strong> — a live, community-maintained database. Coverage in rural India is growing. If a facility is missing, any OSM contributor can add it at{' '}
-                  <a href="https://www.openstreetmap.org" target="_blank" rel="noreferrer" style={{ color: '#0ea5e9', fontWeight: 700 }}>openstreetmap.org</a>.
-                </p>
-              </div>
+                  <Info size={16} style={{ color: '#0ea5e9', flexShrink: 0, marginTop: 2 }} />
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#075985', lineHeight: 1.5 }}>
+                    Results are from <strong>OpenStreetMap (Overpass API)</strong> — a live, community-maintained database. Coverage in rural India is growing. If a facility is missing, any OSM contributor can add it at{' '}
+                    <a href="https://www.openstreetmap.org" target="_blank" rel="noreferrer" style={{ color: '#0ea5e9', fontWeight: 700 }}>openstreetmap.org</a>.
+                  </p>
+                </div>
               </>
             )}
           </>

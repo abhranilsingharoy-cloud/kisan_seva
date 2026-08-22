@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { RentalsTab } from './RentalsTab';
 import { StorageTab } from './StorageTab';
-import { Tractor, Warehouse } from 'lucide-react';
+import { FertiliserTab } from './FertiliserTab';
+import { Tractor, Warehouse, ShoppingBag } from 'lucide-react';
 
 export default function ResourcesPage() {
-  const [activeTab, setActiveTab] = useState<'rentals' | 'storage'>('rentals');
+  const [activeTab, setActiveTab] = useState<'rentals' | 'storage' | 'fertiliser'>('fertiliser');
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#f0f4f0]">
@@ -43,6 +44,18 @@ export default function ResourcesPage() {
           >
             <Warehouse size={16} />
             Cold Storage Finder
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('fertiliser')}
+            className={`flex items-center gap-2 pb-3 border-b-2 font-bold text-sm transition-all whitespace-nowrap ${
+              activeTab === 'fertiliser'
+                ? 'border-indigo-500 text-indigo-700'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <ShoppingBag size={16} />
+            Fertiliser Store
           </button>
         </div>
       </header>

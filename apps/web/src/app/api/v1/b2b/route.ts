@@ -52,7 +52,7 @@ export async function POST(req: Request) {
           console.warn("Supabase update failed, simulating success for UI:", error);
       }
 
-      return NextResponse.json({ success: true, message: \Contract status updated to \\ });
+      return NextResponse.json({ success: true, message: `Contract status updated to ${newStatus}` });
     }
     
     if (action === 'create_contract') {

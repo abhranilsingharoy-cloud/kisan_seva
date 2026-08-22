@@ -72,7 +72,7 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
   let results: ColdStorage[] = [];
   let isFallback = false;
 
-  const query = [out:json][timeout:15];(node["amenity"="cold_storage"](around:,,);way["amenity"="cold_storage"](around:,,);relation["amenity"="cold_storage"](around:,,);node["building"="cold_storage"](around:,,);node["name"~"cold storage",i](around:,,);node["name"~"sheetgriha",i](around:,,););out center tags;;
+  const query = `[out:json][timeout:15];(node["amenity"="cold_storage"](around:${r},${lat},${lon});way["amenity"="cold_storage"](around:${r},${lat},${lon});relation["amenity"="cold_storage"](around:${r},${lat},${lon});node["building"="cold_storage"](around:${r},${lat},${lon});node["name"~"cold storage",i](around:${r},${lat},${lon});node["name"~"sheetgriha",i](around:${r},${lat},${lon}););out center tags;`;
 
   try {
     const res = await fetch('/api/overpass', {

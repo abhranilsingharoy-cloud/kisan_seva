@@ -4,9 +4,9 @@ export async function POST(req: Request) {
   try {
     const { query, language } = await req.json();
 
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.error("GROQ_API_KEY is missing");
+      console.error("GEMINI_API_KEY is missing");
       return NextResponse.json({ result: { text: "API Key not configured on the server." } }, { status: 500 });
     }
 
@@ -25,36 +25,27 @@ Answer the following query concisely, practically, and empathetically.
 Format your response in plain text with short paragraphs. 
 CRITICAL: You MUST answer in ${targetLang}.`;
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: query }
-        ],
-        temperature: 0.3,
-        max_tokens: 400
+        contents: [{ role: 'user', parts: [{ text: query }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: { temperature: 0.3, maxOutputTokens: 400 }
       })
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("Groq API Error:", response.status, errText);
-      throw new Error("Failed to fetch from Groq");
+      console.error("Gemini API Error:", response.status, errText);
+      throw new Error("Failed to fetch from Gemini");
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "I am currently unable to process this request. Please try again later.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I am currently unable to process this request. Please try again later.";
 
     return NextResponse.json({
-      result: {
-        text: reply.trim()
-      }
+      result: { text: reply.trim() }
     });
 
   } catch (error) {

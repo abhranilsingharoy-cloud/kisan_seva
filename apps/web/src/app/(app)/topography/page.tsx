@@ -60,7 +60,7 @@ export default function TopographyPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   
-  const [targetLocation, setTargetLocation] = useState<[number, number] | null>(null);
+  const [targetLocation, setTargetLocation] = useState<[number, number] | null>([30.9010, 75.8573]);
   const [locationName, setLocationName] = useState('Ludhiana District, Punjab, India');
   const [isArable, setIsArable] = useState(true);
 
@@ -85,46 +85,22 @@ export default function TopographyPage() {
     setIsFetchingRealData(true);
 
     const fetchRealData = async () => {
-      try {
-        const center = targetLocation || [30.9010, 75.8573];
-        
-        // Fetch Live Weather & Soil Moisture
-        const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${center[0]}&longitude=${center[1]}&current=temperature_2m,precipitation,soil_moisture_0_to_1cm`);
-        const data = await meteoRes.json();
-        
-        const realData: RealData = {
-          temp: data.current?.temperature_2m || 30,
-          moisture: data.current?.soil_moisture_0_to_1cm || 0.25,
-          precip: data.current?.precipitation || 0
-        };
-        
-        setRealWeatherData(realData);
-
-        // Calculate base health anchored strictly to real-world physics
-        const moistureScore = Math.min(100, Math.max(10, (realData.moisture / 0.35) * 100));
-        const tempPenalty = realData.temp > 38 ? 20 : realData.temp > 30 ? 5 : 0;
-        const baseHealth = Math.max(10, moistureScore - tempPenalty);
-
-        // Synthesize a realistic grid of farm plots around the target location
-        // This restores the "scanning" UI experience for rural regions without complete OSM data
-        const newZones: Zone[] = [];
+      setZones([]); // Clear existing
+      const center = targetLocation || [30.9010, 75.8573];
+      
+      const generateGrid = (baseHealth: number) => {
+        const generatedZones: Zone[] = [];
         const rows = 4;
         const cols = 4;
-        
-        // Dimensions of each synthetic plot (approx 0.003 degrees)
         const latStep = 0.003;
         const lngStep = 0.004;
-        
-        // Start drawing from top-left of the center point
         const startLat = center[0] - (rows / 2) * latStep;
         const startLng = center[1] - (cols / 2) * lngStep;
 
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
-            // Add slight randomness to coordinates so they look like real imperfect farm plots
             const rLat = startLat + r * latStep + (Math.random() * 0.0005);
             const rLng = startLng + c * lngStep + (Math.random() * 0.0005);
-            
             const polySizeLat = latStep * 0.85;
             const polySizeLng = lngStep * 0.85;
             
@@ -136,15 +112,13 @@ export default function TopographyPage() {
               [rLat, rLng]
             ] as [number, number][];
 
-            // Vary the health slightly per plot to simulate natural field variation
             const randH = Math.floor(Math.random() * 18) - 9 + baseHealth;
             const health = Math.max(10, Math.min(100, randH));
-            
             const crops = ['Wheat', 'Rice', 'Sugarcane', 'Cotton', 'Maize', 'Mustard', 'Mixed Crops'];
             const randomCrop = crops[Math.floor(Math.random() * crops.length)];
 
-            newZones.push({
-              id: `synth_${r}_${c}`,
+            generatedZones.push({
+              id: `synth_${r}_${c}_${Date.now()}`,
               name: `Plot ${r}${c}-${Math.floor(Math.random() * 1000)}`,
               crop: randomCrop,
               area: `${(Math.random() * 1.5 + 0.8).toFixed(1)} ha`,
@@ -155,18 +129,46 @@ export default function TopographyPage() {
             });
           }
         }
+        return generatedZones;
+      };
+
+      try {
+        const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${center[0]}&longitude=${center[1]}&current=temperature_2m,precipitation,soil_moisture_0_to_1cm`);
+        const data = await meteoRes.json();
         
-        // Simulate a progressive "scan" by revealing zones one by one
+        const realData: RealData = {
+          temp: data.current?.temperature_2m || 30,
+          moisture: data.current?.soil_moisture_0_to_1cm || 0.25,
+          precip: data.current?.precipitation || 0
+        };
+        
+        setRealWeatherData(realData);
+
+        const moistureScore = Math.min(100, Math.max(10, (realData.moisture / 0.35) * 100));
+        const tempPenalty = realData.temp > 38 ? 20 : realData.temp > 30 ? 5 : 0;
+        const baseHealth = Math.max(10, moistureScore - tempPenalty);
+
+        const newZones = generateGrid(baseHealth);
+        
         const scanZones = async () => {
           for (let i = 1; i <= newZones.length; i++) {
             setZones(newZones.slice(0, i));
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 80));
           }
         };
         scanZones();
 
       } catch (error) {
         console.error("Data fetch failed:", error);
+        // Fallback if API fails
+        const newZones = generateGrid(75);
+        const scanZones = async () => {
+          for (let i = 1; i <= newZones.length; i++) {
+            setZones(newZones.slice(0, i));
+            await new Promise(r => setTimeout(r, 80));
+          }
+        };
+        scanZones();
       } finally {
         setIsFetchingRealData(false);
       }

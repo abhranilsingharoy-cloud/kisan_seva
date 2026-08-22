@@ -445,7 +445,8 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
 
             {/* Info note */}
             {results.length > 0 && (
-                              {isFallbackData && (
+              <>
+                {isFallbackData && (
                   <div style={{ marginBottom: 16, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '14px 18px', display: 'flex', gap: 10 }}>
                     <Info size={18} style={{ color: '#d97706', flexShrink: 0, marginTop: 2 }} />
                     <p style={{ margin: 0, fontSize: '0.9rem', color: '#92400e', lineHeight: 1.5 }}>
@@ -460,6 +461,7 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
                   <a href="https://www.openstreetmap.org" target="_blank" rel="noreferrer" style={{ color: '#0ea5e9', fontWeight: 700 }}>openstreetmap.org</a>.
                 </p>
               </div>
+              </>
             )}
           </>
         )}

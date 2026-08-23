@@ -606,6 +606,6 @@ OPENWEATHER_API_KEY=...
 
 [![Stars](https://img.shields.io/github/stars/abhranilsingharoy-cloud/kisan_seva?style=social)](https://github.com/abhranilsingharoy-cloud/kisan_seva)
 
-`Made with 🌾 · Powered by AI · Built for Bharat`
+`Made with 🌾 · Powered by Limitless Prime· Built for Bharat`
 
 </div>

@@ -1,8 +1,8 @@
-## 🎥 Live Demo Video
+## 🎥 KisanSeva Vision Trailer
 
-Watch the full 5-minute walkthrough of the KisanSeva platform in action:
+Watch our short concept trailer introducing the vision behind KisanSeva:
 
-[**▶️ Watch the Platform Walkthrough Video**](https://kisanseva-ks.vercel.app/demo-video.mp4)
+[**▶️ Watch the Project Trailer**](https://kisanseva-ks.vercel.app/demo-video.mp4)
 
 ---
 
@@ -661,11 +661,11 @@ OPENWEATHER_API_KEY=...
 
 ---
 
-## 🎥 Live Demo Video
+## 🎥 KisanSeva Vision Trailer
 
-Watch the full 5-minute walkthrough of the KisanSeva platform in action:
+Watch our short concept trailer introducing the vision behind KisanSeva:
 
-[**▶️ Watch the Platform Walkthrough Video**](https://kisanseva-ks.vercel.app/demo-video.mp4)
+[**▶️ Watch the Project Trailer**](https://kisanseva-ks.vercel.app/demo-video.mp4)
 
 ---
 

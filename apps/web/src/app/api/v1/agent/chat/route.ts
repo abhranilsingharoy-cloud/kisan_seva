@@ -1,5 +1,5 @@
 /**
- * KisanSeva — AI Chat API Route
+ * KisanSeva â€” AI Chat API Route
  * 
  * @route POST /api/v1/agent/chat
  * @description Conversational agricultural AI powered by Groq Llama-3 70B.
@@ -38,7 +38,7 @@ const ChatRequestSchema = z.object({
   language: z.string().default('en'),
   user_id: z.string().optional(),
   plot_id: z.string().optional(),
-  context: z.record(z.unknown()).default({}),
+  context: z.any().default({}),
 })
 
 export async function POST(req: NextRequest) {
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     
     const { query, language, user_id, plot_id, context } = parseResult.data
 
-    // ── Try ML Service orchestrator first ─────────────────
+    // â”€â”€ Try ML Service orchestrator first â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try {
       const mlResp = await fetch(`${ML_SERVICE_URL}/v1/agent/chat`, {
         method: 'POST',
@@ -72,15 +72,15 @@ export async function POST(req: NextRequest) {
       console.warn('[AI Chat] ML service unavailable, falling back to Groq:', mlErr)
     }
 
-    // ── Fallback: Call Groq directly ────────────────────
+    // â”€â”€ Fallback: Call Groq directly â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!GROQ_API_KEY) {
       // Return a smart mock response if no API key is provided
       let mockText = 'This is a mock response because the GROQ_API_KEY is not set in your .env.local file. Please add it for real AI responses.';
       
       if (language === 'hi') {
-        mockText = 'यह एक डमी उत्तर है क्योंकि आपकी .env.local फ़ाइल में GROQ_API_KEY सेट नहीं है। असली AI उत्तरों के लिए कृपया इसे जोड़ें।';
+        mockText = 'à¤¯à¤¹ à¤à¤• à¤¡à¤®à¥€ à¤‰à¤¤à¥à¤¤à¤° à¤¹à¥ˆ à¤•à¥à¤¯à¥‹à¤‚à¤•à¤¿ à¤†à¤ªà¤•à¥€ .env.local à¤«à¤¼à¤¾à¤‡à¤² à¤®à¥‡à¤‚ GROQ_API_KEY à¤¸à¥‡à¤Ÿ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆà¥¤ à¤…à¤¸à¤²à¥€ AI à¤‰à¤¤à¥à¤¤à¤°à¥‹à¤‚ à¤•à¥‡ à¤²à¤¿à¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤‡à¤¸à¥‡ à¤œà¥‹à¤¡à¤¼à¥‡à¤‚à¥¤';
       } else if (language === 'bn') {
-        mockText = 'এটি একটি মক উত্তর কারণ আপনার .env.local ফাইলে GROQ_API_KEY সেট করা নেই। আসল এআই উত্তরের জন্য দয়া করে এটি যোগ করুন।';
+        mockText = 'à¦à¦Ÿà¦¿ à¦à¦•à¦Ÿà¦¿ à¦®à¦• à¦‰à¦¤à§à¦¤à¦° à¦•à¦¾à¦°à¦£ à¦†à¦ªà¦¨à¦¾à¦° .env.local à¦«à¦¾à¦‡à¦²à§‡ GROQ_API_KEY à¦¸à§‡à¦Ÿ à¦•à¦°à¦¾ à¦¨à§‡à¦‡à¥¤ à¦†à¦¸à¦² à¦à¦†à¦‡ à¦‰à¦¤à§à¦¤à¦°à§‡à¦° à¦œà¦¨à§à¦¯ à¦¦à¦¯à¦¼à¦¾ à¦•à¦°à§‡ à¦à¦Ÿà¦¿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨à¥¤';
       }
 
       return NextResponse.json({
@@ -100,11 +100,11 @@ Your name is "KisanSeva Saathi".
 Today's current date and time in India is: ${currentDate}. You have real-time awareness of the present date.
 Provide concise, actionable advice about crops, diseases, irrigation, fertilizers, and market prices.
 You MUST reply entirely in the language corresponding to this language code: ${language}.
-- If language is 'hi', reply in Hindi using Devanagari script (हिंदी में उत्तर दें).
-- If language is 'bn', reply in Bengali using Bengali script (বাংলায় উত্তর দিন).
+- If language is 'hi', reply in Hindi using Devanagari script (à¤¹à¤¿à¤‚à¤¦à¥€ à¤®à¥‡à¤‚ à¤‰à¤¤à¥à¤¤à¤° à¤¦à¥‡à¤‚).
+- If language is 'bn', reply in Bengali using Bengali script (à¦¬à¦¾à¦‚à¦²à¦¾à¦¯à¦¼ à¦‰à¦¤à§à¦¤à¦° à¦¦à¦¿à¦¨).
 - If language is 'en', reply in English.
 Use simple vocabulary that farmers understand. Keep answers concise and practical.
-Always prioritise safety — for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.`
+Always prioritise safety â€” for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.`
 
     const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -156,4 +156,5 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     )
   }
 }
+
 

@@ -148,11 +148,14 @@ export default function CommunitySOS() {
       </div>
 
       {/* ── Floating SOS Action Button ── */}
-      <div className="sos-floating-btn">
+      <div className="sos-floating-btn" style={{ position: 'relative', display: 'inline-block' }}>
+        {/* Radar Pulse Effect */}
+        <div className="animate-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', backgroundColor: '#ef4444', opacity: 0.75 }}></div>
+        
         <button 
           onClick={() => setIsOpen(true)}
           style={{ 
-            backgroundColor: '#ef4444', color: 'white', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(239,68,68,0.5)', transition: 'all 0.2s' 
+            position: 'relative', zIndex: 10, backgroundColor: '#ef4444', color: 'white', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', boxShadow: '0 8px 32px rgba(239,68,68,0.5)', transition: 'all 0.2s' 
           }}
           title="Broadcast SOS"
         >

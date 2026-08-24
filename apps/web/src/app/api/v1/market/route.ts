@@ -67,14 +67,16 @@ export async function GET(req: NextRequest) {
                       
     const mockMandis = [
       {
-        mandiName: `${state || 'Local'} Main Market`, district: 'Central', state: state || 'Unknown', commodity, variety: 'Local',
-        minPrice: basePrice - 200, maxPrice: basePrice + 300, modalPrice: basePrice + 100, unit: 'Quintal',
+        id: 'mock1',
+        name: `${state || 'Local'} Main Market`, district: 'Central', state: state || 'Unknown', commodity, variety: 'Local',
+        min: basePrice - 200, max: basePrice + 300, modal: basePrice + 100, unit: 'Quintal',
         vsAverage: 100, vsAveragePct: 4, distanceKm: 12, transportCost: 10, netValue: basePrice + 90,
         arrivalDate: new Date().toISOString().split('T')[0], isBestPrice: true
       },
       {
-        mandiName: 'Nearby APMC', district: 'North', state: state || 'Unknown', commodity, variety: 'Hybrid',
-        minPrice: basePrice - 300, maxPrice: basePrice + 100, modalPrice: basePrice - 100, unit: 'Quintal',
+        id: 'mock2',
+        name: 'Nearby APMC', district: 'North', state: state || 'Unknown', commodity, variety: 'Hybrid',
+        min: basePrice - 300, max: basePrice + 100, modal: basePrice - 100, unit: 'Quintal',
         vsAverage: -100, vsAveragePct: -4, distanceKm: 45, transportCost: 36, netValue: basePrice - 136,
         arrivalDate: new Date().toISOString().split('T')[0], isBestPrice: false
       }
@@ -157,14 +159,15 @@ export async function GET(req: NextRequest) {
         const vsAverage = avgPrice ? Math.round(modalPrice - avgPrice) : 0
 
         return {
-          mandiName,
+          id:            `ag-${Math.random().toString(36).substr(2, 9)}`,
+          name:          mandiName,
           district:      r.district || '',
           state:         r.state    || state,
           commodity:     r.commodity || commodity,
           variety:       r.variety  || 'Mixed',
-          minPrice,
-          maxPrice,
-          modalPrice,
+          min:           minPrice,
+          max:           maxPrice,
+          modal:         modalPrice,
           unit:          'Quintal',
           vsAverage,
           vsAveragePct:  avgPrice ? Math.round((vsAverage / avgPrice) * 100) : 0,
@@ -175,7 +178,7 @@ export async function GET(req: NextRequest) {
           isBestPrice:   false, // will be set after sort
         }
       })
-      .filter(r => r.modalPrice > 0)
+      .filter(r => r.modal > 0)
       .sort((a, b) => b.netValue - a.netValue) // rank by net value (price - transport)
 
     // Mark best
@@ -184,8 +187,8 @@ export async function GET(req: NextRequest) {
     // ── Summary stats ───────────────────────────────────────
     const best          = enriched[0]
     const stateAvg      = avgPrice
-    const highestPrice  = Math.max(...enriched.map(r => r.modalPrice))
-    const lowestPrice   = Math.min(...enriched.map(r => r.modalPrice))
+    const highestPrice  = Math.max(...enriched.map(r => r.modal))
+    const lowestPrice   = Math.min(...enriched.map(r => r.modal))
     const priceRange    = highestPrice - lowestPrice
     const spreadPct     = stateAvg ? Math.round((priceRange / stateAvg) * 100) : 0
 

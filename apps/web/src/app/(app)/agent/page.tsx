@@ -6,7 +6,7 @@ import {
   TrendingUp, CloudSun, Brain, MessageSquare, Star, ThumbsUp, ThumbsDown,
   Home, Activity, Plus, Mic, Image as ImageIcon,
   ChevronRight, Loader2, Globe, BarChart2, Droplets, AlertTriangle, BookOpen, PhoneCall, X,
-  Square
+  Square, Volume2, VolumeX
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -169,12 +169,22 @@ export default function AgentChatPage() {
     const cleanText = text.replace(/[#*`_~]/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/[\u{1F000}-\u{1FFFF}]/gu, '').trim();
     if (!cleanText) return;
 
-    // Use Google Translate TTS proxy for Indian languages if native voices suck, but native Web Speech is easier for demo
-    const utterance = new SpeechSynthesisUtterance(cleanText);
     const langMap: Record<string, string> = { en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN' };
-    utterance.lang = langMap[langCode] || 'en-IN';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    const targetLang = langMap[langCode] || 'en-IN';
+
+    // Chunk text by punctuation to prevent browser TTS character limits (Chrome cuts off at ~250 chars)
+    const chunks = cleanText.replace(/([.!?।\n])/g, "$1|").split("|").map(c => c.trim()).filter(c => c.length > 0);
+    
+    let voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang.startsWith(targetLang) || v.lang.startsWith(langCode));
+
+    chunks.forEach(chunk => {
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      utterance.lang = targetLang;
+      utterance.rate = 0.9;
+      if (voice) utterance.voice = voice;
+      window.speechSynthesis.speak(utterance);
+    });
   };
 
   // ── API Call ────────────────────────────────────────────────────────────────
@@ -449,9 +459,16 @@ export default function AgentChatPage() {
                     <div className={`max-w-[82%] space-y-2 ${msg.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
                       {/* Agent label */}
                       {msg.sender === 'agent' && msg.agentLabel && (
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-green-600 px-1">
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-green-600 px-1 w-full">
                           {msg.agentIcon}
-                          {msg.agentLabel}
+                          <span>{msg.agentLabel}</span>
+                          <button 
+                            onClick={() => speakResponse(msg.text, selectedLang)} 
+                            className="ml-auto p-1 rounded-md text-green-600 hover:bg-green-100 transition-colors"
+                            title="Read Aloud"
+                          >
+                            <Volume2 size={12} />
+                          </button>
                         </div>
                       )}
 

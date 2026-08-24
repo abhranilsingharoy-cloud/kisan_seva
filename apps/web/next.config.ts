@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 3600,
   },
 
-  // ─── Headers ──────────────────────────────────────────────
+  // 🛡️ Headers 🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️
   async headers() {
     return [
       {
@@ -33,20 +33,6 @@ const nextConfig: NextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=(self)' },
-        ],
-      },
-      {
-        source: '/sw.js',
-        headers: [
-          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
-          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
-        ],
-      },
-      {
-        source: '/manifest.json',
-        headers: [
-          { key: 'Content-Type', value: 'application/manifest+json' },
-          { key: 'Cache-Control', value: 'public, max-age=3600' },
         ],
       },
     ]

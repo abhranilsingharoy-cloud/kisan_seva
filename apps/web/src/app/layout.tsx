@@ -50,28 +50,6 @@ export const viewport: Viewport = {
 
 import { ClerkProvider } from '@clerk/nextjs'
 
-// Script to aggressively kill any old PWA Service Workers and caches
-const SW_KILL_SCRIPT = `
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-      for(let registration of registrations) {
-        registration.unregister().then(function(boolean) {
-          console.log('Unregistered SW: ', boolean);
-        });
-      }
-    });
-  }
-  if ('caches' in window) {
-    caches.keys().then(function(keyList) {
-      return Promise.all(keyList.map(function(key) {
-        return caches.delete(key);
-      }));
-    });
-  }
-`;
-
-import Script from 'next/script'
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
@@ -85,9 +63,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased bg-white text-slate-900">
-          <Script id="sw-kill" strategy="beforeInteractive">
-            {SW_KILL_SCRIPT}
-          </Script>
           <OfflineIndicator />
           {children}
         </body>

@@ -422,64 +422,69 @@ flowchart TB
 ## 📂 Project Structure
 
 ```
-kisan_seva/                          # 🏠 Turborepo Monorepo Root
-├── turbo.json                       # Build pipeline configuration
-├── pnpm-workspace.yaml              # Workspace package definitions
-├── supabase_schema.sql              # Database schema
+kisan_seva/                          # 📦 Turborepo Monorepo Root
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # 🔄 GitHub Actions CI/CD Pipeline
+├── scripts/                         # 🛠️ Dev Scripts (Data Gen, DB Migrations)
+│   ├── README.md
+│   ├── gen_diseases.js
+│   └── fix_storage.py
+├── turbo.json                       # 🚀 Build pipeline configuration
+├── pnpm-workspace.yaml              # 📦 Workspace package definitions
+├── supabase_schema.sql              # 🗄️ Database schema definitions
 │
-├── apps/
-│   ├── web/                         # 🌐 Next.js Frontend
-│   │   ├── public/
-│   │   │   ├── images/rentals/      # Equipment photos (drone, tractors, planters)
-│   │   │   ├── hero-screenshot.png  # Landing page screenshot
-│   │   │   └── dashboard-screenshot.png
-│   │   │
-│   │   └── src/
-│   │       ├── app/
-│   │       │   ├── (app)/           # 🔒 Protected dashboard routes
-│   │       │   │   ├── AppLayoutClient.tsx  # Sidebar with all 18 nav items
-│   │       │   │   ├── agent/       # 🤖 AI Agent (7-agent chat)
-│   │       │   │   ├── dashboard/   # 📊 Smart farm dashboard
-│   │       │   │   ├── resources/   # 🚜 Equipment rentals + cold storage
-│   │       │   │   ├── market/      # 📈 Mandi price comparator
-│   │       │   │   ├── schedule/    # 📅 Crop planner & irrigation schedule
-│   │       │   │   ├── diagnose/    # 📸 Crop disease diagnosis
-│   │       │   │   ├── disease-library/ # 🦠 Disease encyclopaedia
-│   │       │   │   ├── soil/        # 🧪 Soil health & NPK analysis
-│   │       │   │   ├── plots/       # 🗺️ My farm plots manager
-│   │       │   │   ├── community/   # 👥 Kisan Sabha forum
-│   │       │   │   ├── schemes/     # 🏛️ Government schemes
-│   │       │   │   ├── agri-credit/ # 💰 Loan calculator
-│   │       │   │   ├── docs-locker/ # 📁 Document storage
-│   │       │   │   ├── iot/         # 📡 IoT Sensor Telemetry
-│   │       │   │   ├── settings/    # ⚙️ Farmer Profile Preferences
-│   │       │   │   └── help/        # 🆘 Support & Call Center
-│   │       │   │   └── traceability/# 🔗 QR crop tracking
-│   │       │   │
-│   │       │   └── api/             # ⚙️ Serverless API Routes
-│   │       │       ├── agent/       # Groq Llama-3.3 chat endpoint
-│   │       │       ├── transcribe/  # Groq Whisper voice-to-text
-│   │       │       ├── overpass/    # OSM Overpass 3-mirror proxy
-│   │       │       └── v1/          # Proxied routes → Python ML
-│   │       │           └── tts/     # Google TTS proxy
-│   │       │
-│   │       ├── hooks/
-│   │       │   └── useVoiceChat.ts  # MediaRecorder → Whisper pipeline
-│   │       └── lib/
-│   │           ├── chatStore.ts     # Zustand AI chat state
-│   │           └── supabase/        # DB client
-│   │
-│   └── ml-service/                  # 🧠 Python FastAPI Multi-Agent Backend
-│       ├── main.py                  # FastAPI entry point
-│       ├── agents/
-│       │   ├── orchestrator/        # Master Orchestrator (routes queries)
-│       │   ├── specialist/          # 7 Expert Agents
-│       │   └── base/base_agent.py   # LangChain base class
-│       ├── knowledge_base/          # RAG Vector Store
-│       └── training/                # ML Model Training Pipeline
+└── apps/
+    └── web/                         # 🌐 Next.js Frontend App
+        ├── .env.example             # 🔑 Environment variables template
+        ├── public/
+        │   ├── images/rentals/      # 🚜 Equipment photos
+        │   └── hero-screenshot.png  # 📸 UI Assets
+        │
+        └── src/
+            ├── middleware.ts        # 🛡️ Rate Limiting & Security Headers
+            ├── types/
+            │   └── index.ts         # 📝 Centralized TypeScript Interfaces
+            ├── components/          # 🧩 Shared React Components
+            │   ├── home/            # Landing page UI components
+            │   ├── ui/              # Reusable generic components
+            │   └── ErrorBoundary.tsx# ⚠️ React Error Boundary
+            │
+            └── app/                 # 🛣️ Next.js App Router
+                ├── (marketing)/     # 📢 Public Landing Pages
+                │   └── page.tsx     # Homepage with Judge Panel
+                │
+                ├── (app)/           # 🔒 Protected Dashboard Routes
+                │   ├── AppLayoutClient.tsx  # Sidebar navigation wrapper
+                │   ├── agent/           # 🤖 AI Agent (7-agent chat)
+                │   ├── dashboard/       # 📊 Smart farm dashboard
+                │   ├── resources/       # 🚜 Equipment rentals + cold storage
+                │   ├── market/          # 📈 Mandi price comparator
+                │   ├── schedule/        # 📅 Crop planner & irrigation schedule
+                │   ├── diagnose/        # 📸 Crop disease diagnosis
+                │   ├── disease-library/ # 🦠 Disease encyclopaedia
+                │   ├── soil-health/     # 🧪 Soil health & NPK analysis
+                │   ├── topography/      # 🗺️ Farm Map & plots manager
+                │   ├── community/       # 👥 Kisan Sabha forum & Radio
+                │   ├── schemes/         # 🏛️ Government schemes
+                │   ├── finance/         # 💰 Agri-credit & Loan calculator
+                │   ├── documents/       # 📁 Document storage (Docs Locker)
+                │   ├── iot/             # 📡 IoT Sensor Telemetry
+                │   ├── settings/        # ⚙️ Farmer Profile Preferences
+                │   ├── help/            # 🆘 Support & Call Center
+                │   └── blockchain/      # 🔗 QR crop tracking & Traceability
+                │
+                └── api/             # ⚙️ Serverless API Routes
+                    ├── health/          # 🏥 System health & feature flags
+                    ├── v1/
+                    │   ├── agent/chat/  # Groq Llama-3 70B AI endpoint
+                    │   ├── transcribe/  # Groq Whisper voice-to-text
+                    │   ├── market/      # Live Mandi price fetcher
+                    │   ├── news/        # RSS Krishi News fetcher
+                    │   ├── notifications/ # Push notification generator
+                    │   └── overpass/    # OSM proxy for cold storage
+                    └── tts/             # Google Translate Text-to-Speech
 ```
-
----
 
 ## 🚀 Scalability & DevOps Architecture
 

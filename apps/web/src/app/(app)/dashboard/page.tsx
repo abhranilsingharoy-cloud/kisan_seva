@@ -148,6 +148,27 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
+            {/* PLATFORM IMPACT STRIP */}
+            <div style={{ padding: '0 28px', marginBottom: 18 }}>
+              <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)', borderRadius: 14, padding: '14px 20px', display: 'flex', gap: 0, flexWrap: 'wrap', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, right: 0, width: 200, height: '100%', background: 'radial-gradient(circle at 80% 50%, rgba(34,197,94,0.15) 0%, transparent 70%)' }} />
+                {[
+                  { value: '140M+', label: 'Target Farmers', icon: '👨‍🌾' },
+                  { value: '38', label: 'Disease Classes', icon: '🧬' },
+                  { value: '93.2%', label: 'AI Accuracy', icon: '🎯' },
+                  { value: '5', label: 'Indian Languages', icon: '🗣️' },
+                  { value: '<5s', label: 'Diagnosis Time', icon: '⚡' },
+                  { value: '₹0', label: 'Cost to Farmer', icon: '🆓' },
+                ].map((stat, i) => (
+                  <div key={stat.label} style={{ flex: '1 1 100px', padding: '6px 12px', borderRight: i < 5 ? '1px solid rgba(255,255,255,0.08)' : 'none', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.9rem' }}>{stat.icon}</div>
+                    <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#f0fdf4', letterSpacing: '-0.02em', lineHeight: 1.1 }}>{stat.value}</div>
+                    <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 1 }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* ROW 1: 4 Stat Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, padding: '0 28px', marginBottom: 20 }}>
               {[

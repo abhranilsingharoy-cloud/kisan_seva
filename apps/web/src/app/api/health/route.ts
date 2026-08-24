@@ -1,4 +1,4 @@
-﻿/**
+/**
  * KisanSeva Health Check API
  * 
  * Endpoint: GET /api/health
@@ -68,8 +68,18 @@ export async function GET() {
       ai_agents: 7,
       supported_languages: ["en", "hi", "bn", "ta", "te", "ml", "pa", "gu"],
       disease_classes: 38,
-      model_accuracy: "93.2%",
+      model_accuracy_pct: 93.2,
       inference_latency_p95_ms: 380,
+      training_dataset: "PlantVillage (54,306 images)",
+      voice_input: true,
+      multilingual_tts: true,
+      offline_capable: true,
+      blockchain_traceability: true,
+      sos_emergency_broadcast: true,
+      live_radio_stations: 6,
+      b2b_marketplace: true,
+      cold_storage_finder: true,
+      real_time_mandi_prices: true,
     },
     techStack: {
       frontend: "Next.js 16 (App Router)",

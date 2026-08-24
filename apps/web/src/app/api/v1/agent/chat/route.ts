@@ -1,22 +1,60 @@
 /**
- * KisanSeva — Next.js AI Chat API Route
- * Server-side route that proxies to the ML service agent API,
- * or calls Groq directly as a fast, reliable fallback.
+ * KisanSeva — AI Chat API Route
+ * 
+ * @route POST /api/v1/agent/chat
+ * @description Conversational agricultural AI powered by Groq Llama-3 70B.
+ *   Attempts to proxy to the local Python ML orchestrator first, then falls
+ *   back to calling Groq directly for maximum resilience.
+ * 
+ * @example Request body:
+ * {
+ *   "query": "My tomato leaves are turning yellow",
+ *   "language": "hi",
+ *   "user_id": "user_abc123",
+ *   "plot_id": "plot_xyz",
+ *   "context": { "crop": "tomato", "location": "Punjab" }
+ * }
+ * 
+ * @example Response:
+ * {
+ *   "agent_name": "KisanSeva AI (Groq)",
+ *   "success": true,
+ *   "result": { "text": "...", "type": "general_advisory", "provider": "groq" },
+ *   "confidence": 0.9,
+ *   "language": "hi",
+ *   "sources": ["Groq llama3-70b-8192"]
+ * }
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
 const GROQ_API_KEY   = process.env.GROQ_API_KEY || ''
 const GROQ_MODEL     = 'llama3-70b-8192'
 
+/** Zod schema for validating incoming chat request bodies */
+const ChatRequestSchema = z.object({
+  query: z.string().min(1, 'query is required').max(2000, 'query too long'),
+  language: z.string().default('en'),
+  user_id: z.string().optional(),
+  plot_id: z.string().optional(),
+  context: z.record(z.unknown()).default({}),
+})
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { query, language = 'en', user_id, plot_id, context = {} } = body
-
-    if (!query || typeof query !== 'string') {
-      return NextResponse.json({ error: 'query is required' }, { status: 400 })
+    const rawBody = await req.json()
+    
+    // Validate inputs with Zod
+    const parseResult = ChatRequestSchema.safeParse(rawBody)
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid request body', details: parseResult.error.flatten() },
+        { status: 400 }
+      )
     }
+    
+    const { query, language, user_id, plot_id, context } = parseResult.data
 
     // ── Try ML Service orchestrator first ─────────────────
     try {

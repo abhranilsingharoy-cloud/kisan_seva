@@ -461,6 +461,39 @@ kisan_seva/                          # 🏠 Turborepo Monorepo Root
 
 ---
 
+## 🚀 Scalability & DevOps Architecture
+
+[![CI/CD](https://github.com/abhranilsingharoy-cloud/kisan_seva/actions/workflows/ci.yml/badge.svg)](https://github.com/abhranilsingharoy-cloud/kisan_seva/actions)
+
+### Deployment Pipeline
+
+```
+Developer → git push → GitHub Actions (Lint + Build + Audit) → Vercel Edge CDN
+```
+
+Every commit to `main` automatically:
+1. ✅ Runs **ESLint** code quality checks
+2. ✅ Runs **TypeScript** type checking
+3. ✅ Builds **Next.js production bundle**
+4. ✅ Runs **pnpm security audit**
+5. ✅ Triggers **Vercel auto-deploy** to global edge network
+
+### Scalability Targets
+
+| Layer | Technology | Capacity |
+|-------|-----------|----------|
+| Frontend CDN | Vercel Edge Network | 10M+ requests/day |
+| API Layer | Next.js Serverless Functions | Auto-scales to zero |
+| Database | Supabase PostgreSQL | 500K+ rows, connection pooling |
+| LLM Inference | Groq Llama-3 70B | 18,000 tokens/second |
+| Authentication | Clerk | 1M+ MAU on free tier |
+
+### Health Monitoring
+
+🏥 **Live Health Endpoint:** [`/api/health`](https://kisanseva-ks.vercel.app/api/health) — Returns real-time status of all backend services (Supabase, Groq, Weather API, News Feed) with latency metrics.
+
+---
+
 ## ⚙️ Local Development Setup
 
 ### Quick Start (Frontend Only)

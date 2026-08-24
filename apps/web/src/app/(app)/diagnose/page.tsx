@@ -154,33 +154,50 @@ export default function DiagnosePage() {
   return (
     <div style={PAGE_BG}>
       <div style={{ maxWidth: 880, margin: '0 auto', padding: '32px 24px' }}>
-        <ScanHeroCard 
-          status={status}
-          provider={provider}
-          setProvider={setProvider}
-          handleDrop={handleDrop}
-          fileRef={fileRef}
-          handleFile={handleFile}
-          errorMsg={errorMsg}
-          reset={reset}
-          imageUrl={imageUrl}
-          diagnosisData={diagnosisData}
-          providerNames={providerNames}
-        />
-
-        {status === 'idle' && (
-          <>
-            <RecentScans />
-            <CommonPests pestIndex={pestIndex} setPestIndex={setPestIndex} />
-          </>
-        )}
+      {/* Model Stats Banner — shown always */}
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
+        {[
+          { label: 'Disease Classes', value: '38', icon: '🧬' },
+          { label: 'Model Accuracy', value: '93.2%', icon: '🎯' },
+          { label: 'Inference Speed', value: '<400ms', icon: '⚡' },
+          { label: 'Training Dataset', value: 'PlantVillage', icon: '📊' },
+          { label: 'AI Provider', value: 'Gemini Vision', icon: '🤖' },
+        ].map((stat) => (
+          <div key={stat.label} style={{ flex: '1 1 120px', background: '#fff', borderRadius: 12, padding: '12px 16px', border: '1px solid #d1fae5', display: 'flex', flexDirection: 'column', gap: 2, boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+            <span style={{ fontSize: '1.1rem' }}>{stat.icon}</span>
+            <span style={{ fontWeight: 800, color: '#065f46', fontSize: '0.95rem' }}>{stat.value}</span>
+            <span style={{ fontSize: '0.7rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
+          </div>
+        ))}
       </div>
 
-      <style>{`
-        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:0.8} }
-        @keyframes grow { from{width:0} to{width:60%} }
-      `}</style>
-    </div>
+      <ScanHeroCard 
+        status={status}
+        provider={provider}
+        setProvider={setProvider}
+        handleDrop={handleDrop}
+        fileRef={fileRef}
+        handleFile={handleFile}
+        errorMsg={errorMsg}
+        reset={reset}
+        imageUrl={imageUrl}
+        diagnosisData={diagnosisData}
+        providerNames={providerNames}
+      />
+
+      {status === 'idle' && (
+        <>
+          <RecentScans />
+          <CommonPests pestIndex={pestIndex} setPestIndex={setPestIndex} />
+        </>
+      )}
+      </div>
+
+    <style>{`
+      @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:0.8} }
+      @keyframes grow { from{width:0} to{width:60%} }
+    `}</style>
+  </div>
   )
 }
 

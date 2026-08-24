@@ -1,5 +1,5 @@
-﻿import React, { useState } from 'react';
-import { Search, ShoppingCart, Leaf, Filter, Star, Plus, Check, Minus, X, CreditCard, Truck, ShieldCheck, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, ShoppingCart, Leaf, Filter, Star, Plus, Check, Minus, X, CreditCard, Truck, ShieldCheck, ChevronRight, MapPin } from 'lucide-react';
 
 const FERTILISERS = [
   { id: 'f1', name: 'IFFCO Neem Coated Urea', category: 'Nitrogenous', composition: '46% N', price: 266, weight: '45 kg', rating: 4.8, type: 'Chemical', color: '#0ea5e9', brand: 'IFFCO', image: 'https://images.unsplash.com/photo-1628183204959-1e16104bc684?w=400&q=80' },

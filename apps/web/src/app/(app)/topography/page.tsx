@@ -150,25 +150,20 @@ export default function TopographyPage() {
 
         const newZones = generateGrid(baseHealth);
         
-        const scanZones = async () => {
-          for (let i = 1; i <= newZones.length; i++) {
-            setZones(newZones.slice(0, i));
-            await new Promise(r => setTimeout(r, 80));
-          }
-        };
-        scanZones();
+        // Reveal zones one by one for "scanning" effect, then mark done
+        for (let i = 1; i <= newZones.length; i++) {
+          setZones(newZones.slice(0, i));
+          await new Promise(r => setTimeout(r, 80));
+        }
 
       } catch (error) {
         console.error("Data fetch failed:", error);
-        // Fallback if API fails
+        // Fallback if API fails — still show a full grid
         const newZones = generateGrid(75);
-        const scanZones = async () => {
-          for (let i = 1; i <= newZones.length; i++) {
-            setZones(newZones.slice(0, i));
-            await new Promise(r => setTimeout(r, 80));
-          }
-        };
-        scanZones();
+        for (let i = 1; i <= newZones.length; i++) {
+          setZones(newZones.slice(0, i));
+          await new Promise(r => setTimeout(r, 80));
+        }
       } finally {
         setIsFetchingRealData(false);
       }

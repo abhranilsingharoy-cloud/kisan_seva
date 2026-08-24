@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, MessageSquare, Heart, Share2, Image as ImageIcon, 
   Send, Sparkles, ShieldCheck,
-  Play, Pause, Volume2, VolumeX, Radio, Wifi, WifiOff, ExternalLink, RefreshCw, Signal
+  Play, Pause, Volume2, VolumeX, Radio, Wifi, WifiOff, ExternalLink, RefreshCw, Signal, Newspaper
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -50,13 +50,28 @@ interface Post {
 }
 
 export default function CommunityHub() {
-  const [activeTab, setActiveTab] = useState<'sabha' | 'radio'>('sabha');
+  const [activeTab, setActiveTab] = useState<'sabha' | 'radio' | 'news'>('sabha');
 
   // --- Sabha State ---
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // --- News State ---
+  const [news, setNews] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'news' && news.length === 0) {
+      setLoadingNews(true);
+      fetch('/api/v1/news')
+        .then(r => r.json())
+        .then(d => { if (d.success) setNews(d.articles); })
+        .catch(console.error)
+        .finally(() => setLoadingNews(false));
+    }
+  }, [activeTab]);
 
   const fetchPosts = async () => {
     try {
@@ -194,6 +209,12 @@ export default function CommunityHub() {
               style={{ padding: '10px 20px', borderRadius: 24, fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, background: activeTab === 'radio' ? '#2d6a27' : '#f3f4f6', color: activeTab === 'radio' ? '#fff' : '#4b5563' }}
             >
               <Radio size={18} /> Krishi Radio
+            </button>
+            <button 
+              onClick={() => setActiveTab('news')} 
+              style={{ padding: '10px 20px', borderRadius: 24, fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, background: activeTab === 'news' ? '#2d6a27' : '#f3f4f6', color: activeTab === 'news' ? '#fff' : '#4b5563' }}
+            >
+              <Newspaper size={18} /> Krishi News
             </button>
           </div>
         </div>
@@ -353,6 +374,60 @@ export default function CommunityHub() {
               <Radio size={16} style={{ color: '#2d6a27', flexShrink: 0 }} />
               <span>All streams are provided by public community and rural broadcast infrastructure.</span>
             </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 3: KRISHI NEWS */}
+        {/* ========================================================= */}
+        {activeTab === 'news' && (
+          <div className="fade-in flex flex-col gap-5">
+            <div className="bg-gradient-to-r from-blue-800 to-blue-600 rounded-2xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute right-0 bottom-0 opacity-10 translate-x-1/4 translate-y-1/4"><Newspaper size={200} /></div>
+              <div className="relative z-10">
+                <h1 className="text-3xl font-bold mb-2">Live Agriculture News</h1>
+                <p className="text-blue-100 max-w-lg text-lg">Stay updated with the latest real-time agricultural news, market trends, and government policies across India.</p>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {loadingNews && (
+                <div className="flex flex-col items-center justify-center text-slate-500 py-12">
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p>Fetching latest updates...</p>
+                </div>
+              )}
+
+              {!loadingNews && news.map((article, idx) => (
+                <motion.a 
+                  key={article.id || idx}
+                  href={article.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: 20 }} 
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow p-5 md:p-6 block text-decoration-none group"
+                >
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <Sparkles size={14} /> Top Story
+                      </div>
+                      <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-700 transition-colors mb-3 leading-snug">
+                        {article.title}
+                      </h3>
+                      <div className="text-sm text-slate-500 font-medium">
+                        {article.date}
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors text-slate-400">
+                      <ExternalLink size={18} />
+                    </div>
+                  </div>
+                </motion.a>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </main>

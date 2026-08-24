@@ -55,7 +55,31 @@ export async function GET(req: Request) {
       }
     }
 
-    // 2. Add a fallback Market Notification (simulated live using timestamp)
+    // 2. Add Live News Notification
+    try {
+      const rssUrl = 'https://news.google.com/rss/search?q=agriculture+india&hl=en-IN&gl=IN&ceid=IN:en';
+      const newsResp = await fetch(rssUrl, { next: { revalidate: 3600 } });
+      if (newsResp.ok) {
+        const xml = await newsResp.text();
+        const titleMatch = /<item>[\s\S]*?<title>([\s\S]*?)<\/title>/.exec(xml);
+        if (titleMatch) {
+          let title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/, '$1').trim();
+          title = title.replace(/\s*-\s*[^>]*$/, '');
+          notifications.push({
+            id: `notif-news-${now.getTime()}`,
+            icon: 'bell',
+            title: 'Krishi News Update',
+            body: `Top Story: ${title}`,
+            time: 'Just now',
+            read: false
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch news for notification', e);
+    }
+
+    // 3. Add a fallback Market Notification (simulated live using timestamp)
     notifications.push({ 
       id: `notif-market-${now.getTime()}`, 
       icon: 'market', 

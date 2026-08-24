@@ -81,6 +81,36 @@ export default function B2BMarketplace() {
               commodity: 'Tomato', variety: 'Hybrid Red', quantityReq: 50, quantityUnit: 'Tonnes',
               priceOffered: 3200, marketAvg: 2900, deliveryLocation: '5 km away - Warehouse', expiresInHours: 12.2,
               tags: ['Next Day Delivery'], status: 'open'
+            },
+            {
+              id: 'demo-3', buyerName: 'Adani Wilmar', buyerType: 'Agri-Business', verified: true, rating: 4.8,
+              commodity: 'Soybean', variety: 'Yellow (Grade 1)', quantityReq: 500, quantityUnit: 'Tonnes',
+              priceOffered: 4800, marketAvg: 4500, deliveryLocation: '45 km away - Processing Plant', expiresInHours: 24.5,
+              tags: ['Bulk Order', 'Advance Payment'], status: 'open'
+            },
+            {
+              id: 'demo-4', buyerName: 'Zomato Hyperpure', buyerType: 'B2B Food Tech', verified: true, rating: 4.6,
+              commodity: 'Onion', variety: 'Nashik Red', quantityReq: 20, quantityUnit: 'Tonnes',
+              priceOffered: 2200, marketAvg: 1950, deliveryLocation: '18 km away - Distribution Center', expiresInHours: 8.0,
+              tags: ['Quality Check Required'], status: 'open'
+            },
+            {
+              id: 'demo-5', buyerName: 'Britannia Industries', buyerType: 'FMCG Giant', verified: true, rating: 4.9,
+              commodity: 'Wheat', variety: 'Lok-1', quantityReq: 800, quantityUnit: 'Tonnes',
+              priceOffered: 2600, marketAvg: 2400, deliveryLocation: '60 km away - Mill', expiresInHours: 48.0,
+              tags: ['Long Term Contract'], status: 'open'
+            },
+            {
+              id: 'demo-6', buyerName: 'BigBasket (Tata Enterprise)', buyerType: 'E-commerce', verified: true, rating: 4.5,
+              commodity: 'Potato', variety: 'Chipsona', quantityReq: 30, quantityUnit: 'Tonnes',
+              priceOffered: 1850, marketAvg: 1600, deliveryLocation: '22 km away - Sorting Hub', expiresInHours: 6.5,
+              tags: ['Direct Farm Pickup'], status: 'open'
+            },
+            {
+              id: 'demo-7', buyerName: 'Patanjali Ayurved', buyerType: 'FMCG Corporate', verified: true, rating: 4.7,
+              commodity: 'Rice', variety: 'Basmati (1121)', quantityReq: 150, quantityUnit: 'Tonnes',
+              priceOffered: 8500, marketAvg: 7900, deliveryLocation: '85 km away - Haridwar Hub', expiresInHours: 72.0,
+              tags: ['Export Quality', 'Premium Rate'], status: 'open'
             }
           ]);
         } else {
@@ -115,35 +145,15 @@ export default function B2BMarketplace() {
     setBids(current => current.map(b => b.id === id ? { ...b, status: 'accepting' } : b));
     
     try {
-      // 2. Call real backend API to secure contract and notify buyer
-      const res = await fetch('/api/v1/b2b', {
+      // 2. Call backend API to log the interaction
+      await fetch('/api/v1/b2b', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'update_status', contractId: id, newStatus: 'Secured' })
-      });
+      }).catch(() => {});
       
-      const data = await res.json();
-      
-      if (data.success) {
-        // Add artificial delay just so they can enjoy the "Securing..." animation
-        setTimeout(() => {
-          setBids(current => current.map(b => b.id === id ? { 
-            ...b, 
-            status: 'secured', 
-            securedAt: new Date().toISOString(),
-            contractHash: '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''),
-            notificationLog: {
-              sentAt: new Date().toISOString(),
-              recipient: b.buyerName,
-              channel: 'Enterprise API',
-              message: `Contract accepted by seller for ${b.quantityReq} ${b.quantityUnit} of ${b.commodity}. Awaiting delivery.`,
-              status: 'Delivered'
-            }
-          } : b));
-        }, 1500);
-      } else {
-        throw new Error(data.error);
-      }
+      // Redirect to Google as requested by user
+      window.location.href = 'https://google.com';
     } catch (err) {
       console.error(err);
       // Revert if failed

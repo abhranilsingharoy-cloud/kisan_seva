@@ -5,6 +5,7 @@
 # 🌾 KisanSeva — किसान सेवा
 
 ### *Empowering Every Farmer with the Power of AI*
+#### 🇮🇳 Building for a Bikasata Bharat
 
 <br/>
 
@@ -31,6 +32,8 @@
 <br/>
 
 [🌐 **Live Demo**](https://kisan-seva-ks.vercel.app/) &nbsp;|&nbsp; [📂 **GitHub**](https://github.com/abhranilsingharoy-cloud/kisan_seva) &nbsp;|&nbsp; [📋 **Report Issue**](https://github.com/abhranilsingharoy-cloud/kisan_seva/issues)
+
+✨ **Contributing towards a Bikasata Bharat (Developed India)** ✨
 
 </div>
 
@@ -665,5 +668,7 @@ OPENWEATHER_API_KEY=...
 [![Stars](https://img.shields.io/github/stars/abhranilsingharoy-cloud/kisan_seva?style=social)](https://github.com/abhranilsingharoy-cloud/kisan_seva)
 
 `Made with 🌾 · Powered by Limitless Prime· Built for Bharat`
+
+✨ **Contributing towards a Bikasata Bharat (Developed India)** ✨
 
 </div>

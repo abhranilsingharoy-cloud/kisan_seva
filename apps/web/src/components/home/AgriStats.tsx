@@ -6,7 +6,7 @@ export default function AgriStats() {
   const stats = [
     { label: "Farmers Served", value: "12,000+", icon: Users, iconBg: "bg-[#FFB932]/10 text-amber-500" },
     { label: "Avg Yield Increase", value: "18%", icon: TrendingUp, iconBg: "bg-[#65a30d]/10 text-[#65a30d]" },
-    { label: "Disease Accuracy", value: "91%+", icon: Microscope, iconBg: "bg-[#FFB932]/10 text-amber-500" },
+    { label: "Disease Accuracy", value: "93.2%", icon: Microscope, iconBg: "bg-[#FFB932]/10 text-amber-500" },
     { label: "Diagnosis Time", value: "<5 sec", icon: Clock, iconBg: "bg-slate-50 text-slate-500" },
   ];
 

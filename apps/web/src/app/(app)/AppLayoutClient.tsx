@@ -119,7 +119,7 @@ export default function AppLayoutClient({
           if (data.notifications && data.notifications.length > 0) {
             // Merge with existing to keep read status if IDs match, otherwise use new
             setNotifs(prev => {
-              const prevMap = new Map(prev.map(n => [n.id, n]));
+              const prevMap = new Map<string, Notif>(prev.map(n => [n.id, n]));
               const merged = data.notifications.map((n: Notif) => {
                 if (prevMap.has(n.id)) return prevMap.get(n.id)!;
                 return n;

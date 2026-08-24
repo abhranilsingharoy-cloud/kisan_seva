@@ -102,16 +102,51 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifs, setNotifs] = useState<Notif[]>(DEFAULT_NOTIFICATIONS);
+  const [notifs, setNotifs] = useState<Notif[]>([]);
 
   useEffect(() => {
-    const loadNotifs = () => {
+    const loadNotifs = async () => {
       const saved = localStorage.getItem('ks_notifications');
-      if (saved) setNotifs(JSON.parse(saved));
+      if (saved) {
+        setNotifs(JSON.parse(saved));
+      }
+      
+      // Fetch fresh notifications from the server
+      try {
+        const res = await fetch('/api/v1/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.notifications && data.notifications.length > 0) {
+            // Merge with existing to keep read status if IDs match, otherwise use new
+            setNotifs(prev => {
+              const prevMap = new Map(prev.map(n => [n.id, n]));
+              const merged = data.notifications.map((n: Notif) => {
+                if (prevMap.has(n.id)) return prevMap.get(n.id)!;
+                return n;
+              });
+              
+              // Only update localStorage if there are new unread notifications
+              const hasNew = merged.some((n: Notif) => !n.read && !prevMap.has(n.id));
+              if (hasNew) localStorage.setItem('ks_notifications', JSON.stringify(merged));
+              
+              return merged;
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch real notifications:', err);
+      }
     };
+    
     loadNotifs();
+    
+    // Poll for new notifications every 5 minutes
+    const interval = setInterval(loadNotifs, 5 * 60 * 1000);
     window.addEventListener('storage', loadNotifs);
-    return () => window.removeEventListener('storage', loadNotifs);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', loadNotifs);
+    };
   }, []);
 
   const saveNotifs = (updated: Notif[]) => {

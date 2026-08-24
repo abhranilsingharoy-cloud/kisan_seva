@@ -17,6 +17,59 @@ type Doc = {
 
 const CATEGORIES = ['All', 'Land Records', 'KCC / Bank', 'Soil Health Card', 'Insurance', 'Government ID', 'Other'];
 
+// ─── IndexedDB Helper ────────────────────────────────────────────────────────
+const DB_NAME = 'KisanSevaDocsDB';
+const STORE_NAME = 'docFiles';
+
+function initDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains(STORE_NAME)) {
+        req.result.createObjectStore(STORE_NAME);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveFileToDB(id: string, dataUrl: string) {
+  try {
+    const db = await initDB();
+    return new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(dataUrl, id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) { console.error('IDB save error', e); }
+}
+
+async function getFileFromDB(id: string): Promise<string | null> {
+  try {
+    const db = await initDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) { console.error('IDB get error', e); return null; }
+}
+
+async function deleteFileFromDB(id: string) {
+  try {
+    const db = await initDB();
+    return new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) { console.error('IDB delete error', e); }
+}
+
 export default function DocumentLockerPage() {
   const [docs, setDocs] = useState<Doc[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -45,7 +98,7 @@ export default function DocumentLockerPage() {
     if (!selectedFile) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const newDoc: Doc = {
         id: Date.now().toString(),
         name: uploadForm.name || selectedFile.name,
@@ -55,6 +108,10 @@ export default function DocumentLockerPage() {
         dataUrl: reader.result as string,
         type: selectedFile.type,
       };
+      
+      // Save full file to IndexedDB
+      await saveFileToDB(newDoc.id, newDoc.dataUrl as string);
+      
       saveDocs([newDoc, ...docs]);
       setShowUpload(false);
       setSelectedFile(null);
@@ -63,7 +120,24 @@ export default function DocumentLockerPage() {
     reader.readAsDataURL(selectedFile);
   };
 
-  const handleDelete = (id: string) => saveDocs(docs.filter(d => d.id !== id));
+  const handleDelete = async (id: string) => {
+    await deleteFileFromDB(id);
+    saveDocs(docs.filter(d => d.id !== id));
+  };
+
+  const handleView = async (doc: Doc) => {
+    let dataUrl = doc.dataUrl;
+    if (dataUrl === '[stored]' || !dataUrl) {
+      const dbUrl = await getFileFromDB(doc.id);
+      if (dbUrl) {
+         dataUrl = dbUrl;
+      } else {
+         alert('File data not found in local database (it may have been cleared).');
+         return;
+      }
+    }
+    setPreview({ ...doc, dataUrl });
+  };
 
   const filtered = filter === 'All' ? docs : docs.filter(d => d.category === filter);
 
@@ -124,11 +198,9 @@ export default function DocumentLockerPage() {
                   <div style={{ fontSize: '0.8125rem', color: '#6b7280' }}>{doc.dateAdded} · {doc.size}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
-                  {doc.dataUrl && doc.dataUrl !== '[stored]' && (
-                    <button onClick={() => setPreview(doc)} style={{ flex: 1, background: '#eff6ff', color: '#1d4ed8', border: 'none', padding: '8px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: '0.875rem' }}>
-                      <Eye size={14} /> View
-                    </button>
-                  )}
+                  <button onClick={() => handleView(doc)} style={{ flex: 1, background: '#eff6ff', color: '#1d4ed8', border: 'none', padding: '8px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: '0.875rem' }}>
+                    <Eye size={14} /> View
+                  </button>
                   <button onClick={() => handleDelete(doc.id)} style={{ flex: 1, background: '#fef2f2', color: '#dc2626', border: 'none', padding: '8px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: '0.875rem' }}>
                     <Trash2 size={14} /> Delete
                   </button>
@@ -185,7 +257,7 @@ export default function DocumentLockerPage() {
       )}
 
       {/* Preview Modal */}
-      {preview && preview.dataUrl && preview.dataUrl !== '[stored]' && (
+      {preview && preview.dataUrl && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setPreview(null)} />
           <div style={{ position: 'relative', background: '#fff', borderRadius: 16, maxWidth: 700, width: '100%', maxHeight: '90vh', overflow: 'hidden' }}>

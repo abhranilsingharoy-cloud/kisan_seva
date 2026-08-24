@@ -437,20 +437,23 @@ kisan_seva/                          # 🏠 Turborepo Monorepo Root
 │   │   └── src/
 │   │       ├── app/
 │   │       │   ├── (app)/           # 🔒 Protected dashboard routes
-│   │       │   │   ├── AppLayoutClient.tsx  # Sidebar with all 16 nav items
+│   │       │   │   ├── AppLayoutClient.tsx  # Sidebar with all 18 nav items
 │   │       │   │   ├── agent/       # 🤖 AI Agent (7-agent chat)
 │   │       │   │   ├── dashboard/   # 📊 Smart farm dashboard
 │   │       │   │   ├── resources/   # 🚜 Equipment rentals + cold storage
 │   │       │   │   ├── market/      # 📈 Mandi price comparator
 │   │       │   │   ├── schedule/    # 📅 Crop planner & irrigation schedule
-│   │       │   │   ├── diagnose/    # 👁️ Crop disease diagnosis
+│   │       │   │   ├── diagnose/    # 📸 Crop disease diagnosis
 │   │       │   │   ├── disease-library/ # 🦠 Disease encyclopaedia
-│   │       │   │   ├── soil/        # 🌱 Soil health & NPK analysis
+│   │       │   │   ├── soil/        # 🧪 Soil health & NPK analysis
 │   │       │   │   ├── plots/       # 🗺️ My farm plots manager
-│   │       │   │   ├── community/   # 🤝 Kisan Sabha forum
-│   │       │   │   ├── schemes/     # 💰 Government schemes
-│   │       │   │   ├── agri-credit/ # 💳 Loan calculator
+│   │       │   │   ├── community/   # 👥 Kisan Sabha forum
+│   │       │   │   ├── schemes/     # 🏛️ Government schemes
+│   │       │   │   ├── agri-credit/ # 💰 Loan calculator
 │   │       │   │   ├── docs-locker/ # 📁 Document storage
+│   │       │   │   ├── iot/         # 📡 IoT Sensor Telemetry
+│   │       │   │   ├── settings/    # ⚙️ Farmer Profile Preferences
+│   │       │   │   └── help/        # 🆘 Support & Call Center
 │   │       │   │   └── traceability/# 🔗 QR crop tracking
 │   │       │   │
 │   │       │   └── api/             # ⚙️ Serverless API Routes

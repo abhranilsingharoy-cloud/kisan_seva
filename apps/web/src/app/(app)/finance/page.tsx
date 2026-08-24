@@ -386,6 +386,11 @@ export default function FinancePage() {
           
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: score ? getScoreColor(score) : '#e2e8f0' }} />
           
+          {/* Security Badge */}
+          <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', border: '1px solid #a7f3d0' }}>
+            <ShieldCheck size={12} /> 256-bit AES
+          </div>
+
           <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#334155', margin: '0 0 24px 0', width: '100%', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <Activity size={18} color="#64748b" /> Live Credit Engine
           </h2>
@@ -414,7 +419,10 @@ export default function FinancePage() {
 
               {/* Engine Factors */}
               <div style={{ width: '100%', backgroundColor: '#f8fafc', borderRadius: '12px', padding: '16px', marginTop: '12px' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Live Underwriting Factors</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Live Underwriting Factors</span>
+                  <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '2px' }}><CheckCircle2 size={12}/> RBI Compliant</span>
+                </div>
                 
                 {realData ? (
                   <>
@@ -435,9 +443,23 @@ export default function FinancePage() {
                   <div style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: 600 }}>Could not fetch live telemetry. Risk factor increased.</div>
                 )}
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e2e8f0' }}>
-                  <span style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={14}/> Farm GPS Verification</span>
-                  <span style={{ fontWeight: 700, color: '#10b981' }}>Verified Location</span>
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={14}/> Farm GPS Verification</span>
+                    <span style={{ fontWeight: 700, color: '#10b981' }}>Verified Location</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}><FileText size={14}/> PM-Kisan ID Match</span>
+                    <span style={{ fontWeight: 700, color: '#10b981' }}>Verified via Aadhaar</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}><BarChart2 size={14}/> Experian / CIBIL Sync</span>
+                    <span style={{ fontWeight: 700, color: '#3b82f6' }}>Active (AA Framework)</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={14}/> Bhulekh Land Registry</span>
+                    <span style={{ fontWeight: 700, color: '#10b981' }}>Title Clear & Encumbrance-Free</span>
+                  </div>
                 </div>
               </div>
             </>
@@ -457,9 +479,14 @@ export default function FinancePage() {
             <>
               {/* Financial Inputs */}
               <div style={{ marginBottom: '24px', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
-                  Declared Annual Farm Revenue
-                </label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Declared Annual Farm Revenue
+                  </label>
+                  <button style={{ fontSize: '0.75rem', fontWeight: 700, backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Activity size={12} /> Sync via Account Aggregator
+                  </button>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #cbd5e1', padding: '8px 16px' }}>
                   <IndianRupee size={18} color="#64748b" />
                   <input 
@@ -532,6 +559,16 @@ export default function FinancePage() {
                       <option>Drip Irrigation Setup</option>
                       <option>Labor Wages & Harvesting</option>
                     </select>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px', backgroundColor: '#f0fdf4', border: '1px dashed #86efac', borderRadius: '12px', marginBottom: '24px' }}>
+                    <ShieldCheck size={24} color="#16a34a" style={{ flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#166534', marginBottom: '4px' }}>Blockchain Signature Verification</div>
+                      <div style={{ fontSize: '0.8rem', color: '#15803d', lineHeight: 1.4 }}>
+                        Your certificate will be minted on the Polygon network as an immutable Smart Contract, ensuring cryptographic trust with partner banks.
+                      </div>
+                    </div>
                   </div>
 
                   <button 

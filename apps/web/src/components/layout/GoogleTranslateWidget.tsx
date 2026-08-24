@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import Script from "next/script";
 
 // Extend the Window interface to include Google Translate API
@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-export default function GoogleTranslateWidget({ className = "" }: { className?: string }) {
+const GoogleTranslateWidget = React.memo(({ className = "" }: { className?: string }) => {
   useEffect(() => {
     // Define the global callback function required by Google Translate
     window.googleTranslateElementInit = () => {
@@ -49,5 +49,7 @@ export default function GoogleTranslateWidget({ className = "" }: { className?: 
       ></div>
     </>
   );
-}
+}, () => true); // Never re-render this component, so React doesn't wipe the Google Translate DOM mutations
+
+export default GoogleTranslateWidget;
 

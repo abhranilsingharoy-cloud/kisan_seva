@@ -65,8 +65,21 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// ─── Overpass — comprehensive query ──────────────────────────────────────────
-async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<{results: ColdStorage[], isFallback: boolean}> {
+// ─── AI fallback (Gemini → Groq) ──────────────────────────────────────────────
+async function fetchFromAI(lat: number, lon: number, cityName: string, radiusKm: number): Promise<{results: ColdStorage[], source: string}> {
+  const res = await fetch('/api/cold-storage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lat, lon, city: cityName, radiusKm }),
+  });
+  if (!res.ok) throw new Error('AI fallback error ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return { results: data.results || [], source: data.source || 'ai' };
+}
+
+// ─── Main fetch: Overpass first, AI fallback ──────────────────────────────────
+async function fetchNearby(lat: number, lon: number, radiusKm: number, cityName: string): Promise<{results: ColdStorage[], isFallback: boolean, source: string}> {
   const r = radiusKm * 1000;
 
   // Wide net: OSM tags + name patterns common in India (Hindi, Bengali, Tamil etc.)
@@ -90,80 +103,76 @@ async function fetchNearby(lat: number, lon: number, radiusKm: number): Promise<
   way["name"~"sheeth bhandar",i](around:${r},${lat},${lon});
   node["name"~"refrigerat",i]["amenity"~"storage|warehouse|industrial"](around:${r},${lat},${lon});
   way["name"~"refrigerat",i]["amenity"~"storage|warehouse|industrial"](around:${r},${lat},${lon});
-  node["name"~"hims cold",i](around:${r},${lat},${lon});
-  way["name"~"hims cold",i](around:${r},${lat},${lon});
   node["name"~"frozen",i]["amenity"~"warehouse|storage|industrial"](around:${r},${lat},${lon});
   way["name"~"frozen",i]["amenity"~"warehouse|storage|industrial"](around:${r},${lat},${lon});
 );
 out center tags;
   `;
 
-  // Use our server-side proxy to avoid CORS issues and get mirror fallback
-  const res = await fetch('/api/overpass', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
+  let osmResults: ColdStorage[] = [];
+  let osmOk = false;
+
+  try {
+    const res = await fetch('/api/overpass', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.error) {
+        const seen = new Set<string>();
+        for (const el of data.elements as any[]) {
+          const elLat: number = el.lat ?? el.center?.lat;
+          const elLon: number = el.lon ?? el.center?.lon;
+          if (!elLat || !elLon) continue;
+          const tags = el.tags ?? {};
+          const name: string = tags.name || tags['name:en'] || tags['name:hi'] || 'Cold Storage Facility';
+          const key = name.toLowerCase().slice(0, 20) + '_' + elLat.toFixed(3);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const addrParts = [tags['addr:housenumber'], tags['addr:street'], tags['addr:village'] || tags['addr:suburb'], tags['addr:city'] || tags['addr:town'] || tags['addr:district'], tags['addr:state']].filter(Boolean);
+          osmResults.push({
+            id: String(el.id), name, address: addrParts.length > 0 ? addrParts.join(', ') : '',
+            lat: elLat, lon: elLon, distanceKm: haversineKm(lat, lon, elLat, elLon),
+            phone: tags.phone || tags['contact:phone'] || tags['contact:mobile'],
+            website: tags.website || tags['contact:website'],
+            openingHours: tags.opening_hours, operator: tags.operator,
+            capacity: tags.capacity || tags['storage:capacity'],
+            mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${elLat},${elLon}`,
+          });
+        }
+        osmOk = true;
+      }
+    }
+  } catch (e) {
+    console.warn('[StorageTab] Overpass failed:', e);
+  }
+
+  osmResults = osmResults.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 40);
+
+  // Got real OSM data — return it
+  if (osmOk && osmResults.length > 0) {
+    return { results: osmResults, isFallback: false, source: 'openstreetmap' };
+  }
+
+  // Overpass gave nothing → try AI (Gemini → Groq)
+  try {
+    const { results: aiResults, source } = await fetchFromAI(lat, lon, cityName, radiusKm);
+    if (aiResults.length > 0) {
+      return { results: aiResults, isFallback: true, source };
+    }
+  } catch (e) {
+    console.warn('[StorageTab] AI fallback failed:', e);
+  }
+
+  // Last resort: built-in dataset
+  const fallbackWithDist = FALLBACK_STORAGES.map(s => {
+    const d = haversineKm(lat, lon, s.lat, s.lon);
+    return { ...s, distanceKm: d, mapsUrl: `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}` };
   });
-
-  if (!res.ok) throw new Error('Overpass proxy error ' + res.status);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-
-  const seen = new Set<string>();
-  const results: ColdStorage[] = [];
-
-  for (const el of data.elements as any[]) {
-    const elLat: number = el.lat ?? el.center?.lat;
-    const elLon: number = el.lon ?? el.center?.lon;
-    if (!elLat || !elLon) continue;
-
-    const tags = el.tags ?? {};
-    const name: string =
-      tags.name || tags['name:en'] || tags['name:hi'] || 'Cold Storage Facility';
-
-    // Dedup by name + rounded coords
-    const key = name.toLowerCase().slice(0, 20) + '_' + elLat.toFixed(3);
-    if (seen.has(key)) continue;
-    seen.add(key);
-
-    const addrParts = [
-      tags['addr:housenumber'],
-      tags['addr:street'],
-      tags['addr:village'] || tags['addr:suburb'],
-      tags['addr:city'] || tags['addr:town'] || tags['addr:district'],
-      tags['addr:state'],
-    ].filter(Boolean);
-
-    results.push({
-      id: String(el.id),
-      name,
-      address: addrParts.length > 0 ? addrParts.join(', ') : '',
-      lat: elLat,
-      lon: elLon,
-      distanceKm: haversineKm(lat, lon, elLat, elLon),
-      phone: tags.phone || tags['contact:phone'] || tags['contact:mobile'],
-      website: tags.website || tags['contact:website'],
-      openingHours: tags.opening_hours,
-      operator: tags.operator,
-      capacity: tags.capacity || tags['storage:capacity'],
-      mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${elLat},${elLon}`,
-    });
-  }
-
-  let finalResults = results.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 40);
-  let isFallback = false;
-  
-  if (finalResults.length === 0) {
-    isFallback = true;
-    const fallbackWithDist = FALLBACK_STORAGES.map(s => {
-      const d = haversineKm(lat, lon, s.lat, s.lon);
-      return { ...s, distanceKm: d, mapsUrl: `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}` };
-    });
-    fallbackWithDist.sort((a, b) => a.distanceKm - b.distanceKm);
-    finalResults = fallbackWithDist.slice(0, 3);
-  }
-  
-  return { results: finalResults, isFallback };
+  fallbackWithDist.sort((a, b) => a.distanceKm - b.distanceKm);
+  return { results: fallbackWithDist.slice(0, 5), isFallback: true, source: 'database' };
 }
 
 // ─── Geocode (Nominatim) ──────────────────────────────────────────────────────
@@ -213,6 +222,7 @@ export function StorageTab() {
   const [manualCity, setManualCity] = useState('');
   const [radiusKm, setRadiusKm] = useState(50);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dataSource, setDataSource] = useState<string>('openstreetmap');
   const listRef = useRef<HTMLDivElement>(null);
 
   const runSearch = useCallback(async (lat: number, lon: number, name: string) => {
@@ -223,8 +233,9 @@ export function StorageTab() {
     setCenterCoords([lat, lon]);
     setCityName(name);
     try {
-      const { results: facilities, isFallback } = await fetchNearby(lat, lon, radiusKm);
+      const { results: facilities, isFallback, source } = await fetchNearby(lat, lon, radiusKm, name);
       setIsFallbackData(isFallback);
+      setDataSource(source);
       setResults(facilities);
       setStatus('done');
     } catch (err) {
@@ -276,10 +287,10 @@ export function StorageTab() {
       {/* Header */}
       <div style={{ background: '#fff', padding: '28px 24px 24px', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#0ea5e9', marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: dataSource === 'openstreetmap' ? '#0ea5e9' : dataSource === 'gemini' ? '#8b5cf6' : dataSource === 'groq' ? '#f59e0b' : '#64748b', marginBottom: 6 }}>
             <ThermometerSnowflake size={20} />
             <span style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              Live Search · OpenStreetMap
+              Live Search · {dataSource === 'openstreetmap' ? 'OpenStreetMap' : dataSource === 'gemini' ? 'Gemini AI' : dataSource === 'groq' ? 'Groq AI' : 'Database'}
             </span>
           </div>
           <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#111827', margin: '0 0 6px', letterSpacing: '-0.03em' }}>

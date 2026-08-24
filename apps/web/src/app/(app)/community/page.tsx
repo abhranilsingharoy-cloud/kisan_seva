@@ -138,7 +138,13 @@ export default function CommunityHub() {
 
   useEffect(() => {
     return () => {
-      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+      if (audioRef.current) { 
+        audioRef.current.oncanplay = null;
+        audioRef.current.onerror = null;
+        audioRef.current.pause(); 
+        audioRef.current.removeAttribute('src');
+        audioRef.current.load();
+      }
     };
   }, []);
 

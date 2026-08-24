@@ -93,6 +93,17 @@ export default function DiagnosePage() {
       setDiagnosisData(result.data)
       setStatus('done')
 
+      // Persist last diagnosis for dashboard sync
+      try {
+        localStorage.setItem('kisanseva_last_diagnosis', JSON.stringify({
+          disease: result.data.disease || result.data.name,
+          crop: result.data.crop || 'Unknown',
+          confidence: result.data.confidence,
+          severity: result.data.severity,
+          timestamp: new Date().toISOString()
+        }))
+      } catch (e) {}
+
       // Save to recent scans
       try {
         const reader = new FileReader()

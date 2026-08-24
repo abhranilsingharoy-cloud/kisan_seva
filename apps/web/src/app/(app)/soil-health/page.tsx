@@ -275,6 +275,20 @@ export default function SoilHealthPage() {
         setOverallHealthVal(d.overallHealth ?? 0);
         setScanPct(100);
         setScanStep(SCAN_STEPS.length);
+
+        // Persist last soil scan for dashboard sync
+        try {
+          const phMetric = metrics.find((m: any) => m.label?.toLowerCase().includes('ph'));
+          const nMetric = metrics.find((m: any) => m.label?.toLowerCase().includes('nitrogen') || m.label === 'N');
+          localStorage.setItem('kisanseva_last_soil', JSON.stringify({
+            ph: phMetric?.value ?? null,
+            nitrogen: nMetric?.value ?? null,
+            overallHealth: d.overallHealth,
+            recommendation: d.diagnosis?.split('.')[0] || '',
+            timestamp: new Date().toISOString()
+          }));
+        } catch (e) {}
+
         setTimeout(() => setStage('results'), 600);
       })
       .catch(err => {

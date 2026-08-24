@@ -19,14 +19,14 @@ const CATEGORIES = ['All', 'Land Records', 'KCC / Bank', 'Soil Health Card', 'In
 
 // ─── IndexedDB Helper ────────────────────────────────────────────────────────
 const DB_NAME = 'KisanSevaDocsDB';
-const STORE_NAME = 'docFiles';
+const STORE_NAME = 'docFilesV2';
 
 function initDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+    const req = indexedDB.open(DB_NAME, 2);
     req.onupgradeneeded = () => {
       if (!req.result.objectStoreNames.contains(STORE_NAME)) {
-        req.result.createObjectStore(STORE_NAME);
+        req.result.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -39,7 +39,8 @@ async function saveFileToDB(id: string, dataUrl: string) {
     const db = await initDB();
     return new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(dataUrl, id);
+      const store = tx.objectStore(STORE_NAME);
+      store.put({ id, dataUrl });
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -52,7 +53,13 @@ async function getFileFromDB(id: string): Promise<string | null> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
       const req = tx.objectStore(STORE_NAME).get(id);
-      req.onsuccess = () => resolve(req.result || null);
+      req.onsuccess = () => {
+        if (req.result && req.result.dataUrl) {
+          resolve(req.result.dataUrl);
+        } else {
+          resolve(null);
+        }
+      };
       req.onerror = () => reject(req.error);
     });
   } catch (e) { console.error('IDB get error', e); return null; }

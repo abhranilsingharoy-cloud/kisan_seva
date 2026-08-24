@@ -62,7 +62,9 @@ export default function ResourcesPage() {
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto min-h-0">
-        {activeTab === 'rentals' ? <RentalsTab /> : <StorageTab />}
+        {activeTab === 'rentals' && <RentalsTab />}
+        {activeTab === 'storage' && <StorageTab />}
+        {activeTab === 'fertiliser' && <FertiliserTab />}
       </div>
     </div>
   );

@@ -106,9 +106,9 @@ export async function GET(req: NextRequest) {
       'format':   'json',
       'limit':    limit.toString(),
       'offset':   '0',
-      'filters[Commodity]': commodity,
+      'filters[commodity]': commodity,
     })
-    if (state) params.append('filters[State]', state)
+    if (state) params.append('filters[state]', state)
 
     const url = `${AGMARKNET_BASE}?${params.toString()}`
     const resp = await fetch(url, {

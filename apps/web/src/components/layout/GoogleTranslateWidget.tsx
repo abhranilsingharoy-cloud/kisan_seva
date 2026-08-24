@@ -11,13 +11,13 @@ declare global {
   }
 }
 
-const GoogleTranslateWidget = React.memo(({ className = "" }: { className?: string }) => {
+const GoogleTranslateWidget = ({ className = "" }: { className?: string }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
-    // Define the global callback function required by Google Translate
+    // 1. Setup the callback
     window.googleTranslateElementInit = () => {
-      const el = document.getElementById("google_translate_element");
-      // Prevent duplicate instances if called multiple times
-      if (el && el.childElementCount === 0 && window.google?.translate?.TranslateElement) {
+      if (window.google?.translate?.TranslateElement) {
         new window.google.translate.TranslateElement(
           {
             pageLanguage: "en",
@@ -30,9 +30,19 @@ const GoogleTranslateWidget = React.memo(({ className = "" }: { className?: stri
       }
     };
 
-    // If the script is already loaded from a previous route, trigger it manually
-    if (window.google?.translate?.TranslateElement) {
-       window.googleTranslateElementInit();
+    // 2. Dynamically create the div so React never reconciles its children
+    if (containerRef.current) {
+      // Clear previous instances if any
+      containerRef.current.innerHTML = '';
+      
+      const targetDiv = document.createElement('div');
+      targetDiv.id = 'google_translate_element';
+      containerRef.current.appendChild(targetDiv);
+
+      // 3. If script is already loaded (client navigation), trigger init
+      if (window.google?.translate?.TranslateElement) {
+        window.googleTranslateElementInit();
+      }
     }
   }, []);
 
@@ -40,16 +50,16 @@ const GoogleTranslateWidget = React.memo(({ className = "" }: { className?: stri
     <>
       <Script
         src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
       <div 
-        id="google_translate_element" 
+        ref={containerRef}
         className={`inline-block overflow-hidden transition-opacity ${className}`}
         style={{ minHeight: '38px', minWidth: '130px' }}
       ></div>
     </>
   );
-}, () => true); // Never re-render this component, so React doesn't wipe the Google Translate DOM mutations
+};
 
 export default GoogleTranslateWidget;
 

@@ -11,6 +11,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import WebcamCapture from '@/components/WebcamCapture';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type Stage = 'upload' | 'scanning' | 'results' | 'error';
@@ -195,6 +196,7 @@ export default function SoilHealthPage() {
   const [scanStep, setScanStep] = useState(0);
   const [scanPct, setScanPct] = useState(0);
   const [dragOver, setDragOver] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Real AI results state
@@ -442,6 +444,17 @@ export default function SoilHealthPage() {
   return (
     <div style={{ backgroundColor: '#f0fdf4', minHeight: '100%', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <style>{`@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} } @keyframes spin { to { transform:rotate(360deg) } }`}</style>
+      
+      {showWebcam && (
+        <WebcamCapture 
+          onCapture={(file) => {
+            setShowWebcam(false);
+            handleFile(file);
+          }}
+          onCancel={() => setShowWebcam(false)}
+        />
+      )}
+
       <main style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* ── Header ── */}
@@ -500,12 +513,26 @@ export default function SoilHealthPage() {
                     <p style={{ margin: '0 0 8px 0', fontWeight: 700, fontSize: '1.25rem', color: '#1e293b' }}>Upload Your Soil Health Card</p>
                     <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>Drag & drop or click to browse.<br />Accepts JPG, PNG, or any photo.</p>
                   </div>
-                  <input id="camera-input" type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
                     <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                       <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{ backgroundColor: '#65a30d', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 24px', fontWeight: 700, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FileImage size={18} /> Upload Image
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); document.getElementById('camera-input')?.click(); }} style={{ backgroundColor: '#fff', color: '#65a30d', border: '2px solid #65a30d', borderRadius: '8px', padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          if (typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = 'image/*';
+                            input.capture = 'environment';
+                            input.onchange = (evt: any) => evt.target.files?.[0] && handleFile(evt.target.files[0]);
+                            input.click();
+                          } else {
+                            setShowWebcam(true);
+                          }
+                        }} 
+                        style={{ backgroundColor: '#fff', color: '#65a30d', border: '2px solid #65a30d', borderRadius: '8px', padding: '10px 24px', fontWeight: 700, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+                      >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Take Photo
                       </button>
                     </div>

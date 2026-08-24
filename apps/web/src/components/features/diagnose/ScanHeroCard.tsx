@@ -1,5 +1,6 @@
 import { Cpu, AlertTriangle } from 'lucide-react'
-import { RefObject } from 'react'
+import { RefObject, useState } from 'react'
+import WebcamCapture from '@/components/WebcamCapture'
 
 interface ScanHeroCardProps {
   status: 'idle' | 'uploading' | 'processing' | 'done' | 'error'
@@ -28,35 +29,44 @@ export default function ScanHeroCard({
   diagnosisData,
   providerNames
 }: ScanHeroCardProps) {
+  const [showWebcam, setShowWebcam] = useState(false);
+
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #e8ede7', padding: '40px 24px', textAlign: 'center', marginBottom: 32 }}>
+    <div style={{ background: '#fff', borderRadius: 24, boxShadow: '0 4px 24px rgba(0,0,0,0.04)', padding: '40px 32px', textAlign: 'center', border: '1px solid #f3f4f6' }}>
+      
+      {showWebcam && (
+        <WebcamCapture 
+          onCapture={(file) => {
+            setShowWebcam(false);
+            handleFile(file);
+          }}
+          onCancel={() => setShowWebcam(false)}
+        />
+      )}
+
       {status === 'idle' && (
         <>
-          <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>📷🌿</div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', margin: '0 0 10px', letterSpacing: '-0.025em' }}>Scan Your Crop</h1>
-          <p style={{ fontSize: '0.9375rem', color: '#6b7280', margin: '0 0 28px' }}>Identify health issues and get treatment advice instantly.</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
+            <div style={{ width: 56, height: 42, background: '#6b7280', borderRadius: 8, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -4, left: 12, width: 16, height: 8, background: '#4b5563', borderRadius: '4px 4px 0 0' }} />
+              <div style={{ position: 'absolute', top: 12, left: 18, width: 20, height: 20, background: '#9ca3af', borderRadius: '50%', border: '4px solid #4b5563' }} />
+            </div>
+            <div style={{ fontSize: '2.5rem' }}>🌿</div>
+          </div>
+          <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#111827', margin: '0 0 12px', letterSpacing: '-0.02em' }}>Scan Your Crop</h2>
+          <p style={{ color: '#6b7280', margin: '0 0 32px', fontSize: '1.05rem' }}>Identify health issues and get treatment advice instantly.</p>
           
-          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
             <Cpu size={18} color="#6b7280" />
-            <span style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: 600 }}>AI Engine:</span>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#4b5563' }}>AI Engine:</span>
             <select 
               value={provider} 
-              onChange={(e) => setProvider(e.target.value)}
-              style={{
-                background: '#f9fafb',
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                padding: '8px 12px',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                color: '#111827',
-                cursor: 'pointer',
-                outline: 'none',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }}
+              onChange={e => setProvider(e.target.value)}
+              style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: '0.875rem', fontWeight: 500, color: '#111827', outline: 'none', background: '#f9fafb' }}
             >
-              <option value="gemini">Google Gemini 2.5 Vision (Fastest)</option>
-              <option value="nvidia">NVIDIA NIM Vision</option>
+              {Object.entries(providerNames).map(([key, name]) => (
+                <option key={key} value={key}>{name}</option>
+              ))}
             </select>
           </div>
 
@@ -71,13 +81,27 @@ export default function ScanHeroCard({
             <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Drag & drop an image here, or tap the button below</div>
           </div>
           <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
-          <input id="camera-input" type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button onClick={() => fileRef.current?.click()} style={{ background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 24px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 14px rgba(45,106,39,0.35)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
               Upload
             </button>
-            <button onClick={() => document.getElementById('camera-input')?.click()} style={{ background: '#fff', color: '#2d6a27', border: '2px solid #2d6a27', borderRadius: 10, padding: '11px 24px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 14px rgba(45,106,39,0.1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button 
+              onClick={() => {
+                if (typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.capture = 'environment';
+                  input.onchange = (e: any) => e.target.files?.[0] && handleFile(e.target.files[0]);
+                  input.click();
+                } else {
+                  setShowWebcam(true);
+                }
+              }} 
+              style={{ background: '#fff', color: '#2d6a27', border: '2px solid #2d6a27', borderRadius: 10, padding: '11px 24px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 14px rgba(45,106,39,0.1)', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
               Camera
             </button>

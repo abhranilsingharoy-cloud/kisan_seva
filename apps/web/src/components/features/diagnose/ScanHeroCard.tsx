@@ -167,10 +167,13 @@ export default function ScanHeroCard({
             ))}
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <a href={`https://www.bighaat.com/search?q=${encodeURIComponent(diagnosisData.disease)}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
-              <button style={{ width: '100%', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>🛒 Buy Recommended Supplies</button>
+            <a href="/resources" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
+              <button style={{ width: '100%', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>🛒 Buy on Govt. Agrimart</button>
             </a>
-            <button onClick={reset} style={{ flex: 1, background: 'transparent', color: '#374151', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>↩ New Scan</button>
+            <a href={`https://www.google.com/search?tbm=shop&q=buy+fungicide+for+${encodeURIComponent(diagnosisData.disease)}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
+              <button style={{ width: '100%', background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>Search on Google</button>
+            </a>
+            <button onClick={reset} style={{ flex: 0.5, background: 'transparent', color: '#374151', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>↩ New</button>
           </div>
         </div>
       )}

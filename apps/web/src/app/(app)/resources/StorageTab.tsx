@@ -149,7 +149,10 @@ out center tags;
     console.warn('[StorageTab] Overpass failed:', e);
   }
 
-  osmResults = osmResults.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 40);
+  osmResults = osmResults
+    .filter(a => a.distanceKm <= radiusKm)
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, 40);
 
   // Got real OSM data — return it
   if (osmOk && osmResults.length > 0) {
@@ -159,8 +162,9 @@ out center tags;
   // Overpass gave nothing → try AI (Gemini → Groq)
   try {
     const { results: aiResults, source } = await fetchFromAI(lat, lon, cityName, radiusKm);
-    if (aiResults.length > 0) {
-      return { results: aiResults, isFallback: true, source };
+    const validAi = aiResults.filter((r: ColdStorage) => r.distanceKm <= radiusKm);
+    if (validAi.length > 0) {
+      return { results: validAi, isFallback: true, source };
     }
   } catch (e) {
     console.warn('[StorageTab] AI fallback failed:', e);
@@ -171,8 +175,12 @@ out center tags;
     const d = haversineKm(lat, lon, s.lat, s.lon);
     return { ...s, distanceKm: d, mapsUrl: `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}` };
   });
-  fallbackWithDist.sort((a, b) => a.distanceKm - b.distanceKm);
-  return { results: fallbackWithDist.slice(0, 5), isFallback: true, source: 'database' };
+  
+  const validFallback = fallbackWithDist
+    .filter(s => s.distanceKm <= radiusKm)
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+    
+  return { results: validFallback.slice(0, 5), isFallback: true, source: 'database' };
 }
 
 // ─── Geocode (Nominatim) ──────────────────────────────────────────────────────
@@ -225,7 +233,10 @@ export function StorageTab() {
   const [dataSource, setDataSource] = useState<string>('openstreetmap');
   const listRef = useRef<HTMLDivElement>(null);
 
-  const runSearch = useCallback(async (lat: number, lon: number, name: string) => {
+  const runSearch = useCallback(async (lat: number, lon: number, name: string, overrideRadius?: number) => {
+    const searchRadius = overrideRadius || radiusKm;
+    if (overrideRadius) setRadiusKm(overrideRadius);
+    
     setStatus('searching');
     setResults([]);
     setError('');
@@ -233,7 +244,7 @@ export function StorageTab() {
     setCenterCoords([lat, lon]);
     setCityName(name);
     try {
-      const { results: facilities, isFallback, source } = await fetchNearby(lat, lon, radiusKm, name);
+      const { results: facilities, isFallback, source } = await fetchNearby(lat, lon, searchRadius, name);
       setIsFallbackData(isFallback);
       setDataSource(source);
       setResults(facilities);
@@ -433,10 +444,10 @@ export function StorageTab() {
                   OpenStreetMap coverage for cold storage in rural India is still growing. Try expanding to 100–200 km, or search a nearby larger city.
                 </p>
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button onClick={() => setRadiusKm(100)} style={{ padding: '10px 20px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
+                  <button onClick={() => { setRadiusKm(100); if (centerCoords) runSearch(centerCoords[0], centerCoords[1], cityName, 100); }} style={{ padding: '10px 20px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
                     Try 100 km
                   </button>
-                  <button onClick={() => setRadiusKm(200)} style={{ padding: '10px 20px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
+                  <button onClick={() => { setRadiusKm(200); if (centerCoords) runSearch(centerCoords[0], centerCoords[1], cityName, 200); }} style={{ padding: '10px 20px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
                     Try 200 km
                   </button>
                 </div>

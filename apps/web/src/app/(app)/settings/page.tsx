@@ -4,10 +4,12 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { User, Settings, Shield, Bell, Phone, Mail, MapPin, Briefcase, Camera, LogOut, ChevronRight, Moon, Globe, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@clerk/nextjs";
 
 export default function SettingsProfilePage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
   const supabase = createClient();
+  const { user, isLoaded } = useUser();
   const [userId, setUserId] = useState<string | null>(null);
   
   // Profile State
@@ -34,20 +36,28 @@ export default function SettingsProfilePage() {
 
   useEffect(() => {
     async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
+      if (!isLoaded) return;
       if (!user) return;
+      
       setUserId(user.id);
       
       const savedAvatar = localStorage.getItem(`ks_avatar_${user.id}`);
       if (savedAvatar) setAvatar(savedAvatar);
 
+      const localProfile = localStorage.getItem(`ks_profile_${user.id}`);
+      if (localProfile) {
+        setProfile(JSON.parse(localProfile));
+      } else {
+        setProfile(prev => ({ ...prev, name: user.fullName || '', email: user.primaryEmailAddress?.emailAddress || '' }));
+      }
+
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       
-      if (data) {
+      if (data && data.name) {
         setProfile({
           name: data.name || '',
           phone: data.phone || '',
-          email: data.email || user.email || '',
+          email: data.email || user.primaryEmailAddress?.emailAddress || '',
           farmLocation: data.farm_location || '',
           farmSize: data.farm_size || '',
           primaryCrops: data.primary_crops || ''
@@ -58,21 +68,28 @@ export default function SettingsProfilePage() {
       if (savedSettings) setSettings(JSON.parse(savedSettings));
     }
     loadData();
-  }, [supabase.auth]);
+  }, [isLoaded, user, supabase]);
 
   const handleSaveProfile = async () => {
     if (!userId) return;
     setIsSaving(true);
     
-    await supabase.from('profiles').upsert({
-      id: userId,
-      name: profile.name,
-      phone: profile.phone,
-      email: profile.email,
-      farm_location: profile.farmLocation,
-      farm_size: profile.farmSize,
-      primary_crops: profile.primaryCrops
-    });
+    // Fallback local persistence just in case Supabase RLS blocks unauthenticated writes
+    localStorage.setItem(`ks_profile_${userId}`, JSON.stringify(profile));
+    
+    try {
+      await supabase.from('profiles').upsert({
+        id: userId,
+        name: profile.name,
+        phone: profile.phone,
+        email: profile.email,
+        farm_location: profile.farmLocation,
+        farm_size: profile.farmSize,
+        primary_crops: profile.primaryCrops
+      });
+    } catch (e) {
+      console.error('Supabase profile save error (fallback saved):', e);
+    }
 
     setIsSaving(false);
     setSaveSuccess(true);

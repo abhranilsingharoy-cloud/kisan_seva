@@ -20,8 +20,12 @@ export default function CommunitySOS() {
     { id: 'Unknown Threat', icon: <AlertTriangle size={24} />, color: '#eab308' }
   ];
 
+  const [myActiveSOS, setMyActiveSOS] = useState<string | null>(null);
+
   useEffect(() => {
     setMounted(true);
+    const saved = localStorage.getItem('ks_my_active_sos');
+    if (saved) setMyActiveSOS(saved);
   }, []);
 
   // 1. Background Poller for Early Warning System
@@ -85,6 +89,8 @@ export default function CommunitySOS() {
 
           if (res.ok) {
             alert(`🚨 ${type} Alert broadcasted to all farmers within 50km!`);
+            setMyActiveSOS(type);
+            localStorage.setItem('ks_my_active_sos', type);
             setIsOpen(false);
           } else {
             alert("Failed to broadcast alert. Please check your network.");
@@ -101,6 +107,13 @@ export default function CommunitySOS() {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
+  };
+
+  const stopSOS = () => {
+    setMyActiveSOS(null);
+    localStorage.removeItem('ks_my_active_sos');
+    setIsOpen(false);
+    alert("SOS broadcasting stopped.");
   };
 
   const dismissAlert = (id: number) => {
@@ -171,33 +184,51 @@ export default function CommunitySOS() {
               <X size={24} />
             </button>
             
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '32px' }}>
-              <div style={{ width: '64px', height: '64px', backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                <Siren size={32} color="#ef4444" />
-              </div>
-              <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '1.5rem', fontWeight: 800 }}>Broadcast SOS</h2>
-              <p style={{ color: '#94a3b8', margin: '8px 0 0 0', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                Instantly alert all farmers within a <strong>50km radius</strong>. Please use only for verified community threats.
-              </p>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              {SOS_TYPES.map(threat => (
-                <button 
-                  key={threat.id}
-                  onClick={() => handleSOS(threat.id)}
-                  disabled={isSending}
-                  style={{
-                    backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: isSending ? 'not-allowed' : 'pointer', transition: 'all 0.2s', opacity: isSending ? 0.5 : 1
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
-                >
-                  <div style={{ color: threat.color }}>{threat.icon}</div>
-                  <div style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.9rem' }}>{threat.id}</div>
+            {myActiveSOS ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '16px' }}>
+                <div className="animate-ping" style={{ width: '64px', height: '64px', backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: '50%', position: 'absolute', opacity: 0.8 }} />
+                <div style={{ width: '64px', height: '64px', backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', position: 'relative', zIndex: 10 }}>
+                  <Siren size={32} color="#ef4444" />
+                </div>
+                <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '1.5rem', fontWeight: 800 }}>Broadcasting {myActiveSOS}</h2>
+                <p style={{ color: '#94a3b8', margin: '8px 0 24px 0', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                  Your farm is currently broadcasting a live threat alert.
+                </p>
+                <button onClick={stopSOS} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '14px 24px', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', width: '100%', boxShadow: '0 8px 32px rgba(239,68,68,0.3)', transition: 'transform 0.1s' }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}>
+                  Stop Broadcasting SOS
                 </button>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '32px' }}>
+                  <div style={{ width: '64px', height: '64px', backgroundColor: 'rgba(239,68,68,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                    <Siren size={32} color="#ef4444" />
+                  </div>
+                  <h2 style={{ margin: 0, color: '#f8fafc', fontSize: '1.5rem', fontWeight: 800 }}>Broadcast SOS</h2>
+                  <p style={{ color: '#94a3b8', margin: '8px 0 0 0', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    Instantly alert all farmers within a <strong>50km radius</strong>. Please use only for verified community threats.
+                  </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  {SOS_TYPES.map(threat => (
+                    <button 
+                      key={threat.id}
+                      onClick={() => handleSOS(threat.id)}
+                      disabled={isSending}
+                      style={{
+                        backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', cursor: isSending ? 'not-allowed' : 'pointer', transition: 'all 0.2s', opacity: isSending ? 0.5 : 1
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
+                    >
+                      <div style={{ color: threat.color }}>{threat.icon}</div>
+                      <div style={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.9rem' }}>{threat.id}</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
 
             {isSending && (
               <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#3b82f6', fontWeight: 600, fontSize: '0.9rem' }}>

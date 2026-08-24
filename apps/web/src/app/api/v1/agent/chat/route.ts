@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
 const GROQ_API_KEY   = process.env.GROQ_API_KEY || ''
-const GROQ_MODEL     = 'openai/gpt-oss-120b'
+const GROQ_MODEL     = 'llama3-70b-8192'
 
 export async function POST(req: NextRequest) {
   try {

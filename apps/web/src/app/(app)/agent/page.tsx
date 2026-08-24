@@ -180,7 +180,7 @@ export default function AgentChatPage() {
   // ── API Call ────────────────────────────────────────────────────────────────
   const callAgentAPI = async (query: string) => {
     try {
-      const resp = await fetch('/api/agent', {
+      const resp = await fetch('/api/v1/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, language: selectedLang, user_id: 'demo-farmer-001', context: {} }),

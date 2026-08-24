@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
 const GROQ_API_KEY   = process.env.GROQ_API_KEY || ''
-const GROQ_MODEL     = 'llama-3.3-70b-versatile'
+const GROQ_MODEL     = 'openai/gpt-oss-120b'
 
 export async function POST(req: NextRequest) {
   try {
@@ -106,7 +106,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
       confidence: 0.9,
       language,
       processing_time_ms: 0,
-      sources: ['Groq llama-3.3-70b'],
+      sources: [`Groq ${GROQ_MODEL}`],
       follow_up_actions: [],
     })
 

@@ -223,7 +223,7 @@ export default function AppLayoutClient({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* TOP HEADER */}
-        <header style={{ height: '60px', backgroundColor: '#fff', borderBottom: '1px solid #e9eef0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', zIndex: 10, flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+        <header style={{ position: 'relative', height: '60px', backgroundColor: '#fff', borderBottom: '1px solid #e9eef0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', zIndex: 50000, flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button className="md:hidden" style={{ padding: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }} onClick={() => setMobileMenuOpen(true)}>
               <Menu size={24} />
@@ -373,7 +373,7 @@ export default function AppLayoutClient({
 
       {/* MOBILE DRAWER OVERLAY */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div className="md:hidden fixed inset-0 flex" style={{ zIndex: 60000 }}>
           <div 
             className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" 
             onClick={() => setMobileMenuOpen(false)}

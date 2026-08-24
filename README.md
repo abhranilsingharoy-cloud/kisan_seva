@@ -1,3 +1,11 @@
+## 🎥 Live Demo Video
+
+Watch the full 5-minute walkthrough of the KisanSeva platform in action:
+
+[**▶️ Watch the Platform Walkthrough Video**](https://kisanseva-ks.vercel.app/demo-video.mp4)
+
+---
+
 <div align="center">
 
 <img src="./apps/web/public/icon.jpg" alt="KisanSeva Logo" width="120" height="120" style="border-radius:24px;"/>
@@ -650,6 +658,14 @@ OPENWEATHER_API_KEY=...
 - [ ] Mobile app (React Native)
 - [x] Custom trained PlantVillage disease model (38 classes)
 - [x] Satellite NDVI crop health monitoring
+
+---
+
+## 🎥 Live Demo Video
+
+Watch the full 5-minute walkthrough of the KisanSeva platform in action:
+
+[**▶️ Watch the Platform Walkthrough Video**](https://kisanseva-ks.vercel.app/demo-video.mp4)
 
 ---
 

@@ -56,41 +56,16 @@ export async function POST(req: NextRequest) {
     
     const { query, language, user_id, plot_id, context } = parseResult.data
 
-    // â”€â”€ Try ML Service orchestrator first â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    try {
-      const mlResp = await fetch(`${ML_SERVICE_URL}/v1/agent/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, language, user_id, plot_id, context }),
-      })
-
-      if (mlResp.ok) {
-        const data = await mlResp.json()
-        return NextResponse.json(data)
-      }
-    } catch (mlErr) {
-      console.warn('[AI Chat] ML service unavailable, falling back to Groq:', mlErr)
-    }
-
-    // â”€â”€ Fallback: Call Groq directly â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Go straight to Groq (ML tunnel is unreliable on production) ──────────
     if (!GROQ_API_KEY) {
-      // Return a smart mock response if no API key is provided
-      let mockText = 'This is a mock response because the GROQ_API_KEY is not set in your .env.local file. Please add it for real AI responses.';
-      
-      if (language === 'hi') {
-        mockText = 'à¤¯à¤¹ à¤à¤• à¤¡à¤®à¥€ à¤‰à¤¤à¥à¤¤à¤° à¤¹à¥ˆ à¤•à¥à¤¯à¥‹à¤‚à¤•à¤¿ à¤†à¤ªà¤•à¥€ .env.local à¤«à¤¼à¤¾à¤‡à¤² à¤®à¥‡à¤‚ GROQ_API_KEY à¤¸à¥‡à¤Ÿ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆà¥¤ à¤…à¤¸à¤²à¥€ AI à¤‰à¤¤à¥à¤¤à¤°à¥‹à¤‚ à¤•à¥‡ à¤²à¤¿à¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤‡à¤¸à¥‡ à¤œà¥‹à¤¡à¤¼à¥‡à¤‚à¥¤';
-      } else if (language === 'bn') {
-        mockText = 'à¦à¦Ÿà¦¿ à¦à¦•à¦Ÿà¦¿ à¦®à¦• à¦‰à¦¤à§à¦¤à¦° à¦•à¦¾à¦°à¦£ à¦†à¦ªà¦¨à¦¾à¦° .env.local à¦«à¦¾à¦‡à¦²à§‡ GROQ_API_KEY à¦¸à§‡à¦Ÿ à¦•à¦°à¦¾ à¦¨à§‡à¦‡à¥¤ à¦†à¦¸à¦² à¦à¦†à¦‡ à¦‰à¦¤à§à¦¤à¦°à§‡à¦° à¦œà¦¨à§à¦¯ à¦¦à¦¯à¦¼à¦¾ à¦•à¦°à§‡ à¦à¦Ÿà¦¿ à¦¯à§‹à¦— à¦•à¦°à§à¦¨à¥¤';
-      }
-
       return NextResponse.json({
         agent_name: 'KisanSeva AI (Offline Mode)',
         success: true,
-        result: { text: mockText, type: 'general_advisory', provider: 'mock' },
+        result: { text: 'GROQ_API_KEY is not configured. Please add it to Vercel Environment Variables.', type: 'general_advisory', provider: 'mock' },
         confidence: 1,
         language,
         processing_time_ms: 100,
-        sources: ['Mock DB']
+        sources: ['Mock']
       })
     }
 

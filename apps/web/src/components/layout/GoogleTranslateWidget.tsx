@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect } from "react";
 import Script from "next/script";
 
-// Extend the Window interface to include Google Translate API
 declare global {
   interface Window {
     googleTranslateElementInit: () => void;
@@ -15,35 +14,46 @@ const GoogleTranslateWidget = ({ className = "" }: { className?: string }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    // 1. Setup the callback
-    window.googleTranslateElementInit = () => {
-      if (window.google?.translate?.TranslateElement) {
-        new window.google.translate.TranslateElement(
-          {
-            pageLanguage: "en",
-            includedLanguages: "en,hi,bn,te,ta,mr,gu,kn,ml,pa,or,es,fr,ar",
-            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false,
-          },
-          "google_translate_element"
-        );
-      }
-    };
-
-    // 2. Dynamically create the div so React never reconciles its children
-    if (containerRef.current) {
-      // Clear previous instances if any
-      containerRef.current.innerHTML = '';
+    // We want to avoid Google Translate failing to render on React route changes.
+    // So we use a globally persistent div.
+    
+    let globalDiv = document.getElementById('google_translate_element');
+    
+    if (!globalDiv) {
+      // First time mounting anywhere in the app
+      globalDiv = document.createElement('div');
+      globalDiv.id = 'google_translate_element';
       
-      const targetDiv = document.createElement('div');
-      targetDiv.id = 'google_translate_element';
-      containerRef.current.appendChild(targetDiv);
-
-      // 3. If script is already loaded (client navigation), trigger init
-      if (window.google?.translate?.TranslateElement) {
-        window.googleTranslateElementInit();
-      }
+      // We set the callback for the script
+      window.googleTranslateElementInit = () => {
+        if (window.google?.translate?.TranslateElement) {
+          new window.google.translate.TranslateElement(
+            {
+              pageLanguage: "en",
+              includedLanguages: "en,hi,bn,te,ta,mr,gu,kn,ml,pa,or,es,fr,ar",
+              layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+              autoDisplay: false,
+            },
+            "google_translate_element"
+          );
+        }
+      };
     }
+
+    // Move the global div into our React container
+    if (containerRef.current && globalDiv) {
+      containerRef.current.appendChild(globalDiv);
+    }
+    
+    // If the script is already loaded, we might need to force a re-init if it's empty
+    if (window.google?.translate?.TranslateElement && globalDiv.innerHTML.trim() === '') {
+        try {
+            window.googleTranslateElementInit();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
   }, []);
 
   return (
@@ -62,4 +72,3 @@ const GoogleTranslateWidget = ({ className = "" }: { className?: string }) => {
 };
 
 export default GoogleTranslateWidget;
-

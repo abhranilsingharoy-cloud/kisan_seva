@@ -683,7 +683,7 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 
 [![Stars](https://img.shields.io/github/stars/abhranilsingharoy-cloud/kisan_seva?style=social)](https://github.com/abhranilsingharoy-cloud/kisan_seva)
 
-`Made with 🌾 · Powered by Limitless Prime· Built for Bharat`
+`Made with 🌾 · Powered by Limitless Prime· Built for India`
 
 ✨ **Contributing towards a Bikasata Bharat (Developed India)** ✨
 

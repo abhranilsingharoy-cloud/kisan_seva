@@ -127,8 +127,8 @@ export default function CommunitySOS() {
     <>
       <style>{`
         @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-                            .sos-floating-btn { position: fixed; bottom: 80px; left: 24px; z-index: 99990; }
-          @media (min-width: 1024px) { .sos-floating-btn { bottom: 32px; left: 288px; } }
+        .sos-floating-btn { position: fixed; bottom: 80px; left: 24px; z-index: 99990; }
+        @media (min-width: 1024px) { .sos-floating-btn { bottom: 190px; left: 288px; } }
       `}</style>
       
       {/* ── Global Early Warning Push Notifications ── */}

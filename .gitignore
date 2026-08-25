@@ -43,4 +43,8 @@ Thumbs.db
 logs/
 *.log
 feedback.db
-.turbo/
+.turbo/# ─── Make sure .env.example IS tracked by git ────────────────
+# .env.example files are safe to commit (they have no real secrets)
+!.env.example
+!apps/web/.env.example
+!apps/ml-service/.env.example

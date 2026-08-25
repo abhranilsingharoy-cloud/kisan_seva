@@ -45,6 +45,33 @@ export function FertiliserTab() {
   const handleCheckout = () => {
     if (checkoutStep === 0) setCheckoutStep(1);
     else if (checkoutStep === 1) {
+      // Send email via mailto
+      const orderDetails = Object.entries(cart).map(([id, qty]) => {
+        const item = FERTILISERS.find(f => f.id === id);
+        return `${qty}x ${item?.name} (${item?.weight}) - ₹${(item?.price || 0) * qty}`;
+      }).join('
+');
+      
+      const total = cartTotalAmount - Math.floor(cartTotalAmount * 0.15);
+      const orderId = `KS-${Math.floor(Math.random()*1000000)}`;
+      
+      const mailtoLink = `mailto:luffyfocusmode@gmail.com?subject=New Fertiliser Order: ${orderId}&body=${encodeURIComponent(`Hello,
+
+I would like to place an order for the following fertilisers:
+
+${orderDetails}
+
+Total Amount (after subsidy): ₹${total}
+
+Delivery Address:
+Farm Plot 2A, Village Raipur, Ludhiana, Punjab 141001
+
+Please confirm my order.
+
+Thank you.`)}`;
+      
+      window.location.href = mailtoLink;
+
       setCheckoutStep(2);
       setTimeout(() => {
         setCart({});

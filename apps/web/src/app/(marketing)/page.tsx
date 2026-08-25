@@ -72,10 +72,10 @@ export default function HomePage() {
               Monitor Prices
             </Link>
             <Link
-              href="/schedule"
+              href="/dashboard"
               className="w-full sm:w-auto bg-[#2A854B] hover:bg-[#226b3c] text-white font-medium px-8 py-3.5 rounded-full shadow-sm hover:shadow-md transition-all text-base"
             >
-              Check Weather
+              View Dashboard
             </Link>
           </div>
         </div>

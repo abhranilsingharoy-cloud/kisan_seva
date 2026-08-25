@@ -58,24 +58,42 @@ export default function HomePage() {
       <div className="w-full h-full marketing-wrapper flex flex-col pt-24 relative overflow-hidden">
         {/* Text content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative w-full flex flex-col items-center pt-12 lg:pt-16 pb-8 z-10">
+          {/* SIH Badge */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#166534,#15803d)", color: "#fff", borderRadius: 999, padding: "6px 18px", fontSize: "0.78rem", fontWeight: 700, marginBottom: 20, boxShadow: "0 2px 12px rgba(22,101,52,0.3)" }}>
+            🏆 Smart India Hackathon 2025 — AgriTech Innovation
+          </div>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-slate-900 tracking-tight leading-[1.08] mb-6">
-            Empower your farm, <br /> grow your future
+            AI-Powered Farming<br />for <span style={{ color: "#166534" }}>140 Million</span> Indians
           </h1>
-          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto font-normal leading-relaxed mb-9">
-            Track prices, get weather updates, and manage crops all in one place.
+          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto font-normal leading-relaxed mb-6">
+            Disease detection in <strong>&lt;5 seconds</strong> · Live mandi prices · Voice AI in Hindi, Bengali, Tamil — all free, on any smartphone.
           </p>
+          {/* Quick Impact Stats */}
+          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
+            {[
+              { v: "93.2%", l: "AI Accuracy" },
+              { v: "38", l: "Disease Classes" },
+              { v: "8", l: "Indian Languages" },
+              { v: "₹0", l: "Cost to Farmer" },
+            ].map(s => (
+              <div key={s.l} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "#166534", letterSpacing: "-0.02em" }}>{s.v}</div>
+                <div style={{ fontSize: "0.7rem", color: "#6b7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/market"
-              className="w-full sm:w-auto bg-transparent text-[#2A854B] font-medium px-8 py-3.5 rounded-full border border-[#2A854B] hover:bg-[#e7f4ec] transition-all text-base shadow-sm"
-            >
-              Monitor Prices
-            </Link>
-            <Link
-              href="/schedule"
+              href="/diagnose"
               className="w-full sm:w-auto bg-[#2A854B] hover:bg-[#226b3c] text-white font-medium px-8 py-3.5 rounded-full shadow-sm hover:shadow-md transition-all text-base"
             >
-              Check Weather
+              Try AI Diagnosis Free →
+            </Link>
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto bg-transparent text-[#2A854B] font-medium px-8 py-3.5 rounded-full border border-[#2A854B] hover:bg-[#e7f4ec] transition-all text-base shadow-sm"
+            >
+              View Dashboard
             </Link>
           </div>
         </div>

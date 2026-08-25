@@ -11,49 +11,33 @@ declare global {
 }
 
 const GoogleTranslateWidget = ({ className = "" }: { className?: string }) => {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  
   useEffect(() => {
-    // We want to avoid Google Translate failing to render on React route changes.
-    // So we use a globally persistent div.
-    
-    let globalDiv = document.getElementById('google_translate_element');
-    
-    if (!globalDiv) {
-      // First time mounting anywhere in the app
-      globalDiv = document.createElement('div');
-      globalDiv.id = 'google_translate_element';
-      
-      // We set the callback for the script
-      window.googleTranslateElementInit = () => {
-        if (window.google?.translate?.TranslateElement) {
-          new window.google.translate.TranslateElement(
-            {
-              pageLanguage: "en",
-              includedLanguages: "en,hi,bn,te,ta,mr,gu,kn,ml,pa,or,es,fr,ar",
-              layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-              autoDisplay: false,
-            },
-            "google_translate_element"
-          );
-        }
-      };
-    }
+    // Function to initialize or re-initialize the widget
+    const initWidget = () => {
+      if (window.google?.translate?.TranslateElement) {
+        // Clear any existing content in our div
+        const el = document.getElementById("google_translate_element");
+        if (el) el.innerHTML = "";
+        
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: "en",
+            includedLanguages: "en,hi,bn,te,ta,mr,gu,kn,ml,pa,or,es,fr,ar",
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false,
+          },
+          "google_translate_element"
+        );
+      }
+    };
 
-    // Move the global div into our React container
-    if (containerRef.current && globalDiv) {
-      containerRef.current.appendChild(globalDiv);
-    }
-    
-    // If the script is already loaded, we might need to force a re-init if it's empty
-    if (window.google?.translate?.TranslateElement && globalDiv.innerHTML.trim() === '') {
-        try {
-            window.googleTranslateElementInit();
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    // Set the global callback for when the script first loads
+    window.googleTranslateElementInit = initWidget;
 
+    // If the script is already loaded (e.g. from navigating between pages), manually re-init
+    if (window.google?.translate?.TranslateElement) {
+      initWidget();
+    }
   }, []);
 
   return (
@@ -63,8 +47,8 @@ const GoogleTranslateWidget = ({ className = "" }: { className?: string }) => {
         strategy="lazyOnload"
       />
       <div 
-        ref={containerRef}
-        className={`inline-block overflow-hidden transition-opacity ${className}`}
+        id="google_translate_element"
+        className={`inline-block overflow-hidden ${className}`}
         style={{ minHeight: '38px', minWidth: '130px' }}
       ></div>
     </>

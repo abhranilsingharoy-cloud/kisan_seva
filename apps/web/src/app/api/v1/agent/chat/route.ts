@@ -29,7 +29,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
-const GROQ_API_KEY   = process.env.GROQ_API_KEY || ''
 const GROQ_MODEL     = 'llama3-70b-8192'
 
 /** Zod schema for validating incoming chat request bodies */
@@ -43,6 +42,8 @@ const ChatRequestSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const GROQ_API_KEY = process.env.GROQ_API_KEY || ''
+    
     const rawBody = await req.json()
     
     // Validate inputs with Zod

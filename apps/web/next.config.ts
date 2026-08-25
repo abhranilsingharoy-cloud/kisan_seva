@@ -43,8 +43,6 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-    ]
-  },
 
   // ─── Redirects ─────────────────────────────────────────────
   async redirects() {

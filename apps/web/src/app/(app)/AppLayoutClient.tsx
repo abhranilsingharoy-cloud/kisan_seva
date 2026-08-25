@@ -83,7 +83,7 @@ const APP_LINKS = [
   { name: 'Farm Map', href: '/topography', icon: Map },
   { name: 'Market', href: '/market', icon: TrendingUp },
   { name: 'Crop Planner', href: '/crop-planner', icon: Sprout },
-  { name: 'Agri-Credit', href: '/finance', icon: Wallet },
+  { name: 'Agri Financial Services', href: '/finance', icon: Wallet },
   { name: 'Farm Resources', href: '/resources', icon: Tractor },
   { name: 'Traceability', href: '/blockchain', icon: QrCode },
   { name: 'Schemes', href: '/schemes', icon: FileText },

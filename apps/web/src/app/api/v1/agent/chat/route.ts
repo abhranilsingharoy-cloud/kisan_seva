@@ -29,7 +29,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
-const GROQ_MODEL     = 'groq/compound'
+const GROQ_MODEL     = 'llama-3.1-8b-instant'
 
 /** Zod schema for validating incoming chat request bodies */
 const ChatRequestSchema = z.object({

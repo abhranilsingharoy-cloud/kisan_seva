@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Bug, CloudRainWind, Siren, ShieldAlert, X, Send, Loader2 } from 'lucide-react';
 
 export default function CommunitySOS() {
@@ -122,7 +123,7 @@ export default function CommunitySOS() {
 
   if (!mounted) return null;
 
-  return (
+  return createPortal(
     <>
       <style>{`
         @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -233,6 +234,5 @@ export default function CommunitySOS() {
         </div>
       )}
     </>
-  );
+  , document.body);
 }
-

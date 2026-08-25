@@ -155,7 +155,7 @@ export default function CommunitySOS() {
       </div>
 
       {/* ── Floating SOS Action Button ── */}
-      <div className="sos-floating-btn" style={{ position: 'relative', display: 'inline-block' }}>
+      <div className="sos-floating-btn">
         {/* Radar Pulse Effect */}
         <div className="animate-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', backgroundColor: '#ef4444', opacity: 0.75 }}></div>
         

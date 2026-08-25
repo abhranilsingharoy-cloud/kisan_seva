@@ -671,7 +671,7 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 
 <div align="center">
 
-**👨‍💻 Built by Abhranil Singha Roy**
+**👨‍💻 Built by Limitless Prime**
 
 [![GitHub](https://img.shields.io/badge/GitHub-abhranilsingharoy--cloud-181717?style=for-the-badge&logo=github)](https://github.com/abhranilsingharoy-cloud)
 

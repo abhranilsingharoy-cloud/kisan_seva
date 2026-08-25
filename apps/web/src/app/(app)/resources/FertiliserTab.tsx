@@ -49,8 +49,7 @@ export function FertiliserTab() {
       const orderDetails = Object.entries(cart).map(([id, qty]) => {
         const item = FERTILISERS.find(f => f.id === id);
         return `${qty}x ${item?.name} (${item?.weight}) - ₹${(item?.price || 0) * qty}`;
-      }).join('
-');
+      }).join('\\n');
       
       const total = cartTotalAmount - Math.floor(cartTotalAmount * 0.15);
       const orderId = `KS-${Math.floor(Math.random()*1000000)}`;

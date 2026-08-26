@@ -1,37 +1,6 @@
-/**
- * KisanSeva â€” AI Chat API Route
- * 
- * @route POST /api/v1/agent/chat
- * @description Conversational agricultural AI powered by Groq Llama-3 70B.
- *   Attempts to proxy to the local Python ML orchestrator first, then falls
- *   back to calling Groq directly for maximum resilience.
- * 
- * @example Request body:
- * {
- *   "query": "My tomato leaves are turning yellow",
- *   "language": "hi",
- *   "user_id": "user_abc123",
- *   "plot_id": "plot_xyz",
- *   "context": { "crop": "tomato", "location": "Punjab" }
- * }
- * 
- * @example Response:
- * {
- *   "agent_name": "KisanSeva AI (Groq)",
- *   "success": true,
- *   "result": { "text": "...", "type": "general_advisory", "provider": "groq" },
- *   "confidence": 0.9,
- *   "language": "hi",
- *   "sources": ["Groq llama3-70b-8192"]
- * }
- */
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
-const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'http://localhost:8000'
-const GROQ_MODEL     = 'llama-3.1-8b-instant'
-
-/** Zod schema for validating incoming chat request bodies */
 const ChatRequestSchema = z.object({
   query: z.string().min(1, 'query is required').max(2000, 'query too long'),
   language: z.string().default('en'),
@@ -45,8 +14,6 @@ export async function POST(req: NextRequest) {
     const GROQ_API_KEY = process.env.GROQ_API_KEY || ''
     
     const rawBody = await req.json()
-    
-    // Validate inputs with Zod
     const parseResult = ChatRequestSchema.safeParse(rawBody)
     if (!parseResult.success) {
       return NextResponse.json(
@@ -57,80 +24,118 @@ export async function POST(req: NextRequest) {
     
     const { query, language, user_id, plot_id, context } = parseResult.data
 
-    // ── Go straight to Groq (ML tunnel is unreliable on production) ──────────
-    if (!GROQ_API_KEY) {
-      return NextResponse.json({
-        agent_name: 'KisanSeva AI (Offline Mode)',
-        success: true,
-        result: { text: 'GROQ_API_KEY is not configured. Please add it to Vercel Environment Variables.', type: 'general_advisory', provider: 'mock' },
-        confidence: 1,
-        language,
-        processing_time_ms: 100,
-        sources: ['Mock']
-      })
-    }
-
     const currentDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'long' });
     const systemPrompt = `You are KisanSeva AI, an expert agricultural advisor for smallholder farmers in India.
 Your name is "KisanSeva Saathi". 
-Today's current date and time in India is: ${currentDate}. You have real-time awareness of the present date.
+Today's date is: ${currentDate}.
 Provide concise, actionable advice about crops, diseases, irrigation, fertilizers, and market prices.
 You MUST reply entirely in the language corresponding to this language code: ${language}.
-- If language is 'hi', reply in Hindi using Devanagari script (à¤¹à¤¿à¤‚à¤¦à¥€ à¤®à¥‡à¤‚ à¤‰à¤¤à¥à¤¤à¤° à¤¦à¥‡à¤‚).
-- If language is 'bn', reply in Bengali using Bengali script (à¦¬à¦¾à¦‚à¦²à¦¾à¦¯à¦¼ à¦‰à¦¤à§à¦¤à¦° à¦¦à¦¿à¦¨).
+- If language is 'hi', reply in Hindi using Devanagari script.
+- If language is 'bn', reply in Bengali using Bengali script.
 - If language is 'en', reply in English.
 Use simple vocabulary that farmers understand. Keep answers concise and practical.
-Always prioritise safety â€” for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.`
+Always prioritise safety — for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.`
 
-    const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: query },
-        ],
-        temperature: 0.3,
-        max_tokens: 1024,
-      }),
-      signal: AbortSignal.timeout(20_000),
-    })
-
-    if (!groqResp.ok) {
-      const err = await groqResp.text()
-      console.error('[Groq] API error:', err)
-      throw new Error(`Groq API error: ${groqResp.status}`)
+    // --- ATTEMPT 1: Try Multiple Groq Models ---
+    const groqModels = ['llama3-8b-8192', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma-7b-it'];
+    let text = '';
+    let successModel = '';
+    
+    if (GROQ_API_KEY) {
+      for (const model of groqModels) {
+        try {
+          const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${GROQ_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: query },
+              ],
+              temperature: 0.3,
+              max_tokens: 1024,
+            }),
+            signal: AbortSignal.timeout(6000), // 6 sec timeout per model
+          })
+          
+          if (groqResp.ok) {
+            const data = await groqResp.json()
+            text = data?.choices?.[0]?.message?.content || ''
+            if (text) {
+              successModel = model;
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn(`[Groq] Model ${model} failed, trying next...`);
+        }
+      }
     }
 
-    const groqData = await groqResp.json()
-    const text = groqData?.choices?.[0]?.message?.content ?? ''
+    if (text) {
+      return NextResponse.json({
+        agent_name: 'KisanSeva AI',
+        success: true,
+        result: { text, type: 'general_advisory', provider: 'groq' },
+        confidence: 0.9,
+        language,
+        processing_time_ms: 0,
+        sources: [`Groq ${successModel}`],
+        follow_up_actions: [],
+      })
+    }
 
+    // --- ATTEMPT 2: Fallback to Python ML Backend (Localtunnel) ---
+    try {
+      const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'https://silly-dingos-brake.loca.lt'
+      const mlResp = await fetch(`${ML_SERVICE_URL}/api/v1/orchestrator`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, language, user_id, plot_id }),
+        signal: AbortSignal.timeout(10000), // 10 sec timeout
+      })
+      
+      if (mlResp.ok) {
+        const mlData = await mlResp.json()
+        return NextResponse.json(mlData)
+      }
+    } catch (e) {
+      console.warn(`[ML Backend] Fallback failed:`, e);
+    }
+
+    // --- ATTEMPT 3: Ultimate Graceful Fallback (Never return 500) ---
     return NextResponse.json({
-      agent_name: 'KisanSeva AI (Groq)',
+      agent_name: 'KisanSeva AI (Offline)',
       success: true,
       result: {
-        text,
+        text: "I am temporarily unable to reach the AI servers due to high traffic. Please try again in a few minutes, or contact your local KVK for urgent assistance.",
         type: 'general_advisory',
-        provider: 'groq',
+        provider: 'offline',
       },
-      confidence: 0.9,
+      confidence: 1,
       language,
       processing_time_ms: 0,
-      sources: [`Groq ${GROQ_MODEL}`],
+      sources: ['Offline Cache'],
       follow_up_actions: [],
     })
 
   } catch (err: any) {
-    console.error('[AI Chat API] Error:', err)
-    return NextResponse.json(
-      { error: 'Internal server error', message: err?.message },
-      { status: 500 }
-    )
+    console.error('[AI Chat API] Critical Error:', err)
+    return NextResponse.json({
+      agent_name: 'KisanSeva AI (Offline)',
+      success: true,
+      result: {
+        text: "System error: Unable to connect. Please try again later.",
+        type: 'error',
+        provider: 'error',
+      },
+      confidence: 0,
+      language: 'en',
+      sources: []
+    })
   }
 }
-
-

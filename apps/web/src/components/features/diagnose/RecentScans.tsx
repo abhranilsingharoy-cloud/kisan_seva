@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/features/diagnose/RecentScans.tsx
+ * @description Displays the farmer's recent crop diagnosis history, read from localStorage.
+ */
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, AlertTriangle, ShieldCheck, Stethoscope } from 'lucide-react';
@@ -40,7 +44,7 @@ export default function RecentScans() {
         
         {scans.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200/60 p-8 text-center">
-            <div className="text-4xl mb-3">🌱</div>
+            <div className="text-4xl mb-3">ðŸŒ±</div>
             <h3 className="text-lg font-bold text-slate-800 mb-1">No recent scans</h3>
             <p className="text-slate-500 text-sm">Upload a photo of your crop above to start diagnosing.</p>
           </div>
@@ -109,7 +113,7 @@ export default function RecentScans() {
             <div className="p-6 sm:p-8 flex flex-col gap-6 overflow-y-auto">
               
               <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-                <span className="text-2xl">{selectedScan.diagnosis.severity === 'High' ? '🚨' : selectedScan.diagnosis.severity === 'Moderate' ? '⚠️' : '✅'}</span>
+                <span className="text-2xl">{selectedScan.diagnosis.severity === 'High' ? 'ðŸš¨' : selectedScan.diagnosis.severity === 'Moderate' ? 'âš ï¸' : 'âœ…'}</span>
                 <div>
                   <div className="font-bold text-slate-900">Severity: {selectedScan.diagnosis.severity || 'Normal'}</div>
                   <div className="text-sm text-slate-500">{selectedScan.diagnosis.confidence}% AI Confidence Score</div>
@@ -166,4 +170,5 @@ export default function RecentScans() {
     </>
   )
 }
+
 

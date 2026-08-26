@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/home/Hero.tsx
+ * @description Marketing landing page hero section with animated headline, CTA buttons, and a floating product screenshot.
+ */
 "use client";
 
 import Link from "next/link";
@@ -49,4 +53,5 @@ export default function Hero() {
     </section>
   );
 }
+
 

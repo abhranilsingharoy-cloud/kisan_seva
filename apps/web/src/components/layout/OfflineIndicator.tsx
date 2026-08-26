@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/layout/OfflineIndicator.tsx
+ * @description Thin banner that slides in at the top of the viewport when the browser loses network access, and auto-dismisses on reconnect.
+ */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -78,4 +82,5 @@ export default function OfflineIndicator() {
     </div>
   );
 }
+
 

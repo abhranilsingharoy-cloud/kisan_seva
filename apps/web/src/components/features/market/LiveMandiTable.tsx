@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/features/market/LiveMandiTable.tsx
+ * @description Sortable table of live APMC mandi prices for a selected commodity, fetched from the market API.
+ */
 import { Loader2, AlertCircle } from 'lucide-react'
 
 interface LiveMandiTableProps {
@@ -38,11 +42,11 @@ export default function LiveMandiTable({ loading, error, mandis, avgPrice }: Liv
                     <td style={{ padding: '12px', fontWeight: 500 }}>{m.name} {isBest && <span className="badge badge-success" style={{ marginLeft: '8px' }}>Best</span>}</td>
                     <td style={{ padding: '12px' }}>{m.state}</td>
                     <td style={{ padding: '12px', color: 'var(--color-bark)' }}>{m.arrivals || 'N/A'}</td>
-                    <td style={{ padding: '12px', color: 'var(--color-bark)' }}>₹{m.min}</td>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>₹{m.modal}</td>
-                    <td style={{ padding: '12px', color: 'var(--color-bark)' }}>₹{m.max}</td>
+                    <td style={{ padding: '12px', color: 'var(--color-bark)' }}>â‚¹{m.min}</td>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>â‚¹{m.modal}</td>
+                    <td style={{ padding: '12px', color: 'var(--color-bark)' }}>â‚¹{m.max}</td>
                     <td style={{ padding: '12px', color: delta > 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                      {delta > 0 ? '+' : ''}₹{delta}
+                      {delta > 0 ? '+' : ''}â‚¹{delta}
                     </td>
                   </tr>
                 )
@@ -57,4 +61,5 @@ export default function LiveMandiTable({ loading, error, mandis, avgPrice }: Liv
     </div>
   )
 }
+
 

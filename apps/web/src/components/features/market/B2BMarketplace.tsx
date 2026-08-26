@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/features/market/B2BMarketplace.tsx
+ * @description B2B contract farming marketplace listing. Fetches active contracts from Supabase and allows farmers to express interest.
+ */
 import React, { useState, useEffect } from 'react';
 import { 
   Briefcase, CheckCircle2, Clock, MapPin, Search, Star, Building2, 
@@ -189,7 +193,7 @@ export default function B2BMarketplace() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/10 p-4 rounded-xl backdrop-blur-md border border-white/10">
             <div className="flex flex-col">
               <span className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Total Active Value</span>
-              <span className="text-2xl font-bold text-emerald-400">₹4.2 Cr+</span>
+              <span className="text-2xl font-bold text-emerald-400">â‚¹4.2 Cr+</span>
             </div>
             <div className="hidden sm:block w-px h-10 bg-white/20"></div>
             <div className="flex flex-col">
@@ -267,7 +271,7 @@ export default function B2BMarketplace() {
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-500 font-medium mt-0.5">
                           <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> {bid.rating}</span>
-                          <span>•</span>
+                          <span>â€¢</span>
                           <span>{bid.buyerType}</span>
                         </div>
                       </div>
@@ -292,11 +296,11 @@ export default function B2BMarketplace() {
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6 flex flex-wrap gap-6">
                     <div>
                       <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Offered Rate</div>
-                      <div className="text-xl font-bold text-emerald-600">₹{bid.priceOffered}<span className="text-sm font-medium text-slate-500">/{bid.quantityUnit === 'Tonnes' && bid.commodity !== 'Tomato' ? 'quintal' : 'kg'}</span></div>
+                      <div className="text-xl font-bold text-emerald-600">â‚¹{bid.priceOffered}<span className="text-sm font-medium text-slate-500">/{bid.quantityUnit === 'Tonnes' && bid.commodity !== 'Tomato' ? 'quintal' : 'kg'}</span></div>
                     </div>
                     <div>
                       <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Mandi Avg</div>
-                      <div className="text-xl font-bold text-slate-900">₹{bid.marketAvg}</div>
+                      <div className="text-xl font-bold text-slate-900">â‚¹{bid.marketAvg}</div>
                     </div>
                     <div className="ml-auto flex items-center">
                       <div className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5">
@@ -357,13 +361,13 @@ export default function B2BMarketplace() {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900">{bid.quantityReq} {bid.quantityUnit} of {bid.commodity}</h4>
-                      <p className="text-sm text-slate-500 font-medium">Sold to {bid.buyerName} • Escrow Secured</p>
+                      <p className="text-sm text-slate-500 font-medium">Sold to {bid.buyerName} â€¢ Escrow Secured</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-6 w-full sm:w-auto">
                     <div className="text-right">
-                      <div className="font-bold text-slate-900">₹{bid.priceOffered}</div>
+                      <div className="font-bold text-slate-900">â‚¹{bid.priceOffered}</div>
                       <div className="text-xs text-slate-500">per {bid.quantityUnit === 'Tonnes' && bid.commodity !== 'Tomato' ? 'quintal' : 'kg'}</div>
                     </div>
                     <button 
@@ -440,7 +444,7 @@ export default function B2BMarketplace() {
                   </div>
                   <div>
                     <span className="text-xs font-bold text-slate-500 uppercase">Agreed Rate</span>
-                    <p className="font-bold text-slate-900">₹{selectedContract.priceOffered} / {selectedContract.quantityUnit === 'Tonnes' && selectedContract.commodity !== 'Tomato' ? 'quintal' : 'kg'}</p>
+                    <p className="font-bold text-slate-900">â‚¹{selectedContract.priceOffered} / {selectedContract.quantityUnit === 'Tonnes' && selectedContract.commodity !== 'Tomato' ? 'quintal' : 'kg'}</p>
                   </div>
                   <div>
                     <span className="text-xs font-bold text-slate-500 uppercase">Delivery Location</span>
@@ -489,3 +493,4 @@ export default function B2BMarketplace() {
     </div>
   );
 }
+

@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/chat/ChatWidget.tsx
+ * @description Floating AI Saathi chat widget rendered on every app page. Manages the open/collapsed state and delegates all voice/text logic to useVoiceChat.
+ */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -118,12 +122,12 @@ export default function ChatWidget() {
                 <p className="text-slate-900 font-extrabold text-sm leading-none">KisanSeva Saathi</p>
                 <p className="text-slate-500 text-[11px] mt-0.5">
                   {isListening
-                    ? "🎙️ Listening..."
+                    ? "ðŸŽ™ï¸ Listening..."
                     : isSpeaking
-                    ? "🔊 Speaking..."
+                    ? "ðŸ”Š Speaking..."
                     : isLoading
-                    ? "⏳ Thinking..."
-                    : "● Online"}
+                    ? "â³ Thinking..."
+                    : "â— Online"}
                 </p>
               </div>
             </div>
@@ -210,14 +214,14 @@ export default function ChatWidget() {
                   placeholder={
                     isListening
                       ? language === "hi"
-                        ? "🎙️ सुन रहा हूं... रुकने पर भेज देगा"
+                        ? "ðŸŽ™ï¸ à¤¸à¥à¤¨ à¤°à¤¹à¤¾ à¤¹à¥‚à¤‚... à¤°à¥à¤•à¤¨à¥‡ à¤ªà¤° à¤­à¥‡à¤œ à¤¦à¥‡à¤—à¤¾"
                         : language === "bn"
-                        ? "🎙️ শুনছি... থামলেই পাঠাবে"
-                        : "🎙️ Listening... will send when you stop"
+                        ? "ðŸŽ™ï¸ à¦¶à§à¦¨à¦›à¦¿... à¦¥à¦¾à¦®à¦²à§‡à¦‡ à¦ªà¦¾à¦ à¦¾à¦¬à§‡"
+                        : "ðŸŽ™ï¸ Listening... will send when you stop"
                       : language === "hi"
-                      ? "यहाँ टाइप करें या माइक दबाएं..."
+                      ? "à¤¯à¤¹à¤¾à¤ à¤Ÿà¤¾à¤‡à¤ª à¤•à¤°à¥‡à¤‚ à¤¯à¤¾ à¤®à¤¾à¤‡à¤• à¤¦à¤¬à¤¾à¤à¤‚..."
                       : language === "bn"
-                      ? "এখানে টাইপ করুন বা মাইক চাপুন..."
+                      ? "à¦à¦–à¦¾à¦¨à§‡ à¦Ÿà¦¾à¦‡à¦ª à¦•à¦°à§à¦¨ à¦¬à¦¾ à¦®à¦¾à¦‡à¦• à¦šà¦¾à¦ªà§à¦¨..."
                       : "Type or click mic to speak..."
                   }
                   className={`w-full resize-none px-3.5 py-2.5 border rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-transparent max-h-24 overflow-y-auto leading-snug transition-colors ${
@@ -272,15 +276,15 @@ export default function ChatWidget() {
               <p className="text-[10px] text-slate-400 text-center mt-2 font-medium">
                 {isListening
                   ? language === "hi"
-                    ? "🔴 सुन रहा हूं... रोकने के लिए दबाएं"
+                    ? "ðŸ”´ à¤¸à¥à¤¨ à¤°à¤¹à¤¾ à¤¹à¥‚à¤‚... à¤°à¥‹à¤•à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤¦à¤¬à¤¾à¤à¤‚"
                     : language === "bn"
-                    ? "🔴 শুনছি... থামাতে চাপুন"
-                    : "🔴 Listening... click to stop"
+                    ? "ðŸ”´ à¦¶à§à¦¨à¦›à¦¿... à¦¥à¦¾à¦®à¦¾à¦¤à§‡ à¦šà¦¾à¦ªà§à¦¨"
+                    : "ðŸ”´ Listening... click to stop"
                   : language === "hi"
-                  ? "🎙️ बोलने के लिए माइक दबाएं"
+                  ? "ðŸŽ™ï¸ à¤¬à¥‹à¤²à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤®à¤¾à¤‡à¤• à¤¦à¤¬à¤¾à¤à¤‚"
                   : language === "bn"
-                  ? "🎙️ কথা বলতে মাইক চাপুন"
-                  : "🎙️ Click mic to speak"}
+                  ? "ðŸŽ™ï¸ à¦•à¦¥à¦¾ à¦¬à¦²à¦¤à§‡ à¦®à¦¾à¦‡à¦• à¦šà¦¾à¦ªà§à¦¨"
+                  : "ðŸŽ™ï¸ Click mic to speak"}
               </p>
             )}
           </div>
@@ -289,4 +293,5 @@ export default function ChatWidget() {
     </>
   );
 }
+
 

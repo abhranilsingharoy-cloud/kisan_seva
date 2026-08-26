@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/features/diagnose/ScanHeroCard.tsx
+ * @description Hero card for the crop disease detection flow. Handles image file selection, camera capture, and delegates to the parent's onAnalyse callback.
+ */
 import { Cpu, AlertTriangle } from 'lucide-react'
 import { RefObject, useState } from 'react'
 import WebcamCapture from '@/components/WebcamCapture'
@@ -51,7 +55,7 @@ export default function ScanHeroCard({
               <div style={{ position: 'absolute', top: -4, left: 12, width: 16, height: 8, background: '#4b5563', borderRadius: '4px 4px 0 0' }} />
               <div style={{ position: 'absolute', top: 12, left: 18, width: 20, height: 20, background: '#9ca3af', borderRadius: '50%', border: '4px solid #4b5563' }} />
             </div>
-            <div style={{ fontSize: '2.5rem' }}>🌿</div>
+            <div style={{ fontSize: '2.5rem' }}>ðŸŒ¿</div>
           </div>
           <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#111827', margin: '0 0 12px', letterSpacing: '-0.02em' }}>Scan Your Crop</h2>
           <p style={{ color: '#6b7280', margin: '0 0 32px', fontSize: '1.05rem' }}>Identify health issues and get treatment advice instantly.</p>
@@ -111,7 +115,7 @@ export default function ScanHeroCard({
 
       {status === 'uploading' && (
         <div style={{ padding: '20px 0' }}>
-          <div style={{ fontSize: '2rem', marginBottom: 16 }}>📤</div>
+          <div style={{ fontSize: '2rem', marginBottom: 16 }}>ðŸ“¤</div>
           <div style={{ fontWeight: 600, color: '#374151', marginBottom: 16 }}>Uploading photo...</div>
           <div style={{ height: 6, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden', maxWidth: 320, margin: '0 auto' }}>
             <div style={{ height: '100%', width: '60%', background: '#2d6a27', borderRadius: 99, animation: 'grow 1.2s ease forwards' }} />
@@ -144,7 +148,7 @@ export default function ScanHeroCard({
         <div>
           <div style={{ background: diagnosisData.severity === 'High' ? '#fff1f2' : diagnosisData.severity === 'Moderate' ? '#fff8f0' : '#f0fdf4', border: '1px solid', borderColor: diagnosisData.severity === 'High' ? '#fecdd3' : diagnosisData.severity === 'Moderate' ? '#fed7aa' : '#bbf7d0', borderRadius: 12, padding: '14px 20px', marginBottom: 20, textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <span style={{ fontSize: '1.2rem' }}>{diagnosisData.severity === 'High' ? '🚨' : diagnosisData.severity === 'Moderate' ? '⚠️' : '✅'}</span>
+              <span style={{ fontSize: '1.2rem' }}>{diagnosisData.severity === 'High' ? 'ðŸš¨' : diagnosisData.severity === 'Moderate' ? 'âš ï¸' : 'âœ…'}</span>
               <span style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#111827' }}>{diagnosisData.disease} Detected</span>
               <span style={{ marginLeft: 'auto', background: '#fff', color: '#111827', border: '1px solid #e5e7eb', fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: 9999 }}>{diagnosisData.confidence}% Confidence</span>
             </div>
@@ -159,7 +163,7 @@ export default function ScanHeroCard({
           <div style={{ textAlign: 'left', marginBottom: 20 }}>
             {diagnosisData.symptoms && diagnosisData.symptoms.length > 0 && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>🩺 KEY SYMPTOMS</div>
+                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>ðŸ©º KEY SYMPTOMS</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>
                   {diagnosisData.symptoms.map((sym: string, i: number) => <li key={i}>{sym}</li>)}
                 </ul>
@@ -168,14 +172,14 @@ export default function ScanHeroCard({
             
             {diagnosisData.causes && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>🦠 ROOT CAUSE</div>
+                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>ðŸ¦  ROOT CAUSE</div>
                 <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{diagnosisData.causes}</p>
               </div>
             )}
             
             {diagnosisData.prevention && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>🛡️ PREVENTION</div>
+                <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.08em', color: '#6b7280', textTransform: 'uppercase', marginBottom: 8 }}>ðŸ›¡ï¸ PREVENTION</div>
                 <p style={{ margin: 0, fontSize: '0.875rem', color: '#374151', lineHeight: 1.6 }}>{diagnosisData.prevention}</p>
               </div>
             )}
@@ -192,16 +196,17 @@ export default function ScanHeroCard({
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <a href="/resources" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
-              <button style={{ width: '100%', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>🛒 Buy on Govt. Agrimart</button>
+              <button style={{ width: '100%', background: '#2d6a27', color: '#fff', border: 'none', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>ðŸ›’ Buy on Govt. Agrimart</button>
             </a>
             <a href={`https://www.google.com/search?tbm=shop&q=buy+fungicide+for+${encodeURIComponent(diagnosisData.disease)}`} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textDecoration: 'none', display: 'flex' }}>
               <button style={{ width: '100%', background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>Search on Google</button>
             </a>
-            <button onClick={reset} style={{ flex: 0.5, background: 'transparent', color: '#374151', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>↩ New</button>
+            <button onClick={reset} style={{ flex: 0.5, background: 'transparent', color: '#374151', border: '1.5px solid #e5e7eb', borderRadius: 10, padding: '12px', fontSize: '0.9375rem', fontWeight: 600, cursor: 'pointer' }}>â†© New</button>
           </div>
         </div>
       )}
     </div>
   )
 }
+
 

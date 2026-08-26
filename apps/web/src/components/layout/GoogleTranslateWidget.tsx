@@ -1,4 +1,8 @@
-﻿"use client";
+﻿/**
+ * @file src/components/layout/GoogleTranslateWidget.tsx
+ * @description Embeds the Google Translate language picker widget into the top navbar for on-the-fly UI translation.
+ */
+"use client";
 
 import React, { useEffect } from "react";
 import Script from "next/script";
@@ -56,3 +60,4 @@ const GoogleTranslateWidget = ({ className = "" }: { className?: string }) => {
 };
 
 export default GoogleTranslateWidget;
+

@@ -44,11 +44,24 @@ function getMandiCoords(mandiName: string): [number, number] | null {
   return null
 }
 
+/** Raw record shape returned by the Agmarknet data.gov.in API. */
+interface MandiRecord {
+  state: string;
+  district: string;
+  market: string;
+  commodity: string;
+  variety: string;
+  min_price: string;
+  max_price: string;
+  modal_price: string;
+  arrival_date: string;
+}
+
 // State average price from the ranked results
-function stateAverage(records: any[]): number {
-  if (!records.length) return 0
-  const sum = records.reduce((acc, r) => acc + (parseFloat(r.modal_price) || 0), 0)
-  return Math.round(sum / records.length)
+function stateAverage(records: MandiRecord[]): number {
+  if (!records.length) return 0;
+  const sum = records.reduce((acc, r) => acc + (parseFloat(r.modal_price) || 0), 0);
+  return Math.round(sum / records.length);
 }
 
 export async function GET(req: NextRequest) {

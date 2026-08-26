@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/chat/ChatBubble.tsx
+ * @description Single message bubble component for the AI Saathi chat thread. Renders markdown content and optional quick-action buttons.
+ */
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -13,22 +17,22 @@ interface ChatBubbleProps {
 const ACTION_LABELS: Record<string, { label: string; href: string; hi: string }> = {
   diagnose: {
     label: "Diagnose Crop",
-    hi: "फसल का निदान करें",
+    hi: "à¤«à¤¸à¤² à¤•à¤¾ à¤¨à¤¿à¤¦à¤¾à¤¨ à¤•à¤°à¥‡à¤‚",
     href: "/diagnose",
   },
   market: {
     label: "Check Market Prices",
-    hi: "बाजार भाव जांचें",
+    hi: "à¤¬à¤¾à¤œà¤¾à¤° à¤­à¤¾à¤µ à¤œà¤¾à¤‚à¤šà¥‡à¤‚",
     href: "/market",
   },
   schedule: {
     label: "View My Plots",
-    hi: "कार्यक्रम देखें",
+    hi: "à¤•à¤¾à¤°à¥à¤¯à¤•à¥à¤°à¤® à¤¦à¥‡à¤–à¥‡à¤‚",
     href: "/schedule",
   },
   schemes: {
     label: "View Government Schemes",
-    hi: "सरकारी योजनाएं देखें",
+    hi: "à¤¸à¤°à¤•à¤¾à¤°à¥€ à¤¯à¥‹à¤œà¤¨à¤¾à¤à¤‚ à¤¦à¥‡à¤–à¥‡à¤‚",
     href: "/schemes",
   }
 };
@@ -45,14 +49,14 @@ function renderMarkdown(text: string) {
       return;
     }
 
-    // Bullet point: starts with • or - or *
-    if (/^[•\-\*]\s/.test(trimmed)) {
-      const content = trimmed.replace(/^[•\-\*]\s/, "");
+    // Bullet point: starts with â€¢ or - or *
+    if (/^[â€¢\-\*]\s/.test(trimmed)) {
+      const content = trimmed.replace(/^[â€¢\-\*]\s/, "");
       // Bold scheme name before colon
       const parts = content.split(/:(.*)/);
       elements.push(
         <div key={i} className="flex items-start gap-1.5 mt-1">
-          <span className="text-[#65a30d] font-bold mt-0.5 shrink-0">•</span>
+          <span className="text-[#65a30d] font-bold mt-0.5 shrink-0">â€¢</span>
           <span>
             {parts.length > 1 ? (
               <>
@@ -68,7 +72,7 @@ function renderMarkdown(text: string) {
       return;
     }
 
-    // Normal line — inline bold via **text**
+    // Normal line â€” inline bold via **text**
     const inlineBold = trimmed.split(/(\*\*[^*]+\*\*)/g).map((chunk, j) => {
       if (chunk.startsWith("**") && chunk.endsWith("**")) {
         return (
@@ -166,4 +170,5 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
     </div>
   );
 }
+
 

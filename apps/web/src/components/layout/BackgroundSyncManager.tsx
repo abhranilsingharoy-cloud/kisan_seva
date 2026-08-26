@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/layout/BackgroundSyncManager.tsx
+ * @description Invisible background component that flushes the offline action queue when the device regains network connectivity.
+ */
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -53,3 +57,4 @@ export default function BackgroundSyncManager() {
 
   return null; // This component doesn't render anything visually
 }
+

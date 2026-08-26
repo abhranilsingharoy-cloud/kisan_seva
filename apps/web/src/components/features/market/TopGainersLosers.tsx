@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/features/market/TopGainersLosers.tsx
+ * @description Widget showing top commodity price gainers and losers compared to the previous day.
+ */
 interface TopGainersLosersProps {
   marketData: any;
 }
@@ -30,14 +34,14 @@ export default function TopGainersLosers({ marketData }: TopGainersLosersProps) 
                   {m.name} <span style={{ fontSize: '0.75rem', color: 'var(--color-bark)', fontWeight: 400 }}>({m.district}, {m.state})</span>
                 </span>
                 <span style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '0.95rem' }}>
-                  ₹{m.modal?.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>(+{m.vsAveragePct}%)</span>
+                  â‚¹{m.modal?.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>(+{m.vsAveragePct}%)</span>
                 </span>
               </div>
               {(m.variety || m.arrivals) && (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '0.75rem', color: 'var(--color-bark)' }}>
-                  {m.variety && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>🌱 {m.variety}</span>}
-                  {m.quality && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>✨ {m.quality}</span>}
-                  {m.arrivals && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>📦 {m.arrivals}</span>}
+                  {m.variety && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>ðŸŒ± {m.variety}</span>}
+                  {m.quality && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>âœ¨ {m.quality}</span>}
+                  {m.arrivals && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>ðŸ“¦ {m.arrivals}</span>}
                 </div>
               )}
             </div>
@@ -57,14 +61,14 @@ export default function TopGainersLosers({ marketData }: TopGainersLosersProps) 
                   {m.name} <span style={{ fontSize: '0.75rem', color: 'var(--color-bark)', fontWeight: 400 }}>({m.district}, {m.state})</span>
                 </span>
                 <span style={{ color: 'var(--color-danger)', fontWeight: 700, fontSize: '0.95rem' }}>
-                  ₹{m.modal?.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>({m.vsAveragePct}%)</span>
+                  â‚¹{m.modal?.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>({m.vsAveragePct}%)</span>
                 </span>
               </div>
               {(m.variety || m.arrivals) && (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '0.75rem', color: 'var(--color-bark)' }}>
-                  {m.variety && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>🌱 {m.variety}</span>}
-                  {m.quality && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>✨ {m.quality}</span>}
-                  {m.arrivals && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>📦 {m.arrivals}</span>}
+                  {m.variety && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>ðŸŒ± {m.variety}</span>}
+                  {m.quality && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>âœ¨ {m.quality}</span>}
+                  {m.arrivals && <span style={{ backgroundColor: 'var(--color-parchment)', padding: '2px 6px', borderRadius: '4px' }}>ðŸ“¦ {m.arrivals}</span>}
                 </div>
               )}
             </div>
@@ -76,4 +80,5 @@ export default function TopGainersLosers({ marketData }: TopGainersLosersProps) 
     </div>
   )
 }
+
 

@@ -1,3 +1,11 @@
+/**
+ * @file src/app/(app)/AppLayoutClient.tsx
+ * @description Client-side shell for every authenticated app page.
+ *
+ * Renders the desktop sidebar, top header bar (notifications, language selector,
+ * calculator), mobile bottom nav, mobile drawer, and the floating AI chat widget.
+ * Fetches and polls live notifications from `/api/v1/notifications` every 5 minutes.
+ */
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -92,13 +100,20 @@ const APP_LINKS = [
   { name: 'AI Agent', href: '/agent', icon: Bot },
 ];
 
-export default function AppLayoutClient({ 
-  children, 
-  profile
-}: { 
-  children: React.ReactNode, 
-  profile: any
-}) {
+/** Props accepted by the root application layout shell. */
+interface AppLayoutClientProps {
+  children: React.ReactNode;
+  /** Authenticated farmer profile hydrated from Clerk + Supabase on the server. */
+  profile: {
+    id: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    farm_location?: string;
+  };
+}
+
+export default function AppLayoutClient({ children, profile }: AppLayoutClientProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);

@@ -1,3 +1,7 @@
+﻿/**
+ * @file src/components/features/market/PriceChartCard.tsx
+ * @description 7-day price trend chart card using Recharts. Displays historical and forecasted commodity prices.
+ */
 'use client';
 
 import React, { useState } from 'react';
@@ -85,14 +89,14 @@ export default function PriceChartCard({ selectedCrop, selectedState, chartData,
             />
             <YAxis 
               domain={['auto', 'auto']}
-              tickFormatter={(val) => `₹${val}`}
+              tickFormatter={(val) => `â‚¹${val}`}
               tick={{ fontSize: 12, fill: '#6b7280' }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip 
               contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-              formatter={(value: any, name: any) => [`₹${value}`, String(name).charAt(0).toUpperCase() + String(name).slice(1)]}
+              formatter={(value: any, name: any) => [`â‚¹${value}`, String(name).charAt(0).toUpperCase() + String(name).slice(1)]}
             />
             <Area type="monotone" dataKey="max" stroke={isForecast ? "#c084fc" : "#ef4444"} fill="none" strokeDasharray="5 5" />
             <Area type="monotone" dataKey="min" stroke={isForecast ? "#a78bfa" : "#3b82f6"} fill="none" strokeDasharray="5 5" />
@@ -118,4 +122,5 @@ export default function PriceChartCard({ selectedCrop, selectedState, chartData,
     </div>
   )
 }
+
 

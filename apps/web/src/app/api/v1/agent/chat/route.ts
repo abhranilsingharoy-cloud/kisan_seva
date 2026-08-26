@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const ChatRequestSchema = z.object({
@@ -128,9 +128,12 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     // --- ATTEMPT 3: Fallback to Python ML Backend (Localtunnel) ---
     try {
       const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'https://silly-dingos-brake.loca.lt'
-      const mlResp = await fetch(`${ML_SERVICE_URL}/api/v1/orchestrator`, {
+      const mlResp = await fetch(`${ML_SERVICE_URL}/v1/agent/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Bypass-Tunnel-Reminder': 'true'
+        },
         body: JSON.stringify({ query, language, user_id, plot_id }),
         signal: AbortSignal.timeout(10000), // 10 sec timeout
       })

@@ -42,7 +42,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     let successModel = '';
 
     // --- ATTEMPT 1: Try Multiple Groq Models ---
-    const groqModels = ['llama-3.1-8b-instant', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'];
+    const groqModels = ['qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'groq/compound-mini', 'groq/compound'];
     
     if (GROQ_API_KEY) {
       for (const model of groqModels) {
@@ -54,7 +54,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
               model,
               messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: query }],
               temperature: 0.3,
-              max_tokens: 1024,
+              max_tokens: 2048,
             }),
             signal: AbortSignal.timeout(6000),
           })
@@ -79,7 +79,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: `${systemPrompt}\n\nUser Query: ${query}` }] }],
-                generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+                generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
               }),
               signal: AbortSignal.timeout(8000),
             }
@@ -173,4 +173,5 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     })
   }
 }
+
 

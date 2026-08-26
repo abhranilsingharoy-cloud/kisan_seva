@@ -46,7 +46,7 @@ Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object.`;
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`;
           const payload = {
             contents: [{ parts: [{ text: systemPrompt }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 1024 }
+            generationConfig: { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 4096 }
           };
           const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           const data = await response.json();
@@ -67,7 +67,7 @@ Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object.`;
           model: 'meta/llama-3.1-70b-instruct',
           messages: [{ role: 'user', content: systemPrompt }],
           temperature: 0.2,
-          max_tokens: 1024,
+          max_tokens: 2048,
         };
         const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${nvidiaKey}` }, body: JSON.stringify(payload) });
         const data = await response.json();
@@ -95,4 +95,5 @@ Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object.`;
     return NextResponse.json({ success: false, error: error.message || 'Failed to search disease' }, { status: 500 });
   }
 }
+
 

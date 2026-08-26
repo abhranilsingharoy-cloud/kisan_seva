@@ -43,7 +43,7 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`;
           const payload = {
             contents: [{ parts: [{ text: systemPrompt }, { inline_data: { mime_type: mimeType, data: base64Image } }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 1024 }
+            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 }
           };
           const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           const data = await response.json();
@@ -71,7 +71,7 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
             ]
           }],
           temperature: 0.1,
-          max_tokens: 1024,
+          max_tokens: 2048,
         };
         const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${nvidiaKey}` }, body: JSON.stringify(payload) });
         const data = await response.json();
@@ -127,5 +127,6 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
     return NextResponse.json({ success: false, error: error.message || 'Diagnosis failed' }, { status: 500 });
   }
 }
+
 
 

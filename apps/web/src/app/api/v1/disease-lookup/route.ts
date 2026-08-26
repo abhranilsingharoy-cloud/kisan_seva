@@ -35,31 +35,51 @@ You must ALWAYS respond with ONLY a valid JSON object matching exactly this stru
 }
 Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object.`;
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
-    
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    const payload = {
-      contents: [{
-        parts: [
-          { text: systemPrompt }
-        ]
-      }],
-      generationConfig: {
-        temperature: 0.3
+    let resultJson = "";
+
+    // ATTEMPT 1: Gemini (Try multiple models)
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && geminiKey.length > 20) {
+      const gModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+      for (const gModel of gModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`;
+          const payload = {
+            contents: [{ parts: [{ text: systemPrompt }] }],
+            generationConfig: { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 1024 }
+          };
+          const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const data = await response.json();
+          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            resultJson = data.candidates[0].content.parts[0].text;
+            break;
+          }
+        } catch (e) { /* try next */ }
       }
-    };
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "Gemini API Error");
-    
-    let resultJson = data.candidates[0].content.parts[0].text;
+    }
+
+    // ATTEMPT 2: Nvidia NIM Fallback
+    const nvidiaKey = process.env.NVIDIA_NIM_KEY || process.env.GEMINI_API_KEY; // Fallback in case user put Nvidia key in Gemini slot
+    if (!resultJson && nvidiaKey && nvidiaKey.startsWith('AQ.')) {
+      try {
+        const url = 'https://integrate.api.nvidia.com/v1/chat/completions';
+        const payload = {
+          model: 'meta/llama-3.1-70b-instruct',
+          messages: [{ role: 'user', content: systemPrompt }],
+          temperature: 0.2,
+          max_tokens: 1024,
+        };
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${nvidiaKey}` }, body: JSON.stringify(payload) });
+        const data = await response.json();
+        if (response.ok && data.choices?.[0]?.message?.content) {
+          resultJson = data.choices[0].message.content;
+        }
+      } catch (e) { /* fallback */ }
+    }
+
+    if (!resultJson) {
+      throw new Error("All AI models failed. Please check your API keys in Vercel.");
+    }
     resultJson = resultJson.replace(/```json/g, '').replace(/```/g, '').trim();
     
     const parsedData = JSON.parse(resultJson);

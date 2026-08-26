@@ -40,66 +40,54 @@ Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object ma
 
     let resultJson = "";
 
-    if (provider === 'gemini') {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
-      
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      const payload = {
-        contents: [{
-          parts: [
-            { text: systemPrompt },
-            { inline_data: { mime_type: mimeType, data: base64Image } }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.2
-        }
-      };
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error?.message || "Gemini API Error");
-      resultJson = data.candidates[0].content.parts[0].text;
+    // ATTEMPT 1: Gemini (Try multiple models)
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && geminiKey.length > 20) {
+      const visionModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+      for (const gModel of visionModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`;
+          const payload = {
+            contents: [{ parts: [{ text: systemPrompt }, { inline_data: { mime_type: mimeType, data: base64Image } }] }],
+            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 1024 }
+          };
+          const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const data = await response.json();
+          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            resultJson = data.candidates[0].content.parts[0].text;
+            break;
+          }
+        } catch (e) { /* try next */ }
+      }
+    }
 
-    } else if (provider === 'nvidia') {
-      const apiKey = process.env.NVIDIA_NIM_KEY;
-      if (!apiKey) throw new Error("NVIDIA_NIM_KEY not configured");
-      const baseUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
-      
-      const payload = {
-        model: 'meta/llama-3.2-90b-vision-instruct',
-        messages: [
-          {
+    // ATTEMPT 2: Nvidia NIM Fallback
+    const nvidiaKey = process.env.NVIDIA_NIM_KEY || process.env.GEMINI_API_KEY; // Fallback in case user put Nvidia key in Gemini slot
+    if (!resultJson && nvidiaKey && nvidiaKey.startsWith('AQ.')) {
+      try {
+        const url = 'https://integrate.api.nvidia.com/v1/chat/completions';
+        const payload = {
+          model: 'meta/llama-3.2-90b-vision-instruct',
+          messages: [{
             role: 'user',
             content: [
               { type: 'text', text: systemPrompt },
               { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } }
             ]
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.2,
-      };
+          }],
+          temperature: 0.1,
+          max_tokens: 1024,
+        };
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${nvidiaKey}` }, body: JSON.stringify(payload) });
+        const data = await response.json();
+        if (response.ok && data.choices?.[0]?.message?.content) {
+          resultJson = data.choices[0].message.content;
+        }
+      } catch (e) { /* fallback */ }
+    }
 
-      const response = await fetch(baseUrl, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(payload)
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error?.message || "NVIDIA API Error");
-      resultJson = data.choices[0].message.content;
-
-    } else {
-      throw new Error(`Provider '${provider}' not supported.`);
+    if (!resultJson) {
+      throw new Error("All AI vision models failed. Please check your API keys in Vercel.");
     }
 
     // Clean up markdown code blocks if the model returned them

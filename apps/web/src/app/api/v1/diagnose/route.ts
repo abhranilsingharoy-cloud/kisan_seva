@@ -44,7 +44,12 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
             { text: systemPrompt },
             { inline_data: { mime_type: mimeType, data: base64Image } }
           ]
-        }]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+          maxOutputTokens: 1024,
+        }
       };
       
       const response = await fetch(url, {
@@ -97,11 +102,17 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
     // Clean up markdown code blocks if the model returned them
     resultJson = resultJson.replace(/```json/g, '').replace(/```/g, '').trim();
     
+    // Extra: extract JSON object if buried in surrounding text
+    const jsonMatch = resultJson.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      resultJson = jsonMatch[0];
+    }
+
     let parsed;
     try {
       parsed = JSON.parse(resultJson);
     } catch (e) {
-      console.error("Failed to parse JSON:", resultJson);
+      console.error("Failed to parse JSON:", resultJson.substring(0, 500));
       throw new Error("AI returned invalid JSON formatting.");
     }
 

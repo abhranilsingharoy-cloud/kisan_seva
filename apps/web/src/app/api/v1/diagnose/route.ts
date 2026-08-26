@@ -37,7 +37,7 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
       
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
       const payload = {
         contents: [{
           parts: [

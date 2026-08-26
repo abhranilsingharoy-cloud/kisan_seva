@@ -102,7 +102,16 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifs, setNotifs] = useState<Notif[]>([]);
+  const [notifs, setNotifs] = useState<Notif[]>([
+    {
+      id: 'notif-sys-upgrade-v2',
+      icon: 'check',
+      title: 'KisanSeva System Upgraded! 🚀',
+      body: 'We just rolled out the new "Indestructible" AI Cascade! App now uses Gemini 3.6 Flash (Thinking Mode) with a dedicated ML Backend on Render. 100% uptime guaranteed for all your diagnoses.',
+      time: 'Just now',
+      read: false
+    }
+  ]);
 
   useEffect(() => {
     const loadNotifs = async () => {

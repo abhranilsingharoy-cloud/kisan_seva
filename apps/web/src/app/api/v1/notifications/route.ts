@@ -10,6 +10,16 @@ export async function GET(req: Request) {
     const now = new Date();
     const notifications = [];
 
+    // 0. SYSTEM UPGRADE NOTIFICATION
+    notifications.push({
+      id: `notif-sys-${now.getTime()}`,
+      icon: 'check',
+      title: 'KisanSeva System Upgraded! 🚀',
+      body: 'We just rolled out the new "Indestructible" AI Cascade! App now uses Gemini 3.6 Flash (Thinking Mode) with a dedicated ML Backend on Render. 100% uptime guaranteed for all your diagnoses.',
+      time: 'Just now',
+      read: false
+    });
+
     // 1. Fetch Real Weather Data from Open-Meteo (No API key needed)
     const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&timezone=auto`);
     

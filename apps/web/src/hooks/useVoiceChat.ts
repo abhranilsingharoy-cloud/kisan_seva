@@ -1,3 +1,20 @@
+/**
+ * @file apps/web/src/hooks/useVoiceChat.ts
+ * @description React hook encapsulating all voice I/O for the AI Saathi chat.
+ *
+ * Manages the full voice pipeline:
+ *  - Audio recording via `MediaRecorder` (works over plain HTTP — no HTTPS needed)
+ *  - Transcription via the Groq Whisper API proxy at `/api/transcribe`
+ *  - Text-to-speech playback via Google Translate TTS proxy at `/api/v1/tts`
+ *    with a fallback to the browser's native `SpeechSynthesis` API
+ *
+ * State (messages, language, loading flags) lives in `useChatStore` (Zustand).
+ * This hook is intentionally side-effect-free on mount — it only activates
+ * when the farmer explicitly presses the microphone button.
+ *
+ * @returns An object with `startListening`, `stopListening`, `speak`, and
+ *          `sendTextMessage` handlers, plus derived boolean flags.
+ */
 "use client";
 
 import { useCallback, useRef, useEffect } from "react";

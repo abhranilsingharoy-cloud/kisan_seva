@@ -1,23 +1,46 @@
+﻿/**
+ * @file apps/web/src/app/api/v1/soil-ocr/route.ts
+ * @description Soil Health Card OCR analysis API route.
+ *
+ * Accepts a multipart form upload of a Soil Health Card image (or any soil
+ * photo), runs it through the shared vision AI cascade, and returns a
+ * structured JSON object with NPK metrics, a fertilizer schedule, and an
+ * overall health score.
+ */
+
 import { NextResponse } from 'next/server';
+import { callVisionAI, cleanJsonResponse, type VisionImage } from '@/lib/ai';
 
-export async function POST(req: Request) {
-  try {
-    const formData = await req.formData();
-    const image = formData.get('image') as File | null;
-    const provider = formData.get('provider') as string || 'gemini';
+/** A single soil metric entry in the response. */
+interface SoilMetric {
+  name: string;
+  value: number;
+  unit: string;
+  optimal_low: number;
+  optimal_high: number;
+  status: 'low' | 'optimal' | 'high';
+  color: string;
+}
 
-    if (!image) {
-      return NextResponse.json({ success: false, error: 'No image provided' }, { status: 400 });
-    }
+/** A single fertilizer schedule action entry. */
+interface ScheduleEntry {
+  week: string;
+  action: string;
+  product: string;
+  quantity: string;
+  priority: 'low' | 'medium' | 'high';
+}
 
-    // Convert file to base64
-    const arrayBuffer = await image.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64Image = buffer.toString('base64');
-    let mimeType = image.type || 'image/jpeg';
-    if (mimeType === 'image/jpg') mimeType = 'image/jpeg';
+/** The complete AI response structure for soil OCR. */
+interface SoilAnalysisResult {
+  metrics: SoilMetric[];
+  schedule: ScheduleEntry[];
+  diagnosis: string;
+  tags: string[];
+  overallHealth: number;
+}
 
-    const systemPrompt = `You are an expert AI Agronomist analyzing Soil Health Cards via OCR.
+const SYSTEM_PROMPT = `You are an expert AI Agronomist analyzing Soil Health Cards via OCR.
 Extract the soil metrics (N, P, K, pH, Organic Carbon, etc.) from the image if visible. 
 If no text is visible or the image is not a soil card, make highly educated realistic estimates based on the visual soil type or return realistic Indian agricultural averages.
 You must ALWAYS respond with ONLY a valid JSON object matching exactly this structure:
@@ -38,78 +61,42 @@ You must ALWAYS respond with ONLY a valid JSON object matching exactly this stru
 }
 Do not wrap in markdown tags like \`\`\`json. Just return the raw JSON object matching the exact structure.`;
 
-    let resultJson = "";
+/**
+ * POST /api/v1/soil-ocr
+ *
+ * Analyses an uploaded soil image or Soil Health Card via the multi-provider
+ * vision AI cascade. Returns structured NPK metrics and a fertilizer schedule.
+ *
+ * @param req - Next.js request with `multipart/form-data` body containing
+ *              an "image" field (File).
+ * @returns JSON response with `{ success: true, data: SoilAnalysisResult }`
+ *          or `{ success: false, error: string }` on failure.
+ */
+export async function POST(req: Request) {
+  try {
+    const formData = await req.formData();
+    const image = formData.get('image') as File | null;
 
-    // ATTEMPT 1: Gemini (Try multiple models)
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (geminiKey && geminiKey.length > 20) {
-      const visionModels = ['gemini-3.6-flash', 'gemini-2.5-flash'];
-      for (const gModel of visionModels) {
-        try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`;
-          const payload = {
-            contents: [{ parts: [{ text: systemPrompt }, { inline_data: { mime_type: mimeType, data: base64Image } }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 4096 }
-          };
-          const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          const data = await response.json();
-          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            resultJson = data.candidates[0].content.parts[0].text;
-            break;
-          }
-        } catch (e) { /* try next */ }
-      }
+    if (!image) {
+      return NextResponse.json({ success: false, error: 'No image provided' }, { status: 400 });
     }
 
-    // ATTEMPT 2: Nvidia NIM Fallback
-    const nvidiaKey = process.env.NVIDIA_NIM_KEY || process.env.GEMINI_API_KEY; // Fallback in case user put Nvidia key in Gemini slot
-    if (!resultJson && nvidiaKey && nvidiaKey.startsWith('AQ.')) {
-      try {
-        const url = 'https://integrate.api.nvidia.com/v1/chat/completions';
-        const payload = {
-          model: 'meta/llama-3.2-90b-vision-instruct',
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'text', text: systemPrompt },
-              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } }
-            ]
-          }],
-          temperature: 0.1,
-          max_tokens: 2048,
-        };
-        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${nvidiaKey}` }, body: JSON.stringify(payload) });
-        const data = await response.json();
-        if (response.ok && data.choices?.[0]?.message?.content) {
-          resultJson = data.choices[0].message.content;
-        }
-      } catch (e) { /* fallback */ }
-    }
+    // Convert uploaded file to base64 for the AI providers
+    const arrayBuffer = await image.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    const mimeType = (image.type === 'image/jpg' ? 'image/jpeg' : image.type) || 'image/jpeg';
 
-    if (!resultJson) {
-      throw new Error("All AI vision models failed. Please check your API keys in Vercel.");
-    }
+    const visionImage: VisionImage = { base64, mimeType };
 
-    // Clean up markdown code blocks if the model returned them
-    resultJson = resultJson.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    let parsedData;
-    try {
-      parsedData = JSON.parse(resultJson);
-    } catch (e) {
-      console.error("Failed to parse JSON:", resultJson);
-      throw new Error("AI returned invalid JSON formatting.");
-    }
+    // Run vision AI cascade (Gemini → Nvidia NIM)
+    const { text: aiText } = await callVisionAI(SYSTEM_PROMPT, visionImage);
 
-    return NextResponse.json({
-      success: true,
-      data: parsedData
-    });
+    const parsedData: SoilAnalysisResult = JSON.parse(cleanJsonResponse(aiText));
+    return NextResponse.json({ success: true, data: parsedData });
 
-  } catch (error: any) {
-    console.error('[Soil OCR Real API Error]:', error);
-    return NextResponse.json({ success: false, error: error.message || 'Failed to process soil card' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to process soil card';
+    console.error('[Soil OCR API Error]:', message);
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
-
-

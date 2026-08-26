@@ -54,3 +54,4 @@ httpx>=0.27.0   # for FastAPI TestClient
 # Monitoring
 sentry-sdk[fastapi,httpx]==2.19.2
 
+gradio

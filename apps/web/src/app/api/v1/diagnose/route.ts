@@ -36,30 +36,45 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
     if (provider === 'gemini') {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
-      
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
-      const payload = {
-        contents: [{
-          parts: [
-            { text: systemPrompt },
-            { inline_data: { mime_type: mimeType, data: base64Image } }
-          ]
-        }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.1,
-          maxOutputTokens: 1024,
+
+      // Try multiple Gemini vision models - first one that works wins
+      const visionModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+      let geminiSuccess = false;
+
+      for (const gModel of visionModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${apiKey}`;
+          const payload = {
+            contents: [{
+              parts: [
+                { text: systemPrompt },
+                { inline_data: { mime_type: mimeType, data: base64Image } }
+              ]
+            }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.1,
+              maxOutputTokens: 1024,
+            }
+          };
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+          if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            resultJson = data.candidates[0].content.parts[0].text;
+            geminiSuccess = true;
+            break;
+          }
+          console.warn(`[Diagnose] ${gModel} failed: ${data.error?.message}`);
+        } catch (e: any) {
+          console.warn(`[Diagnose] ${gModel} exception: ${e.message}`);
         }
-      };
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error?.message || "Gemini API Error");
-      resultJson = data.candidates[0].content.parts[0].text;
+      }
+      if (!geminiSuccess) throw new Error("All Gemini vision models failed. Check GEMINI_API_KEY in Vercel.");
 
     } else if (provider === 'nvidia') {
       const apiKey = process.env.NVIDIA_NIM_KEY;

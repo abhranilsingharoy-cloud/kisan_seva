@@ -1,4 +1,4 @@
-## 🎥 KisanSeva Vision Trailer
+﻿## 🎥 KisanSeva Vision Trailer
 
 Watch our short concept trailer introducing the vision behind KisanSeva:
 
@@ -341,35 +341,41 @@ flowchart TB
     classDef external fill:#2d0a15,stroke:#ef4444,stroke-width:2px,color:#fff;
     classDef db fill:#062817,stroke:#3ecf8e,stroke-width:2px,color:#fff;
     classDef user fill:#000000,stroke:#ffffff,stroke-width:2px,color:#fff,rx:20px,ry:20px;
+    classDef pwa fill:#1a1a2e,stroke:#a855f7,stroke-width:2px,color:#fff;
 
     %% Client Layer
     User(["🌾 Farmer / User"]):::user
-    
-    subgraph ClientLayer ["📱 Client Layer (Next.js 16)"]
-        UI["React UI Components & Zustand State"]:::frontend
+
+    subgraph ClientLayer ["📱 Client Layer — Next.js 16 + PWA"]
+        UI["React UI + Zustand State"]:::frontend
         Voice["MediaRecorder Audio Capture"]:::frontend
         Maps["Leaflet Farm Maps"]:::frontend
+        SW["Service Worker sw.js — Offline Cache + Background Sync"]:::pwa
     end
 
     %% Vercel API Layer
     subgraph VercelAPI ["⚡ Vercel Serverless Functions"]
-        RouteAgent["/api/agent<br/>(AI Chat Router)"]:::api
-        RouteTranscribe["/api/transcribe<br/>(Voice to Text)"]:::api
-        RouteOverpass["/api/overpass<br/>(3-Mirror Proxy)"]:::api
-        RouteTTS["/api/v1/tts<br/>(Google TTS Proxy)"]:::api
-        RouteData["/api/v1/*<br/>(Market, Weather, Diagnose)"]:::api
+        RouteChat["/api/v1/agent/chat — AI Chat Cascade"]:::api
+        RouteTranscribe["/api/transcribe — Voice to Text"]:::api
+        RouteOverpass["/api/overpass — 3-Mirror Proxy"]:::api
+        RouteTTS["/api/v1/tts — Google TTS Proxy"]:::api
+        RouteDiagnose["/api/v1/diagnose — Crop Disease Vision"]:::api
+        RouteSoil["/api/v1/soil-ocr — Soil Card OCR"]:::api
+        RouteMarket["/api/v1/market — Agmarknet Prices"]:::api
+        RouteOther["/api/v1 — Notifs, News, B2B, SOS"]:::api
+        SharedAI["lib/ai.ts — Shared AI Cascade Engine"]:::api
     end
 
     %% Database & Auth
     subgraph CoreServices ["🗄️ Core Services"]
         Clerk["🔐 Clerk Authentication"]:::db
-        Supabase["🐘 Supabase PostgreSQL<br/>& Document Storage"]:::db
+        Supabase["🐘 Supabase PostgreSQL and Document Storage"]:::db
     end
 
-    %% Python ML Backend
-    subgraph MLBackend ["🧠 Python ML Service (FastAPI)"]
+    %% Python ML Backend on Render
+    subgraph MLBackend ["🧠 Python ML Service — FastAPI on Render"]
         Orchestrator{"🤖 Master Orchestrator"}:::python
-        
+
         subgraph Agents ["7-Agent System"]
             A1["🌿 Diagnosis Agent"]:::agent
             A2["📊 Market Price Agent"]:::agent
@@ -379,43 +385,57 @@ flowchart TB
             A6["📚 Knowledge Agent"]:::agent
             A7["📱 SMS/IVR Agent"]:::agent
         end
-        
+
         RAG[("📑 RAG Vector Store")]:::python
     end
 
     %% External APIs
-    subgraph ExternalServices ["🌐 External APIs & AI Models"]
-        GroqLLM["🧠 Groq Llama-3.3-70B"]:::external
-        GroqWhisper["🎤 Groq Whisper"]:::external
-        Vision["👁️ Gemini / Nvidia NIM"]:::external
-        GovtAPI["📈 Agmarknet API"]:::external
+    subgraph ExternalServices ["🌐 External APIs and AI Models"]
+        GeminiVision["👁️ Gemini 3.6 Flash — Primary Vision and Text"]:::external
+        GroqChat["🧠 Groq — Qwen 3.8 / GPT-OSS — Primary Chat"]:::external
+        GroqWhisper["🎤 Groq Whisper — Voice Transcription"]:::external
+        NvidiaVision["🖥️ Nvidia NIM — Vision Fallback"]:::external
+        GovtAPI["📈 Agmarknet API — Mandi Prices"]:::external
         WeatherAPI["🌩️ OpenWeatherMap"]:::external
         MapAPI["🗺️ OSM Overpass / MapTiler"]:::external
     end
 
-    %% Connections - User & Frontend
+    %% User flows
     User -->|Interacts| UI
     User -->|Speaks| Voice
     UI --> Maps
+    UI <-->|Offline Cache| SW
 
-    %% Connections - Frontend to API
+    %% Frontend to API
     UI -->|Auth| Clerk
     UI -->|CRUD| Supabase
-    UI -->|Text Chat| RouteAgent
+    UI -->|Text Chat| RouteChat
     Voice -->|Audio Blob| RouteTranscribe
     Maps -->|Storage Search| RouteOverpass
-    UI -->|Fetch Data| RouteData
+    UI -->|Upload Image| RouteDiagnose
+    UI -->|Upload Soil Card| RouteSoil
+    UI -->|Fetch Prices| RouteMarket
     UI -->|Play Audio| RouteTTS
+    UI -->|Notifications and News| RouteOther
 
-    %% Connections - API to ML & External
-    RouteTranscribe -->|Transcribe| GroqWhisper
-    RouteOverpass -->|Proxied Query| MapAPI
-    RouteAgent -.->|Primary Mode| Orchestrator
-    RouteAgent -->|Fallback Mode| GroqLLM
-    RouteData -.->|Dedicated ML| FastAPI["FastAPI App"]:::python
-    FastAPI --> Orchestrator
+    %% Shared AI cascade used by all AI routes
+    RouteDiagnose --> SharedAI
+    RouteSoil --> SharedAI
+    RouteChat --> SharedAI
+    RouteOther --> SharedAI
 
-    %% Connections - ML to Agents
+    %% AI Cascade: Gemini → Groq → Nvidia → Render ML
+    SharedAI -->|"1 Primary Vision+Text"| GeminiVision
+    SharedAI -->|"2 Chat Fallback"| GroqChat
+    SharedAI -->|"3 Vision Fallback"| NvidiaVision
+    SharedAI -.->|"4 Final Fallback"| Orchestrator
+
+    %% Other external connections
+    RouteTranscribe --> GroqWhisper
+    RouteOverpass --> MapAPI
+    RouteMarket --> GovtAPI
+
+    %% ML Backend internals
     Orchestrator <-->|Coordinates| A1
     Orchestrator <-->|Coordinates| A2
     Orchestrator <-->|Coordinates| A3
@@ -442,70 +462,177 @@ flowchart TB
 ## 📂 Project Structure
 
 ```
-kisan_seva/                          # 📦 Turborepo Monorepo Root
-├── .github/
-│   └── workflows/
-│       └── ci.yml                   # 🔄 GitHub Actions CI/CD Pipeline
-├── scripts/                         # 🛠️ Dev Scripts (Data Gen, DB Migrations)
-│   ├── README.md
-│   ├── gen_diseases.js
-│   └── fix_storage.py
-├── turbo.json                       # 🚀 Build pipeline configuration
-├── pnpm-workspace.yaml              # 📦 Workspace package definitions
-├── supabase_schema.sql              # 🗄️ Database schema definitions
+kisan_seva/                              # 📦 Turborepo Monorepo Root
+├── .editorconfig                        # 🎨 Editor formatting rules (2-space indent, LF)
+├── .gitignore                           # 🚫 Git ignored files
+├── package.json                         # 📦 npm workspace root
+├── turbo.json                           # 🚀 Turborepo build pipeline config
+├── tsconfig.base.json                   # 🔷 Shared TypeScript base config
+├── CONTRIBUTING.md                      # 🤝 Contribution guidelines
+├── README.md                            # 📖 This file
+│
+├── database/                            # 🗄️ Supabase SQL Schemas
+│   ├── supabase_schema.sql              # Main schema (profiles, plots, community, B2B)
+│   └── supabase_profiles_schema.sql     # Profiles table with idempotent drop-safe DDL
 │
 └── apps/
-    └── web/                         # 🌐 Next.js Frontend App
-        ├── .env.example             # 🔑 Environment variables template
-        ├── public/
-        │   ├── images/rentals/      # 🚜 Equipment photos
-        │   └── hero-screenshot.png  # 📸 UI Assets
-        │
-        └── src/
-            ├── middleware.ts        # 🛡️ Rate Limiting & Security Headers
-            ├── types/
-            │   └── index.ts         # 📝 Centralized TypeScript Interfaces
-            ├── components/          # 🧩 Shared React Components
-            │   ├── home/            # Landing page UI components
-            │   ├── ui/              # Reusable generic components
-            │   └── ErrorBoundary.tsx# ⚠️ React Error Boundary
-            │
-            └── app/                 # 🛣️ Next.js App Router
-                ├── (marketing)/     # 📢 Public Landing Pages
-                │   └── page.tsx     # Homepage with Judge Panel
-                │
-                ├── (app)/           # 🔒 Protected Dashboard Routes
-                │   ├── AppLayoutClient.tsx  # Sidebar navigation wrapper
-                │   ├── agent/           # 🤖 AI Agent (7-agent chat)
-                │   ├── dashboard/       # 📊 Smart farm dashboard
-                │   ├── resources/       # 🚜 Equipment rentals + cold storage
-                │   ├── market/          # 📈 Mandi price comparator
-                │   ├── schedule/        # 📅 Crop planner & irrigation schedule
-                │   ├── diagnose/        # 📸 Crop disease diagnosis
-                │   ├── disease-library/ # 🦠 Disease encyclopaedia
-                │   ├── soil-health/     # 🧪 Soil health & NPK analysis
-                │   ├── topography/      # 🗺️ Farm Map & plots manager
-                │   ├── community/       # 👥 Kisan Sabha forum & Radio
-                │   ├── schemes/         # 🏛️ Government schemes
-                │   ├── finance/         # 💰 Agri-credit & Loan calculator
-                │   ├── documents/       # 📁 Document storage (Docs Locker)
-                │   ├── iot/             # 📡 IoT Sensor Telemetry
-                │   ├── settings/        # ⚙️ Farmer Profile Preferences
-                │   ├── help/            # 🆘 Support & Call Center
-                │   └── blockchain/      # 🔗 QR crop tracking & Traceability
-                │
-                └── api/             # ⚙️ Serverless API Routes
-                    ├── health/          # 🏥 System health & feature flags
-                    ├── v1/
-                    │   ├── agent/chat/  # Groq Llama-3 70B AI endpoint
-                    │   ├── transcribe/  # Groq Whisper voice-to-text
-                    │   ├── market/      # Live Mandi price fetcher
-                    │   ├── news/        # RSS Krishi News fetcher
-                    │   ├── notifications/ # Push notification generator
-                    │   └── overpass/    # OSM proxy for cold storage
-                    └── tts/             # Google Translate Text-to-Speech
+    │
+    ├── web/                             # 🌐 Next.js 16 Frontend (deployed on Vercel)
+    │   ├── .env.example                 # 🔑 All required env variables template
+    │   ├── next.config.ts               # ⚙️ Next.js config (Turbopack, rewrites)
+    │   ├── tailwind.config.ts           # 🎨 Tailwind CSS + Ambrook design tokens
+    │   ├── eslint.config.mjs            # 🔍 ESLint with TypeScript + no-any rules
+    │   ├── tsconfig.json                # 🔷 TypeScript strict mode config
+    │   │
+    │   ├── public/                      # 📁 Static assets (served as-is by CDN)
+    │   │   ├── sw.js                    # 🔌 Custom Service Worker (PWA offline cache)
+    │   │   ├── icon.jpg                 # 📱 PWA app icon for home screen installs
+    │   │   └── images/                  # 🖼️ Crop photos, equipment images, UI assets
+    │   │
+    │   └── src/
+    │       ├── middleware.ts             # 🛡️ Clerk auth guard + security headers
+    │       │
+    │       ├── config/                  # ⚙️ App-wide constants (single source of truth)
+    │       │   └── constants.ts         # AI model names, timeouts, URLs, languages
+    │       │
+    │       ├── types/                   # 🔷 Shared TypeScript type registry
+    │       │   └── index.ts             # FarmerProfile, Plot, Weather, DiagnosisResult…
+    │       │
+    │       ├── lib/                     # 🔧 Shared server-side utilities
+    │       │   ├── index.ts             # Barrel export for all lib utilities
+    │       │   ├── ai.ts                # 🤖 AI cascade engine (Gemini→Groq→Nvidia NIM)
+    │       │   ├── chatStore.ts         # 💬 Zustand store for AI Saathi chat state
+    │       │   ├── offlineStore.ts      # 📴 Zustand store for offline-first data cache
+    │       │   ├── whatsapp.ts          # 📱 WhatsApp Business API client
+    │       │   └── supabase/            # 🐘 Supabase client factories
+    │       │       ├── client.ts        # Browser-side Supabase client
+    │       │       └── server.ts        # Server-side Supabase client (uses cookies)
+    │       │
+    │       ├── hooks/                   # 🪝 Custom React hooks
+    │       │   ├── index.ts             # Barrel export
+    │       │   └── useVoiceChat.ts      # 🎤 Full voice pipeline (record→transcribe→TTS)
+    │       │
+    │       ├── components/              # 🧩 Reusable React components
+    │       │   ├── chat/                # 💬 AI Saathi floating chat widget
+    │       │   │   ├── ChatWidget.tsx   # Floating chat panel (open/closed state)
+    │       │   │   ├── ChatBubble.tsx   # Single message bubble with markdown support
+    │       │   │   └── LanguageSelector.tsx  # EN / HI / BN switcher
+    │       │   │
+    │       │   ├── features/            # 🌟 Feature-specific smart components
+    │       │   │   ├── diagnose/
+    │       │   │   │   ├── ScanHeroCard.tsx      # Image upload + camera capture card
+    │       │   │   │   ├── RecentScans.tsx        # Diagnosis history from localStorage
+    │       │   │   │   └── CommonPests.tsx        # Common pests quick reference
+    │       │   │   ├── market/
+    │       │   │   │   ├── LiveMandiTable.tsx     # Sortable live mandi price table
+    │       │   │   │   ├── PriceChartCard.tsx     # 7-day Recharts price trend chart
+    │       │   │   │   ├── TopGainersLosers.tsx   # Daily price movers widget
+    │       │   │   │   ├── B2BMarketplace.tsx     # Contract farming listings
+    │       │   │   │   ├── MarketCalculator.tsx   # Profit calculator tool
+    │       │   │   │   ├── MarketNews.tsx          # Agri news feed
+    │       │   │   │   ├── PinnedCommodities.tsx   # Saved commodity watchlist
+    │       │   │   │   └── PriceAlertManager.tsx   # Price alert creation/management
+    │       │   │   └── schedule/
+    │       │   │       └── (irrigation & fertilizer schedule sub-components)
+    │       │   │
+    │       │   ├── home/                # 🏠 Marketing landing page sections
+    │       │   │   ├── Hero.tsx               # Animated hero with CTA buttons
+    │       │   │   ├── AgriFeatures.tsx        # Feature pillars section
+    │       │   │   ├── AgriStats.tsx           # Impact numbers
+    │       │   │   ├── FarmerTestimonials.tsx  # Farmer success stories
+    │       │   │   ├── AgriFAQ.tsx             # Frequently asked questions
+    │       │   │   └── …                       # AgriImpact, AgriTrustStrip, etc.
+    │       │   │
+    │       │   ├── layout/              # 🏗️ App-wide layout / shell components
+    │       │   │   ├── Navbar.tsx                # Top navigation bar
+    │       │   │   ├── BackgroundSyncManager.tsx  # Flushes offline queue on reconnect
+    │       │   │   ├── OfflineIndicator.tsx       # "You are offline" banner
+    │       │   │   ├── GoogleTranslateWidget.tsx  # Google Translate language picker
+    │       │   │   └── GlobalCalculatorWidget.tsx # Floating farm calculator
+    │       │   │
+    │       │   ├── map/                 # 🗺️ Map components (Leaflet)
+    │       │   │   ├── FarmMap.tsx        # Farm plot map with SOS alerts
+    │       │   │   ├── ColdStorageMap.tsx # Cold storage finder (Overpass API)
+    │       │   │   └── MapClient.tsx      # Client-only Leaflet wrapper (no SSR)
+    │       │   │
+    │       │   └── ui/                  # 🎨 Generic reusable UI primitives
+    │       │       ├── ErrorBoundary.tsx    # React error boundary wrapper
+    │       │       ├── CommunitySOS.tsx     # SOS emergency alert panel
+    │       │       ├── WebcamCapture.tsx    # Browser camera capture component
+    │       │       └── FullPageScroller.tsx # Full-page scroll animation wrapper
+    │       │
+    │       └── app/                     # 🛣️ Next.js App Router (file-based routing)
+    │           ├── layout.tsx            # Root HTML shell + Clerk + Google Fonts
+    │           ├── manifest.ts           # 📱 Dynamic PWA Web App Manifest
+    │           ├── ~offline/             # 📴 Custom branded offline fallback page
+    │           │
+    │           ├── (marketing)/          # 📢 Public routes — no auth required
+    │           │   ├── page.tsx          # 🏠 Main landing page
+    │           │   ├── govt-schemes/     # Public government scheme browser
+    │           │   ├── price-guide/      # Public mandi price reference guide
+    │           │   ├── trace/[batchId]/  # QR code crop traceability lookup
+    │           │   ├── privacy/          # Privacy policy page
+    │           │   └── terms/            # Terms of service page
+    │           │
+    │           ├── (auth)/               # 🔐 Clerk authentication pages
+    │           │   ├── sign-in/          # Sign-in page (Clerk hosted UI)
+    │           │   └── sign-up/          # Sign-up page (Clerk hosted UI)
+    │           │
+    │           ├── (app)/                # 🔒 Protected dashboard — requires sign-in
+    │           │   ├── layout.tsx                # Fetches profile → renders AppLayoutClient
+    │           │   ├── AppLayoutClient.tsx        # Sidebar + header + notification shell
+    │           │   ├── dashboard/                 # 📊 Smart farm overview dashboard
+    │           │   ├── agent/                     # 🤖 AI Agent multi-session chat
+    │           │   ├── diagnose/                  # 📸 Crop disease photo detection
+    │           │   ├── disease-library/           # 🦠 Full disease encyclopaedia
+    │           │   ├── soil-health/               # 🧪 Soil card OCR + NPK analysis
+    │           │   ├── market/                    # 📈 Live mandi price comparator
+    │           │   ├── schedule/                  # 📅 Irrigation & fertilizer calendar
+    │           │   ├── crop-planner/              # 🌱 AI-powered crop planning tool
+    │           │   ├── resources/                 # 🚜 Equipment rentals + cold storage
+    │           │   ├── topography/                # 🗺️ Farm map & plot manager
+    │           │   ├── community/                 # 👥 Kisan Sabha forum + radio
+    │           │   ├── schemes/                   # 🏛️ Government schemes discovery
+    │           │   ├── finance/                   # 💰 Agri-credit & loan calculator
+    │           │   ├── documents/                 # 📁 Docs Locker — secure doc storage
+    │           │   ├── iot/                       # 📡 IoT sensor telemetry dashboard
+    │           │   ├── blockchain/                # 🔗 QR crop traceability chain
+    │           │   ├── settings/                  # ⚙️ Farmer profile & app preferences
+    │           │   └── help/                      # 🆘 Support & KVK call centre
+    │           │
+    │           └── api/                  # ⚡ Next.js Serverless API Routes
+    │               ├── health/           # 🏥 Full system health + feature flags
+    │               ├── transcribe/       # 🎤 Groq Whisper voice-to-text proxy
+    │               ├── overpass/         # 🗺️ OSM Overpass 3-mirror proxy
+    │               ├── reports/          # 📊 PDF farm report generator
+    │               ├── weather/          # 🌤️ OpenWeatherMap data proxy
+    │               └── v1/               # 📡 Versioned AI & data endpoints
+    │                   ├── agent/chat/   # 🤖 Chat: Groq→Gemini→Render→KB cascade
+    │                   ├── diagnose/     # 👁️ Crop disease (Gemini 3.6 Flash vision)
+    │                   ├── soil-ocr/     # 🧪 Soil card OCR (Gemini 3.6 Flash vision)
+    │                   ├── disease-lookup/  # 🦠 Disease search (Gemini 3.6 Flash text)
+    │                   ├── market/       # 📈 Live Agmarknet mandi prices
+    │                   ├── notifications/ # 🔔 Push notification feed
+    │                   ├── news/         # 📰 Krishi news RSS aggregator
+    │                   ├── b2b/          # 🤝 B2B contract farming API
+    │                   ├── community/    # 👥 Community posts + AI replies
+    │                   ├── loans/        # 💰 Loan & credit scheme data
+    │                   ├── sos/          # 🚨 SOS emergency broadcast
+    │                   ├── tts/          # 🔊 Google TTS proxy (Hindi + Bengali)
+    │                   ├── whatsapp/     # 📱 WhatsApp send + webhook handler
+    │                   └── debug/        # 🔧 API key health-check (internal only)
+    │
+    └── ml-service/                       # 🧠 Python FastAPI ML Backend (Render)
+        ├── app.py                        # 🚀 FastAPI application entry point
+        ├── main.py                       # 7-agent orchestrator + specialist agents
+        ├── requirements.txt              # Python package dependencies
+        ├── Dockerfile                    # 🐳 Docker build for Render deployment
+        ├── config.toml                   # App configuration (model paths, settings)
+        ├── pytest.ini                    # Test runner configuration
+        ├── feedback.db                   # SQLite feedback + model retraining queue
+        ├── .env.example                  # ML service env variables template
+        └── README.md                     # ML service documentation & API reference
 ```
-
 ## 🚀 Scalability & DevOps Architecture
 
 [![CI/CD](https://github.com/abhranilsingharoy-cloud/kisan_seva/actions/workflows/ci.yml/badge.svg)](https://github.com/abhranilsingharoy-cloud/kisan_seva/actions)
@@ -705,3 +832,4 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 ✨ **Contributing towards a Bikasata Bharat (Developed India)** ✨
 
 </div>
+

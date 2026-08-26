@@ -675,7 +675,7 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 
 [![GitHub](https://img.shields.io/badge/GitHub-abhranilsingharoy--cloud-181717?style=for-the-badge&logo=github)](https://github.com/abhranilsingharoy-cloud)
 
-*Built with ❤️ for India's farming community — because every farmer deserves the best technology.*
+*Built with ❤️ for Bharat's farming community — because every farmer deserves the best technology.*
 
 <br/>
 

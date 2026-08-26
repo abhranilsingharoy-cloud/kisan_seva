@@ -12,6 +12,7 @@ const ChatRequestSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const GROQ_API_KEY = process.env.GROQ_API_KEY || ''
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
     
     const rawBody = await req.json()
     const parseResult = ChatRequestSchema.safeParse(rawBody)
@@ -36,10 +37,11 @@ You MUST reply entirely in the language corresponding to this language code: ${l
 Use simple vocabulary that farmers understand. Keep answers concise and practical.
 Always prioritise safety — for critical diseases, advise consulting a Krishi Vigyan Kendra (KVK) expert.`
 
-    // --- ATTEMPT 1: Try Multiple Groq Models ---
-    const groqModels = ['llama3-8b-8192', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma-7b-it'];
     let text = '';
     let successModel = '';
+
+    // --- ATTEMPT 1: Try Multiple Groq Models ---
+    const groqModels = ['llama-3.1-8b-instant', 'llama3-8b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'];
     
     if (GROQ_API_KEY) {
       for (const model of groqModels) {
@@ -66,7 +68,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
             const data = await groqResp.json()
             text = data?.choices?.[0]?.message?.content || ''
             if (text) {
-              successModel = model;
+              successModel = `Groq ${model}`;
               break;
             }
           }
@@ -76,20 +78,54 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
       }
     }
 
+    // --- ATTEMPT 2: Fallback to Gemini 1.5 Flash ---
+    if (!text && GEMINI_API_KEY) {
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiResp = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: `${systemPrompt}\n\nUser Query: ${query}` }]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 1024
+            }
+          }),
+          signal: AbortSignal.timeout(8000),
+        })
+
+        if (geminiResp.ok) {
+          const data = await geminiResp.json()
+          text = data?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+          if (text) {
+            successModel = 'Google Gemini 1.5 Flash';
+          }
+        }
+      } catch (e) {
+        console.warn(`[Gemini] Fallback failed:`, e);
+      }
+    }
+
+    // If we have text from Groq OR Gemini, return it!
     if (text) {
       return NextResponse.json({
         agent_name: 'KisanSeva AI',
         success: true,
-        result: { text, type: 'general_advisory', provider: 'groq' },
+        result: { text, type: 'general_advisory', provider: successModel.includes('Groq') ? 'groq' : 'gemini' },
         confidence: 0.9,
         language,
         processing_time_ms: 0,
-        sources: [`Groq ${successModel}`],
+        sources: [successModel],
         follow_up_actions: [],
       })
     }
 
-    // --- ATTEMPT 2: Fallback to Python ML Backend (Localtunnel) ---
+    // --- ATTEMPT 3: Fallback to Python ML Backend (Localtunnel) ---
     try {
       const ML_SERVICE_URL = process.env.NEXT_PUBLIC_ML_URL || 'https://silly-dingos-brake.loca.lt'
       const mlResp = await fetch(`${ML_SERVICE_URL}/api/v1/orchestrator`, {
@@ -107,7 +143,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
       console.warn(`[ML Backend] Fallback failed:`, e);
     }
 
-    // --- ATTEMPT 3: Ultimate Graceful Fallback (Never return 500) ---
+    // --- ATTEMPT 4: Ultimate Graceful Fallback (Never return 500) ---
     return NextResponse.json({
       agent_name: 'KisanSeva AI (Offline)',
       success: true,

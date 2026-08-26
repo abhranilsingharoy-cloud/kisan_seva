@@ -2,7 +2,7 @@
 
 Watch our short concept trailer introducing the vision behind KisanSeva:
 
-[**▶️ Watch the Project Trailer (Google Drive)**](https://drive.google.com/drive/folders/1qclB5-O1ZOq3bUMS3bS9WBeXjlk6NBzK)
+[**▶️ Watch the Project Trailer (Google Drive) (Google Drive)**](https://drive.google.com/drive/folders/1qclB5-O1ZOq3bUMS3bS9WBeXjlk6NBzK)
 
 ---
 
@@ -665,7 +665,7 @@ OPENWEATHER_API_KEY=...
 
 Watch our short concept trailer introducing the vision behind KisanSeva:
 
-[**▶️ Watch the Project Trailer**](https://kisanseva-ks.vercel.app/demo-video.mp4)
+[**▶️ Watch the Project Trailer (Google Drive)**](https://drive.google.com/drive/folders/1qclB5-O1ZOq3bUMS3bS9WBeXjlk6NBzK)
 
 ---
 

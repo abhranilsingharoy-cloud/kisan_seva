@@ -134,7 +134,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
           'Content-Type': 'application/json',
           'Bypass-Tunnel-Reminder': 'true'
         },
-        body: JSON.stringify({ query, language, user_id, plot_id }),
+        body: JSON.stringify({ query, language, user_id: user_id || 'anonymous', plot_id, context }),
         signal: AbortSignal.timeout(10000), // 10 sec timeout
       })
       

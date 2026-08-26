@@ -68,7 +68,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     }
 
     // --- ATTEMPT 2: Try Multiple Gemini Models ---
-    const geminiModels = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-2.0-flash'];
+    const geminiModels = ['gemini-3.6-flash', 'gemini-2.5-flash'];
     if (!text && GEMINI_API_KEY) {
       for (const gModel of geminiModels) {
         try {
@@ -173,3 +173,4 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     })
   }
 }
+

@@ -37,7 +37,7 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
     // ATTEMPT 1: Gemini (Try multiple models)
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey && geminiKey.length > 20) {
-      const visionModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+      const visionModels = ['gemini-3.6-flash', 'gemini-2.5-flash'];
       for (const gModel of visionModels) {
         try {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`;
@@ -127,4 +127,5 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
     return NextResponse.json({ success: false, error: error.message || 'Diagnosis failed' }, { status: 500 });
   }
 }
+
 

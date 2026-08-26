@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next'
+﻿import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // ─── Performance ──────────────────────────────────────────
   reactStrictMode: true,
   poweredByHeader: false,
   compiler: {
@@ -17,8 +16,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion'],
   },
-
-  // ─── Images ───────────────────────────────────────────────
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -27,8 +24,6 @@ const nextConfig: NextConfig = {
     ],
     minimumCacheTTL: 3600,
   },
-
-  // 🛡️ Headers 🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️🛡️
   async headers() {
     return [
       {
@@ -43,8 +38,6 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-
-  // ─── Redirects ─────────────────────────────────────────────
   async redirects() {
     return [
       { source: '/home', destination: '/', permanent: true },
@@ -54,23 +47,10 @@ const nextConfig: NextConfig = {
 }
 
 export default withSentryConfig(nextConfig, {
-  // ─── Sentry build-time options ────────────────────────────
-  org:     'na-w3p',
+  org: 'na-w3p',
   project: 'javascript-nextjs',
-
-  // Source map upload (requires SENTRY_AUTH_TOKEN in CI)
-  silent:         !process.env.CI,
-  sourcemaps:     { disable: false },
-
-  // Auto-instrument all API routes
-  // (Deprecated options removed for Turbopack compatibility)
-
-  // Tree-shake Sentry debug code in production
-  // (Deprecated option removed for Turbopack compatibility)
-
-  // Tunnels Sentry requests through /monitoring to bypass ad-blockers
+  silent: !process.env.CI,
+  sourcemaps: { disable: false },
   tunnelRoute: '/monitoring',
-
-  // Automatically wrap pages with error boundaries
   widenClientFileUpload: true,
 })

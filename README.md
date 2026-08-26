@@ -223,7 +223,7 @@ All items have **real unique photos**, **hourly rates**, **owner contact**, and 
 
 ---
 
-### 💳 11. Agri-Credit
+### 💳 11. Agri Financial Service
 > *Financial tools designed for farmers*
 
 - **Kisan Credit Card EMI Calculator** — input loan amount and tenure, get monthly EMI

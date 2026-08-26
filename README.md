@@ -2,7 +2,7 @@
 
 Watch our short concept trailer introducing the vision behind KisanSeva:
 
-[**▶️ Watch the Project Trailer (Google Drive) (Google Drive)**](https://drive.google.com/drive/folders/1qclB5-O1ZOq3bUMS3bS9WBeXjlk6NBzK)
+[**▶️ Watch the Project Trailer (Google Drive)**](https://drive.google.com/drive/folders/1qclB5-O1ZOq3bUMS3bS9WBeXjlk6NBzK)
 
 ---
 
@@ -19,11 +19,12 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Groq](https://img.shields.io/badge/Groq-Llama_3.3_70B-FF6B35?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com/)
+[![Gemini](https://img.shields.io/badge/Gemini-3.6_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)](https://clerk.dev/)
-[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://kisan-seva-ks.vercel.app/)
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://kisanseva-ks.vercel.app/)
+[![Render](https://img.shields.io/badge/ML_Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://kisanseva-api.onrender.com/)
 [![Turbo](https://img.shields.io/badge/Monorepo-Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)](https://turbo.build/)
 
 <br/>
@@ -41,7 +42,7 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 
 <br/>
 
-[🌐 **Live Demo**](https://kisan-seva-ks.vercel.app/) &nbsp;|&nbsp; [📂 **GitHub**](https://github.com/abhranilsingharoy-cloud/kisan_seva) &nbsp;|&nbsp; [📋 **Report Issue**](https://github.com/abhranilsingharoy-cloud/kisan_seva/issues)
+[🌐 **Live Demo**](https://kisanseva-ks.vercel.app/) &nbsp;|&nbsp; [🧠 **ML Backend (Render)**](https://kisanseva-api.onrender.com/) &nbsp;|&nbsp; [📂 **GitHub**](https://github.com/abhranilsingharoy-cloud/kisan_seva) &nbsp;|&nbsp; [📋 **Report Issue**](https://github.com/abhranilsingharoy-cloud/kisan_seva/issues)
 
 ✨ **Contributing towards a Bikasata Bharat (Developed India)** ✨
 
@@ -303,13 +304,19 @@ All items have **real unique photos**, **hourly rates**, **owner contact**, and 
 ### AI & Machine Learning
 | Technology | Purpose |
 |-----------|---------|
-| **Groq — Llama-3.3-70B** | Primary LLM powering all 7 agents |
+| **Google Gemini 3.6 Flash** | Primary LLM for all AI features — Chat, Vision, OCR, Disease Lookup |
+| **Groq (Qwen 3.8 / GPT-OSS)** | Fast LLM fallback for AI Chat agent |
 | **Groq Whisper** | Voice-to-text transcription (works on HTTP!) |
-| **Google Gemini Vision** | Crop disease image analysis |
-| **Nvidia NIM Vision** | Alternative vision model |
-| **FastAPI + Uvicorn** | Python ML microservice |
+| **Nvidia NIM Vision** | Alternative vision model for Crop Diagnose & Soil OCR |
+| **FastAPI + Uvicorn** | Python ML microservice (hosted on Render free tier) |
 | **LangChain** | Agent orchestration framework |
 | **Google Translate TTS** | Multilingual Hindi/Bengali speech |
+
+### Deployment
+| Service | Hosts | URL |
+|---------|-------|-----|
+| **Vercel** | Next.js Frontend + API Routes | [kisanseva-ks.vercel.app](https://kisanseva-ks.vercel.app/) |
+| **Render** | Python FastAPI ML Backend | [kisanseva-api.onrender.com](https://kisanseva-api.onrender.com/) |
 
 ### External APIs
 | API | Data Provided |
@@ -539,11 +546,11 @@ Every commit to `main` automatically:
 ```bash
 git clone https://github.com/abhranilsingharoy-cloud/kisan_seva.git
 cd kisan_seva
-pnpm install
+npm install
 cp apps/web/.env.example apps/web/.env.local
-# Fill in your API keys
-pnpm run dev
-# Open http://localhost:5173
+# Fill in your API keys (see Environment Variables section below)
+npm run dev
+# Open http://localhost:3000
 ```
 
 ### Full Stack (Frontend + Python ML Service)
@@ -555,20 +562,20 @@ python -m venv .venv
 .\.venv\Scripts\activate     # Windows
 # source .venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn app:app --reload --port 8000
 ```
 
 **Terminal 2 — Next.js Frontend:**
 ```bash
-pnpm run dev
+npm run dev
 ```
 
 ### HTTPS Mode (for Microphone / Camera Access)
 
 ```bash
 cd apps/web
-npx next dev --port 5173 --experimental-https
-# Open https://localhost:5173
+npx next dev --experimental-https
+# Open https://localhost:3000
 ```
 
 ---
@@ -579,9 +586,12 @@ Create `apps/web/.env.local`:
 
 ```env
 # ── AI & LLM ─────────────────────────────────────
-GROQ_API_KEY=gsk_...          # Llama-3.3-70B + Whisper
-GEMINI_API_KEY=AIza...         # Gemini Vision (crop diagnosis)
-NVIDIA_NIM_KEY=nvapi-...       # Nvidia NIM Vision
+GROQ_API_KEY=gsk_...          # Groq API (Qwen 3.8 / GPT-OSS fallback for chat)
+GEMINI_API_KEY=AQ.Ab8RN6...   # Google AI Studio key (Gemini 3.6 Flash — primary for all AI)
+NVIDIA_NIM_KEY=AQ....         # Nvidia NIM key (vision fallback for diagnose/soil)
+
+# ── ML Backend (Render) ──────────────────────────
+NEXT_PUBLIC_ML_URL=https://kisanseva-api.onrender.com
 
 # ── Auth (Clerk) ─────────────────────────────────
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
@@ -596,19 +606,24 @@ NEXT_PUBLIC_MAPTILER_KEY=...
 OPENWEATHER_API_KEY=...
 ```
 
----
+> **Note on Gemini API Key format:** Google AI Studio keys starting with `AQ.` are valid OAuth tokens and work exactly the same as the traditional `AIza...` keys. Both formats are supported.
+
 
 ## 🌍 API Reference
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/agent` | AI chat via Groq Llama-3.3-70B |
+| `POST` | `/api/agent` | AI chat via Gemini 3.6 Flash |
 | `POST` | `/api/transcribe` | Voice → text via Groq Whisper |
 | `POST` | `/api/overpass` | OSM Overpass proxy (3 mirrors) |
 | `GET`  | `/api/v1/tts` | Google TTS proxy for Hindi/Bengali |
 | `GET`  | `/api/v1/market` | Live Agmarknet mandi prices |
-| `POST` | `/api/v1/diagnose` | Crop disease diagnosis |
-| `GET`  | `/api/v1/weather` | Location weather forecast |
+| `POST` | `/api/v1/diagnose` | Crop disease vision diagnosis (Gemini 3.6 Flash → Nvidia NIM) |
+| `POST` | `/api/v1/soil-ocr` | Soil Health Card OCR (Gemini 3.6 Flash → Nvidia NIM) |
+| `POST` | `/api/v1/agent/chat` | AI Chatbot (Groq → Gemini → Render ML → Knowledge Base) |
+| `POST` | `/api/v1/disease-lookup` | Disease encyclopaedia lookup (Gemini 3.6 Flash) |
+| `GET`  | `/api/v1/debug` | Health-check for environment variables & API keys |
+| `GET`  | `/api/health` | Full system health status |
 
 ---
 

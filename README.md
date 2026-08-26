@@ -28,6 +28,8 @@ Watch our short concept trailer introducing the vision behind KisanSeva:
 
 <br/>
 
+> **🎯 Problem Statement Title:** Student Innovation-Developing solutions, keeping in mind the need to enhance the primary sector of India – Agriculture and to manage and process our agriculture produce.
+>
 > **🏆 Hackathon Submission** — An innovative, highly scalable Agritech ecosystem leveraging **Multi-Agent AI**, **Voice-First Accessibility**, and **Real-Time Data** to solve critical on-ground challenges for India's 140 million farming families.
 
 <br/>

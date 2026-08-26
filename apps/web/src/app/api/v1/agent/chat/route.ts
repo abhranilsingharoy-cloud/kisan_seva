@@ -81,7 +81,7 @@ Always prioritise safety — for critical diseases, advise consulting a Krishi V
     // --- ATTEMPT 2: Fallback to Gemini 1.5 Flash ---
     if (!text && GEMINI_API_KEY) {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
         const geminiResp = await fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

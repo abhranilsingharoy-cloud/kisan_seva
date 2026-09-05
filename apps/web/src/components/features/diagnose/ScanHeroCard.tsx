@@ -55,7 +55,7 @@ export default function ScanHeroCard({
               <div style={{ position: 'absolute', top: -4, left: 12, width: 16, height: 8, background: '#4b5563', borderRadius: '4px 4px 0 0' }} />
               <div style={{ position: 'absolute', top: 12, left: 18, width: 20, height: 20, background: '#9ca3af', borderRadius: '50%', border: '4px solid #4b5563' }} />
             </div>
-            <div style={{ fontSize: '2.5rem' }}>ðŸŒ¿</div>
+            <div style={{ fontSize: '2.5rem' }}>🌿</div>
           </div>
           <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#111827', margin: '0 0 12px', letterSpacing: '-0.02em' }}>Scan Your Crop</h2>
           <p style={{ color: '#6b7280', margin: '0 0 32px', fontSize: '1.05rem' }}>Identify health issues and get treatment advice instantly.</p>
@@ -208,5 +208,6 @@ export default function ScanHeroCard({
     </div>
   )
 }
+
 
 

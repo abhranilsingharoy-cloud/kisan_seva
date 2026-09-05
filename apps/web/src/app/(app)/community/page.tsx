@@ -151,8 +151,18 @@ export default function CommunityHub() {
   const setStatus = (id: string, status: StationStatus) => setStatusMap(prev => ({ ...prev, [id]: status }));
 
   const playStation = (station: typeof STATIONS[0]) => {
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
-    if (activeId === station.id) { setActiveId(null); return; }
+    if (audioRef.current) { 
+      audioRef.current.oncanplay = null;
+      audioRef.current.onerror = null;
+      audioRef.current.pause(); 
+      audioRef.current.src = ''; 
+      audioRef.current.load();
+    }
+    if (activeId === station.id) { 
+      setActiveId(null); 
+      setStatus(station.id, 'idle');
+      return; 
+    }
     setActiveId(station.id);
     setStatus(station.id, 'loading');
 
